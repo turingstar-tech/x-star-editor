@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.editor {
+  flex: 1;
+  border-bottom-right-radius: 0;
+}
+
+.viewer {
+  flex: 1;
+  border-radius: 0;
+  border-bottom-right-radius: 0.2em;
+}
+
+.toolbar {
+  width: 100%;
+}
