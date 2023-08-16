@@ -1,14 +1,19 @@
 import classNames from 'classnames/bind';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { XStarMdEditorHandle, XStarMdEditorProps } from '../XStarMdEditor';
-import XStarMdEditor from '../XStarMdEditor';
+import XStarMdEditor, { useMdEditorRef } from '../XStarMdEditor';
 import type { XStarMdViewerHandle, XStarMdViewerProps } from '../XStarMdViewer';
-import XStarMdViewer from '../XStarMdViewer';
+import XStarMdViewer, { useMdViewerRef } from '../XStarMdViewer';
 import styles from './index.module.css';
 
 const cx = classNames.bind(styles);
 
-export interface XStarMDProps {
+export interface XStarEditorHandle {
+  getEditor: () => XStarMdEditorHandle | null;
+  getViewer: () => XStarMdViewerHandle | null;
+}
+
+export interface XStarEditorProps {
   height?: React.CSSProperties['height'];
   initialValue?: string;
   editorProps?: Omit<XStarMdEditorProps, 'initialValue' | 'onChange'>;
@@ -16,104 +21,160 @@ export interface XStarMDProps {
   onChange?: (value: string) => void;
 }
 
-const XStarEditor = ({
-  height,
-  initialValue,
-  editorProps,
-  viewerProps,
-  onChange,
-}: XStarMDProps) => {
-  const [value, setValue] = useState(initialValue);
+const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
+  ({ height, initialValue, editorProps, viewerProps, onChange }, ref) => {
+    const [value, setValue] = useState(initialValue);
 
-  const editorRef = useRef<XStarMdEditorHandle>(null);
-  const viewerRef = useRef<XStarMdViewerHandle>(null);
+    const editorRef = useMdEditorRef();
+    const viewerRef = useMdViewerRef();
 
-  useEffect(() => {
-    const editor = editorRef.current?.getContainer();
-    const viewer = viewerRef.current?.getContainer();
+    useImperativeHandle(
+      ref,
+      () => ({
+        getEditor: () => editorRef.current,
+        getViewer: () => viewerRef.current,
+      }),
+      [],
+    );
 
-    /**
-     * 获取一个父元素的子元素到父元素顶部的距离
-     *
-     * @param element 父元素
-     * @param index 是否只考虑有 `index` 属性的子元素
-     * @returns 子元素到父元素顶部的距离
-     */
-    const getOffsetTops = (element: HTMLDivElement, index: boolean) => {
-      const offsetTops = [0];
-      for (let i = 0; i < element.children.length; i++) {
-        const child = element.children[i];
-        if (
-          child instanceof HTMLElement &&
-          (!index || child.hasAttribute('index'))
-        ) {
-          offsetTops.push(child.offsetTop);
+    // 同步滚动
+    useEffect(() => {
+      const editor = editorRef.current?.getContainer();
+      const viewer = viewerRef.current?.getContainer();
+
+      /**
+       * 获取两个父元素的子元素到各自父元素顶部的距离
+       *
+       * @param fromElement 第一个父元素
+       * @param toElement 第二个父元素
+       * @returns 子元素到各自父元素顶部的距离
+       */
+      const getOffsetTops = (
+        fromElement: HTMLDivElement,
+        toElement: HTMLDivElement,
+      ): [number[], number[]] => {
+        const fromOffsetTops = [0];
+        const toOffsetTops = [0];
+        const fromLimit = fromElement.scrollHeight - fromElement.clientHeight;
+        const toLimit = toElement.scrollHeight - toElement.clientHeight;
+        if (fromLimit > 0 && toLimit > 0) {
+          for (
+            let i = 0, j = 0;
+            i < fromElement.children.length && j < toElement.children.length;
+
+          ) {
+            const fromChild = fromElement.children[i];
+            const toChild = toElement.children[j];
+            const fromLine = parseInt(fromChild.getAttribute('line') ?? '');
+            const toLine = parseInt(toChild.getAttribute('line') ?? '');
+            if (!(fromChild instanceof HTMLElement) || !fromLine) {
+              i++;
+            } else if (!(toChild instanceof HTMLElement) || !toLine) {
+              j++;
+            } else if (fromLine < toLine) {
+              i++;
+            } else if (fromLine > toLine) {
+              j++;
+            } else {
+              fromOffsetTops.push(fromChild.offsetTop);
+              toOffsetTops.push(toChild.offsetTop);
+              i++;
+              j++;
+            }
+          }
+          for (
+            ;
+            fromOffsetTops[fromOffsetTops.length - 1] >= fromLimit ||
+            toOffsetTops[toOffsetTops.length - 1] >= toLimit;
+
+          ) {
+            fromOffsetTops.pop();
+            toOffsetTops.pop();
+          }
+          fromOffsetTops.push(fromLimit);
+          toOffsetTops.push(toLimit);
         }
-      }
-      offsetTops.push(element.scrollHeight);
-      return offsetTops;
-    };
+        return [fromOffsetTops, toOffsetTops];
+      };
 
-    const listener = (e: Event) => {
-      if (!editor || !viewer) {
-        return;
-      }
-      const [fromElement, toElement] =
-        e.currentTarget === editor ? [editor, viewer] : [viewer, editor];
-      const fromOffsetTops = getOffsetTops(fromElement, fromElement === editor);
-      const toOffsetTops = getOffsetTops(toElement, toElement === editor);
-      for (let i = 0; i < fromOffsetTops.length - 1; i++) {
-        if (
-          fromOffsetTops[i] <= fromElement.scrollTop &&
-          fromElement.scrollTop < fromOffsetTops[i + 1]
-        ) {
-          toElement.scrollTop =
-            ((fromElement.scrollTop - fromOffsetTops[i]) /
-              (fromOffsetTops[i + 1] - fromOffsetTops[i])) *
-              (toOffsetTops[i + 1] - toOffsetTops[i]) +
-            toOffsetTops[i];
-          break;
+      /**
+       * 是否忽略下一个滚动事件
+       */
+      let ignoreNext = false;
+
+      const listener = (e: Event) => {
+        const ignore = ignoreNext;
+        ignoreNext = false;
+        if (ignore || !editor || !viewer) {
+          return;
         }
-      }
-    };
+        const [fromElement, toElement] =
+          e.currentTarget === editor ? [editor, viewer] : [viewer, editor];
+        const [fromOffsetTops, toOffsetTops] = getOffsetTops(
+          fromElement,
+          toElement,
+        );
+        for (let i = 0; i < fromOffsetTops.length - 1; i++) {
+          if (
+            fromOffsetTops[i] <= fromElement.scrollTop &&
+            fromElement.scrollTop < fromOffsetTops[i + 1]
+          ) {
+            const scrollTop =
+              ((fromElement.scrollTop - fromOffsetTops[i]) /
+                (fromOffsetTops[i + 1] - fromOffsetTops[i])) *
+                (toOffsetTops[i + 1] - toOffsetTops[i]) +
+              toOffsetTops[i];
+            if (toElement.scrollTop !== scrollTop) {
+              ignoreNext = true;
+              toElement.scrollTop = scrollTop;
+            }
+            break;
+          }
+        }
+      };
 
-    editor?.addEventListener('scroll', listener, {
-      capture: true,
-      passive: true,
-    });
-    viewer?.addEventListener('scroll', listener, {
-      capture: true,
-      passive: true,
-    });
-    return () => {
-      editor?.removeEventListener('scroll', listener, { capture: true });
-      viewer?.removeEventListener('scroll', listener, { capture: true });
-    };
-  }, []);
+      editor?.addEventListener('scroll', listener, {
+        capture: true,
+        passive: true,
+      });
+      viewer?.addEventListener('scroll', listener, {
+        capture: true,
+        passive: true,
+      });
+      return () => {
+        editor?.removeEventListener('scroll', listener, { capture: true });
+        viewer?.removeEventListener('scroll', listener, { capture: true });
+      };
+    }, []);
 
-  return (
-    <div className={cx('container')}>
-      <XStarMdEditor
-        ref={editorRef}
-        {...editorProps}
-        className={cx('editor', editorProps?.className)}
-        style={{ height, ...editorProps?.style }}
-        toolbarClassName={cx('toolbar', editorProps?.toolbarClassName)}
-        initialValue={initialValue}
-        onChange={(value) => {
-          setValue(value);
-          onChange?.(value);
-        }}
-      />
-      <XStarMdViewer
-        ref={viewerRef}
-        {...viewerProps}
-        className={cx('viewer', viewerProps?.className)}
-        style={{ height, ...viewerProps?.style }}
-        value={value}
-      />
-    </div>
-  );
-};
+    return (
+      <div className={cx('container')}>
+        <XStarMdEditor
+          ref={editorRef}
+          {...editorProps}
+          className={cx('editor', editorProps?.className)}
+          style={{ height, ...editorProps?.style }}
+          toolbarClassName={cx('toolbar', editorProps?.toolbarClassName)}
+          initialValue={initialValue}
+          onChange={(value) => {
+            setValue(value);
+            onChange?.(value);
+          }}
+        />
+        <XStarMdViewer
+          ref={viewerRef}
+          {...viewerProps}
+          className={cx('viewer', viewerProps?.className)}
+          style={{ height, ...viewerProps?.style }}
+          value={value}
+        />
+      </div>
+    );
+  },
+);
+
+XStarEditor.displayName = 'XStarEditor';
 
 export default XStarEditor;
+
+export const useEditorRef = () => useRef<XStarEditorHandle>(null);

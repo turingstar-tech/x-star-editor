@@ -53,6 +53,13 @@ const processor = unified()
   .use(rehypeKatex)
   .use(rehypeRaw)
   .use(rehypeSanitize, schema)
+  .use(() => (root) => {
+    for (const node of root.children) {
+      if ('properties' in node && node.properties) {
+        node.properties.line = node.position?.start.line;
+      }
+    }
+  })
   .freeze();
 
 /**
@@ -220,8 +227,7 @@ export const editorRender = (sourceCode: string) => {
    * @param parentEndOffset 父节点终点偏移量
    */
   const getChildren = (nodes: MdastNode[], parentEndOffset: number) => {
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
+    for (const node of nodes) {
       let startOffset = node.position?.start.offset;
       const endOffset = node.position?.end.offset;
       if (startOffset === undefined || endOffset === undefined) {
@@ -258,7 +264,7 @@ export const editorRender = (sourceCode: string) => {
         // 如果栈大小为 1，说明为块级元素终点
         stack[0].el.append('\u200B');
         pushElement(0, true);
-        block.setAttribute('index', `${i}`);
+        block.setAttribute('line', `${node.position?.start.line}`);
         pushBlock();
         scanOffset++;
       }

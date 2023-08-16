@@ -306,3 +306,5 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 XStarMdEditor.displayName = 'XStarMdEditor';
 
 export default XStarMdEditor;
+
+export const useMdEditorRef = () => useRef<XStarMdEditorHandle>(null);

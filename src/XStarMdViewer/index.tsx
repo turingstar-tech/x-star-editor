@@ -55,3 +55,5 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 XStarMdViewer.displayName = 'XStarMdViewer';
 
 export default XStarMdViewer;
+
+export const useMdViewerRef = () => useRef<XStarMdViewerHandle>(null);

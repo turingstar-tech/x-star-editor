@@ -1,12 +1,12 @@
-export { default as XStarEditor } from './XStarEditor';
-export type { XStarMDProps } from './XStarEditor';
-export { default as XStarMdEditor } from './XStarMdEditor';
+export { default as XStarEditor, useEditorRef } from './XStarEditor';
+export type { XStarEditorHandle, XStarEditorProps } from './XStarEditor';
+export { default as XStarMdEditor, useMdEditorRef } from './XStarMdEditor';
 export type {
   XStarMdEditorHandle,
   XStarMdEditorPlugin,
   XStarMdEditorProps,
 } from './XStarMdEditor';
-export { default as XStarMdViewer } from './XStarMdViewer';
+export { default as XStarMdViewer, useMdViewerRef } from './XStarMdViewer';
 export type {
   XStarMdViewerHandle,
   XStarMdViewerPlugin,
