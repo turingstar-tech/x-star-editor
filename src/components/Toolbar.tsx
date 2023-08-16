@@ -63,7 +63,7 @@ const Button = ({
     <div className={cx('button-container')}>
       <div
         className={cx('button', {
-          'button-hover': tooltipOpen || popoverMount,
+          active: tooltipOpen || popoverMount,
         })}
         onClick={() => {
           setPopoverOpen(true);

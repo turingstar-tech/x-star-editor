@@ -15,7 +15,7 @@
   white-space: pre;
   word-spacing: normal;
   word-break: normal;
-  font-size: 0.9em;
+  font-size: 1em;
   line-height: 1.2em;
 
   -moz-tab-size: 4;
@@ -31,7 +31,7 @@
 .x-star-md-viewer.x-star-md-viewer pre > code {
   margin: 0;
   color: #393a34;
-  font-size: 1em;
+  font-size: 1.1em;
 }
 
 .x-star-md-viewer.x-star-md-viewer pre::-moz-selection,

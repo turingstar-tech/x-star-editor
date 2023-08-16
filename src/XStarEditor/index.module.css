@@ -3,17 +3,17 @@
   flex-wrap: wrap;
 }
 
-.editor {
+.container .toolbar {
+  width: 100%;
+}
+
+.container .editor {
   flex: 1;
   border-bottom-right-radius: 0;
 }
 
-.viewer {
+.container .viewer {
   flex: 1;
   border-radius: 0;
   border-bottom-right-radius: 0.2em;
-}
-
-.toolbar {
-  width: 100%;
 }

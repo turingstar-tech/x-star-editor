@@ -229,7 +229,10 @@ export const useContainer = () => {
           if (node.nodeType === Node.TEXT_NODE) {
             if (node.nodeValue) {
               offset += targetOffset;
-              if (node.nodeValue[targetOffset - 1] === '\u200B') {
+              if (
+                targetOffset === node.nodeValue.length &&
+                node.nodeValue.endsWith('\u200B')
+              ) {
                 offset--;
               }
             }
@@ -292,7 +295,11 @@ export const useContainer = () => {
       const traverse = (node: Node): Node | undefined => {
         if (node.nodeType === Node.TEXT_NODE) {
           if (node.nodeValue) {
-            if (offset < node.nodeValue.length) {
+            if (
+              offset < node.nodeValue.length ||
+              (offset === node.nodeValue.length &&
+                !node.nodeValue.endsWith('\u200B'))
+            ) {
               return node;
             }
             offset -= node.nodeValue.length;

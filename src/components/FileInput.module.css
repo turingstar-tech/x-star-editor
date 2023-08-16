@@ -2,66 +2,29 @@
   margin: 0.5em 1em 1em 1em;
 }
 
-.tabs {
+.container .tabs {
   display: flex;
 }
 
-.tab {
+.container .tabs .tab {
   padding: 0.4em 1em;
   border-bottom: 1px solid #f5771280;
   cursor: pointer;
   user-select: none;
 }
 
-.tab.active {
+.container .tabs .tab.active {
   color: #f57712;
   border-bottom: 2px solid #f57712;
 }
 
-.field {
-  margin: 0.8em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2em;
-  font-size: 0.9em;
-}
-
-.file-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.hidden {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-}
-
-.input {
-  width: 20em;
-  padding: 0.4em;
-  border: 1px solid #d0d0d0;
-  border-radius: 0.2em;
-  outline: none;
-}
-
-.input:focus {
-  border: 1px solid #f57712;
-}
-
-.input.file-input {
-  width: 14em;
-}
-
-.buttons {
+.container .buttons {
   display: flex;
   flex-direction: row-reverse;
   gap: 0.4em;
 }
 
-.button {
+.container .button {
   padding: 0.4em 1em;
   background-color: #f0f0f0;
   border: 1px solid #d0d0d0;
@@ -70,12 +33,49 @@
   user-select: none;
 }
 
-.button.primary {
+.container .button.primary {
   color: #ffffff;
   background-color: #f57712;
   border: none;
 }
 
-.button.file-button {
+.container .field {
+  margin: 0.8em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  font-size: 0.9em;
+}
+
+.container .field .input {
+  width: 20em;
+  padding: 0.4em;
+  border: 1px solid #d0d0d0;
+  border-radius: 0.2em;
+  outline: none;
+}
+
+.container .field .input:focus {
+  border: 1px solid #f57712;
+}
+
+.container .field .file-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.container .field .file-container .hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.container .field .file-container .input {
+  width: 14em;
+}
+
+.container .field .file-container .button {
   padding: 0.3em 0.4em;
 }

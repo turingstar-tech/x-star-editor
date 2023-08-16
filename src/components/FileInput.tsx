@@ -44,12 +44,8 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
               type="file"
               onChange={(e) => setFile(e.target.files?.[0])}
             />
-            <input
-              className={cx('input', 'file-input')}
-              readOnly
-              value={file?.name ?? ''}
-            />
-            <button className={cx('button', 'file-button')} type="button">
+            <input className={cx('input')} readOnly value={file?.name ?? ''} />
+            <button className={cx('button')} type="button">
               选择文件
             </button>
           </div>

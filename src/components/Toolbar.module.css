@@ -1,8 +1,19 @@
-.button-container {
+.toolbar {
+  padding: 0.2em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2em;
+  background-color: #f5771210;
+  border: 1px solid #f5771220;
+  border-top-left-radius: 0.2em;
+  border-top-right-radius: 0.2em;
+}
+
+.toolbar .button-container {
   position: relative;
 }
 
-.button {
+.toolbar .button-container .button {
   width: 2em;
   height: 2em;
   display: flex;
@@ -14,13 +25,47 @@
   user-select: none;
 }
 
-.button-hover {
+.toolbar .button-container .button.active {
   background-color: #f8f8f8;
   border: 1px solid #f5771280;
   border-radius: 0.2em;
 }
 
-.tooltip {
+.toolbar .button-container .button .icon {
+  width: 45%;
+  height: 45%;
+  background-size: contain;
+}
+
+.toolbar .button-container .button .icon.code-library {
+  background-image: url(icons/code-library.svg);
+}
+
+.toolbar .button-container .button .icon.italic {
+  background-image: url(icons/italic.svg);
+}
+
+.toolbar .button-container .button .icon.bold {
+  background-image: url(icons/bold.svg);
+}
+
+.toolbar .button-container .button .icon.code {
+  background-image: url(icons/code.svg);
+}
+
+.toolbar .button-container .button .icon.link {
+  background-image: url(icons/link.svg);
+}
+
+.toolbar .button-container .button .icon.image {
+  background-image: url(icons/image.svg);
+}
+
+.toolbar .button-container .button .icon.strikethrough {
+  background-image: url(icons/strikethrough.svg);
+}
+
+.toolbar .button-container .button .tooltip {
   position: absolute;
   top: 3em;
   width: max-content;
@@ -32,7 +77,7 @@
   z-index: 2;
 }
 
-.tooltip::before {
+.toolbar .button-container .button .tooltip::before {
   content: '';
   position: absolute;
   top: -0.3em;
@@ -43,7 +88,7 @@
   transform: rotate(45deg);
 }
 
-.popover {
+.toolbar .button-container .popover {
   position: absolute;
   width: max-content;
   background-color: #f8f8f8;
@@ -54,63 +99,17 @@
   z-index: 1;
 }
 
-.option {
+.toolbar .button-container .popover .option {
   padding: 4px 8px;
   cursor: pointer;
   user-select: none;
 }
 
-.option:hover {
+.toolbar .button-container .popover .option:hover {
   background-color: #f0f0f0;
 }
 
-.icon {
-  width: 45%;
-  height: 45%;
-  background-size: contain;
-}
-
-.icon.code-library {
-  background-image: url(icons/code-library.svg);
-}
-
-.icon.italic {
-  background-image: url(icons/italic.svg);
-}
-
-.icon.bold {
-  background-image: url(icons/bold.svg);
-}
-
-.icon.code {
-  background-image: url(icons/code.svg);
-}
-
-.icon.link {
-  background-image: url(icons/link.svg);
-}
-
-.icon.image {
-  background-image: url(icons/image.svg);
-}
-
-.icon.strikethrough {
-  background-image: url(icons/strikethrough.svg);
-}
-
-.toolbar {
-  margin: 0 -1px;
-  padding: 0.2em;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2em;
-  background-color: #f5771210;
-  border: 1px solid #f5771220;
-  border-top-left-radius: 0.2em;
-  border-top-right-radius: 0.2em;
-}
-
-.divider {
+.toolbar .divider {
   margin: 0.4em;
   border: 1px solid #f5771280;
 }
