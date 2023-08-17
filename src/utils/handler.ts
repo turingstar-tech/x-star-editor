@@ -16,8 +16,8 @@ type HandlerContext = ReturnType<typeof useHistory>;
 /**
  * 处理函数
  */
-export interface Handler {
-  (ctx: HandlerContext): void;
+export interface Handler<T = void> {
+  (ctx: HandlerContext): T;
 }
 
 export const insertHandler =
@@ -61,7 +61,7 @@ export const selectHandler =
  * 接收一个处理函数，获取上下文后执行它
  */
 export interface Executor {
-  (handler: Handler): void;
+  <T>(handler: Handler<T>): T;
 }
 
 /**

@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "father build && sass src/styles/index.scss dist/styles/index.css --style=compressed --no-source-map",
+    "build": "father build && sass src/styles/index.scss dist/styles/index.css --no-source-map",
     "build:watch": "father dev",
     "dev": "dumi dev",
     "docs:build": "dumi build",
@@ -49,12 +49,15 @@
     "rehype-katex": "^6.0.3",
     "rehype-prism-plus": "^1.6.1",
     "rehype-raw": "^6.1.1",
+    "rehype-remark": "^9.1.2",
     "rehype-sanitize": "^5.0.1",
+    "rehype-stringify": "^9.0.4",
     "remark-breaks": "^3.0.3",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "remark-parse": "^10.0.2",
     "remark-rehype": "^10.1.0",
+    "remark-stringify": "^10.0.3",
     "unified": "^10.1.2"
   },
   "devDependencies": {

@@ -23,3 +23,4 @@ export {
   undoHandler,
 } from './utils/handler';
 export type { Handler } from './utils/handler';
+export { toHTML, toMarkdown } from './utils/markdown';

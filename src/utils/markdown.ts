@@ -4,12 +4,15 @@ import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
+import rehypeRemark from 'rehype-remark';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
+import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { prefix } from './global';
 
@@ -328,4 +331,45 @@ export const viewerRender = (sourceCode: string, options: ViewerOptions) =>
           jsx(options.customBlocks[meta] ?? 'div', { children: value }),
       } as never,
     },
+  );
+
+const toHastProcessor = unified()
+  .use(remarkParse)
+  .use(remarkBreaks)
+  .use(remarkGfm)
+  .use(remarkRehype, { allowDangerousHtml: true })
+  .use(rehypeRaw)
+  .freeze();
+
+const toHTMLProcessor = unified().use(rehypeStringify).freeze();
+
+/**
+ * 将 Markdown 文本转成 HTML 文本
+ *
+ * @param sourceCode Markdown 文本
+ * @returns HTML 文本
+ */
+export const toHTML = (sourceCode: string) =>
+  toHTMLProcessor.stringify(
+    toHastProcessor.runSync(toHastProcessor.parse(sourceCode)),
+  );
+
+const toMarkdownProcessor = unified()
+  .use(rehypeRemark)
+  .use(remarkGfm)
+  .use(remarkBreaks)
+  .use(remarkStringify)
+  .freeze();
+
+/**
+ * 将带有 HTML 的 Markdown 文本转成 Markdown 文本
+ *
+ * @param sourceCode 带有 HTML 的 Markdown 文本
+ * @returns Markdown 文本
+ */
+export const toMarkdown = (sourceCode: string) =>
+  toMarkdownProcessor.stringify(
+    toMarkdownProcessor.runSync(
+      toHastProcessor.runSync(toHastProcessor.parse(sourceCode)),
+    ),
   );
