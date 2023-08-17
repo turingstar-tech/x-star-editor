@@ -1,64 +1,65 @@
-@import './global.less';
+@import './global';
 
-@md-prefix: ~'@{prefix}md-editor-';
+$md-prefix: #{$prefix}md-editor-;
 
-.@{md-prefix}block {
+.#{$md-prefix}block {
   margin: 0.2em;
   padding: 0.2em;
   border-radius: 0.2em;
 }
 
-.@{md-prefix}block:hover {
+.#{$md-prefix}block:hover {
   background-color: #f8f8f8;
 }
 
-.@{md-prefix}delimiter,
-.@{md-prefix}break {
+.#{$md-prefix}delimiter,
+.#{$md-prefix}break {
   color: #f5771280;
 }
 
-.@{md-prefix}heading {
+.#{$md-prefix}heading {
+  line-height: 1.6em;
   font-weight: bold;
 }
 
-.@{md-prefix}heading1 {
+.#{$md-prefix}heading1 {
   font-size: 1.6em;
 }
 
-.@{md-prefix}heading2 {
+.#{$md-prefix}heading2 {
   font-size: 1.3em;
 }
 
-.@{md-prefix}heading3 {
+.#{$md-prefix}heading3 {
   font-size: 1.2em;
 }
 
-.@{md-prefix}heading4 {
+.#{$md-prefix}heading4 {
   font-size: 1.1em;
 }
 
-.@{md-prefix}heading5 {
+.#{$md-prefix}heading5 {
   font-size: 1em;
 }
 
-.@{md-prefix}heading6 {
+.#{$md-prefix}heading6 {
   font-size: 0.9em;
 }
 
-.@{md-prefix}thematicBreak,
-.@{md-prefix}listItem > .@{md-prefix}delimiter,
-.@{md-prefix}definition,
-.@{md-prefix}link,
-.@{md-prefix}image,
-.@{md-prefix}linkReference,
-.@{md-prefix}imageReference,
-.@{md-prefix}footnoteDefinition,
-.@{md-prefix}footnoteReference {
+.#{$md-prefix}thematicBreak,
+.#{$md-prefix}listItem > .#{$md-prefix}delimiter,
+.#{$md-prefix}definition,
+.#{$md-prefix}link,
+.#{$md-prefix}image,
+.#{$md-prefix}linkReference,
+.#{$md-prefix}imageReference,
+.#{$md-prefix}footnoteDefinition,
+.#{$md-prefix}footnoteReference {
   color: #f57712;
 }
 
-.@{md-prefix}html,
-.@{md-prefix}code {
+.#{$md-prefix}html,
+.#{$md-prefix}code {
   padding: 0 0.2em;
   tab-size: 4;
   font-family: Consolas;
@@ -68,21 +69,21 @@
   border-left: 1px solid #02267920;
 }
 
-.@{md-prefix}html.@{md-prefix}first,
-.@{md-prefix}code.@{md-prefix}first {
+.#{$md-prefix}html.#{$md-prefix}first,
+.#{$md-prefix}code.#{$md-prefix}first {
   border-top: 1px solid #02267920;
   border-top-left-radius: 0.2em;
   border-top-right-radius: 0.2em;
 }
 
-.@{md-prefix}html.@{md-prefix}last,
-.@{md-prefix}code.@{md-prefix}last {
+.#{$md-prefix}html.#{$md-prefix}last,
+.#{$md-prefix}code.#{$md-prefix}last {
   border-bottom: 1px solid #02267920;
   border-bottom-right-radius: 0.2em;
   border-bottom-left-radius: 0.2em;
 }
 
-.@{md-prefix}inlineCode {
+.#{$md-prefix}inlineCode {
   margin: 0 0.2em;
   padding: 0 0.2em;
   tab-size: 4;
@@ -93,19 +94,19 @@
   border-radius: 0.2em;
 }
 
-.@{md-prefix}emphasis {
+.#{$md-prefix}emphasis {
   font-style: italic;
 }
 
-.@{md-prefix}strong {
+.#{$md-prefix}strong {
   font-weight: bold;
 }
 
-.@{md-prefix}delete > :not(.@{md-prefix}delimiter) {
+.#{$md-prefix}delete > :not(.#{$md-prefix}delimiter) {
   text-decoration: line-through;
 }
 
-.@{md-prefix}math {
+.#{$md-prefix}math {
   padding: 0 0.2em;
   color: #f57712;
   background-color: #f5771210;
@@ -113,19 +114,19 @@
   border-left: 1px solid #f5771220;
 }
 
-.@{md-prefix}math.@{md-prefix}first {
+.#{$md-prefix}math.#{$md-prefix}first {
   border-top: 1px solid #f5771220;
   border-top-left-radius: 0.2em;
   border-top-right-radius: 0.2em;
 }
 
-.@{md-prefix}math.@{md-prefix}last {
+.#{$md-prefix}math.#{$md-prefix}last {
   border-bottom: 1px solid #f5771220;
   border-bottom-right-radius: 0.2em;
   border-bottom-left-radius: 0.2em;
 }
 
-.@{md-prefix}inlineMath {
+.#{$md-prefix}inlineMath {
   margin: 0 0.2em;
   padding: 0 0.2em;
   color: #f57712;

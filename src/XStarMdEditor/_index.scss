@@ -1,6 +1,6 @@
-@import '../styles/global.less';
+@import '../styles/global';
 
-.@{prefix}md-editor {
+.#{$prefix}md-editor {
   position: relative;
   line-height: 1.6em;
   white-space: break-spaces;

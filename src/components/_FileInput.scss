@@ -1,31 +1,31 @@
-@import '../styles/global.less';
+@import '../styles/global';
 
-.@{prefix}file-input {
+.#{$prefix}file-input {
   margin: 0.5em 1em 1em;
 
-  .@{prefix}tabs {
+  .#{$prefix}tabs {
     display: flex;
 
-    .@{prefix}tab {
+    .#{$prefix}tab {
       padding: 0.4em 1em;
       border-bottom: 1px solid #f5771280;
       cursor: pointer;
       user-select: none;
 
-      &.@{prefix}active {
+      &.#{$prefix}active {
         color: #f57712;
         border-bottom: 2px solid #f57712;
       }
     }
   }
 
-  .@{prefix}buttons {
+  .#{$prefix}buttons {
     display: flex;
     flex-direction: row-reverse;
     gap: 0.4em;
   }
 
-  .@{prefix}button {
+  .#{$prefix}button {
     padding: 0.4em 1em;
     background-color: #f0f0f0;
     border: 1px solid #d0d0d0;
@@ -33,21 +33,21 @@
     cursor: pointer;
     user-select: none;
 
-    &.@{prefix}primary {
+    &.#{$prefix}primary {
       color: #fff;
       background-color: #f57712;
       border: none;
     }
   }
 
-  .@{prefix}field {
+  .#{$prefix}field {
     margin: 0.8em;
     display: flex;
     flex-direction: column;
     gap: 0.2em;
     font-size: 0.9em;
 
-    .@{prefix}input {
+    .#{$prefix}input {
       width: 20em;
       padding: 0.4em;
       border: 1px solid #d0d0d0;
@@ -59,23 +59,23 @@
       }
     }
 
-    .@{prefix}file-container {
+    .#{$prefix}file-container {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
 
-      .@{prefix}hidden {
+      .#{$prefix}hidden {
         position: absolute;
         inset: 0;
         opacity: 0;
       }
 
-      .@{prefix}input {
+      .#{$prefix}input {
         width: 14em;
       }
 
-      .@{prefix}button {
+      .#{$prefix}button {
         padding: 0.3em 0.4em;
       }
     }

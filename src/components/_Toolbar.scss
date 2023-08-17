@@ -1,6 +1,6 @@
-@import '../styles/global.less';
+@import '../styles/global';
 
-.@{prefix}toolbar {
+.#{$prefix}toolbar {
   padding: 0.2em;
   display: flex;
   flex-wrap: wrap;
@@ -11,10 +11,10 @@
   border-top-left-radius: 0.2em;
   border-top-right-radius: 0.2em;
 
-  .@{prefix}button-container {
+  .#{$prefix}button-container {
     position: relative;
 
-    > .@{prefix}button {
+    > .#{$prefix}button {
       width: 2em;
       height: 2em;
       display: flex;
@@ -25,47 +25,47 @@
       cursor: pointer;
       user-select: none;
 
-      &.@{prefix}active {
+      &.#{$prefix}active {
         background-color: #f8f8f8;
         border: 1px solid #f5771280;
         border-radius: 0.2em;
       }
 
-      .@{prefix}icon {
+      .#{$prefix}icon {
         width: 45%;
         height: 45%;
         background-size: contain;
 
-        &.@{prefix}code-library {
+        &.#{$prefix}code-library {
           background-image: url('icons/code-library.svg');
         }
 
-        &.@{prefix}italic {
+        &.#{$prefix}italic {
           background-image: url('icons/italic.svg');
         }
 
-        &.@{prefix}bold {
+        &.#{$prefix}bold {
           background-image: url('icons/bold.svg');
         }
 
-        &.@{prefix}code {
+        &.#{$prefix}code {
           background-image: url('icons/code.svg');
         }
 
-        &.@{prefix}link {
+        &.#{$prefix}link {
           background-image: url('icons/link.svg');
         }
 
-        &.@{prefix}image {
+        &.#{$prefix}image {
           background-image: url('icons/image.svg');
         }
 
-        &.@{prefix}strikethrough {
+        &.#{$prefix}strikethrough {
           background-image: url('icons/strikethrough.svg');
         }
       }
 
-      .@{prefix}tooltip {
+      .#{$prefix}tooltip {
         position: absolute;
         top: 3em;
         width: max-content;
@@ -89,7 +89,7 @@
       }
     }
 
-    .@{prefix}popover {
+    .#{$prefix}popover {
       position: absolute;
       width: max-content;
       background-color: #f8f8f8;
@@ -99,7 +99,7 @@
       opacity: 0;
       z-index: 1;
 
-      .@{prefix}option {
+      .#{$prefix}option {
         padding: 4px 8px;
         cursor: pointer;
         user-select: none;
@@ -111,7 +111,7 @@
     }
   }
 
-  .@{prefix}divider {
+  .#{$prefix}divider {
     margin: 0.4em;
     border: 1px solid #f5771280;
   }

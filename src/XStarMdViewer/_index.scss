@@ -1,6 +1,6 @@
-@import '../styles/global.less';
+@import '../styles/global';
 
-.@{prefix}md-viewer {
+.#{$prefix}md-viewer {
   position: relative;
   padding: 0 1em;
   color: #000000d9;
