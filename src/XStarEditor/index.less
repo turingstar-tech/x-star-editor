@@ -1,0 +1,24 @@
+@import '../styles/global.less';
+
+.@{prefix}editor {
+  display: flex;
+  flex-wrap: wrap;
+
+  .@{prefix}toolbar {
+    width: 100%;
+  }
+
+  .@{prefix}md-editor {
+    flex: 1;
+    border-top: none;
+    border-bottom-right-radius: 0;
+  }
+
+  .@{prefix}md-viewer {
+    flex: 1;
+    border-top: none;
+    border-left: none;
+    border-radius: 0;
+    border-bottom-right-radius: 0.2em;
+  }
+}

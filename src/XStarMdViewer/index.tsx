@@ -1,13 +1,12 @@
-import classNames from 'classnames/bind';
+import classNames from 'classnames';
 import React, { useImperativeHandle, useRef } from 'react';
 import '../styles/katex.css';
-import '../styles/prism.css';
+import '../styles/prism.less';
+import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { ViewerOptions } from '../utils/markdown';
-import { viewerRender } from '../utils/markdown';
-import styles from './index.module.css';
-
-const cx = classNames.bind(styles);
+import { getDefaultSchema, viewerRender } from '../utils/markdown';
+import './index.less';
 
 export interface XStarMdViewerPlugin {
   (ctx: ViewerOptions): void;
@@ -37,12 +36,13 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     return (
       <div
         ref={container}
-        className={cx('x-star-md-viewer', 'container', className)}
+        className={classNames(`${prefix}md-viewer`, className)}
         style={style}
       >
         {viewerRender(
           value,
           composeHandlers(plugins)({
+            customSchema: getDefaultSchema(),
             customHTMLElements: {},
             customBlocks: {},
           }),

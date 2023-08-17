@@ -1,12 +1,11 @@
-import classNames from 'classnames/bind';
+import classNames from 'classnames';
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { XStarMdEditorHandle, XStarMdEditorProps } from '../XStarMdEditor';
 import XStarMdEditor, { useMdEditorRef } from '../XStarMdEditor';
 import type { XStarMdViewerHandle, XStarMdViewerProps } from '../XStarMdViewer';
 import XStarMdViewer, { useMdViewerRef } from '../XStarMdViewer';
-import styles from './index.module.css';
-
-const cx = classNames.bind(styles);
+import { prefix } from '../utils/global';
+import './index.less';
 
 export interface XStarEditorHandle {
   getEditor: () => XStarMdEditorHandle | null;
@@ -148,13 +147,11 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
     }, []);
 
     return (
-      <div className={cx('container')}>
+      <div className={classNames(`${prefix}editor`)}>
         <XStarMdEditor
           ref={editorRef}
           {...editorProps}
-          className={cx('editor', editorProps?.className)}
           style={{ height, ...editorProps?.style }}
-          toolbarClassName={cx('toolbar', editorProps?.toolbarClassName)}
           initialValue={initialValue}
           onChange={(value) => {
             setValue(value);
@@ -164,7 +161,6 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         <XStarMdViewer
           ref={viewerRef}
           {...viewerProps}
-          className={cx('viewer', viewerProps?.className)}
           style={{ height, ...viewerProps?.style }}
           value={value}
         />

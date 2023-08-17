@@ -11,10 +11,13 @@ import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
+import { prefix } from './global';
 
-const schema = {
+type Schema = typeof defaultSchema;
+
+export const getDefaultSchema = (): Schema => ({
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames ?? []), 'video', 'custom'],
+  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
   attributes: {
     ...defaultSchema.attributes,
     pre: [...(defaultSchema.attributes?.pre ?? []), 'className', 'style'],
@@ -26,10 +29,9 @@ const schema = {
       'style',
       'line',
     ],
-    video: ['src'],
     custom: ['meta', 'value'],
   },
-};
+});
 
 /**
  * 将 Markdown 文本解析为 Mdast 树并转换为 Hast 树的处理器
@@ -52,7 +54,6 @@ const processor = unified()
   .use(rehypePrism, { ignoreMissing: true })
   .use(rehypeKatex)
   .use(rehypeRaw)
-  .use(rehypeSanitize, schema)
   .use(() => (root) => {
     for (const node of root.children) {
       if ('properties' in node && node.properties) {
@@ -79,7 +80,7 @@ export const editorRender = (sourceCode: string) => {
   /**
    * CSS 类名前缀
    */
-  const classNamePrefix = 'x-star-md-editor-';
+  const classNamePrefix = `${prefix}md-editor-`;
 
   /**
    * 扫描偏移量，表示已经添加到 DOM 树的文本
@@ -288,6 +289,11 @@ export const editorRender = (sourceCode: string) => {
 
 export interface ViewerOptions {
   /**
+   * 自定义过滤模式
+   */
+  customSchema: Schema;
+
+  /**
    * 自定义 HTML 元素
    */
   customHTMLElements: Partial<Components>;
@@ -308,13 +314,18 @@ export interface ViewerOptions {
  * @returns React 虚拟 DOM 树
  */
 export const viewerRender = (sourceCode: string, options: ViewerOptions) =>
-  toJsxRuntime(processor.runSync(processor.parse(sourceCode)), {
-    Fragment,
-    jsx,
-    jsxs,
-    components: {
-      ...options.customHTMLElements,
-      custom: ({ meta, value }: { meta: string; value: string }) =>
-        jsx(options.customBlocks[meta] ?? 'div', { children: value }),
-    } as never,
-  });
+  toJsxRuntime(
+    processor()
+      .use(rehypeSanitize, options.customSchema)
+      .runSync(processor.parse(sourceCode)),
+    {
+      Fragment,
+      jsx,
+      jsxs,
+      components: {
+        ...options.customHTMLElements,
+        custom: ({ meta, value }: { meta: string; value: string }) =>
+          jsx(options.customBlocks[meta] ?? 'div', { children: value }),
+      } as never,
+    },
+  );

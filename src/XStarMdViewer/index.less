@@ -1,4 +1,6 @@
-.container {
+@import '../styles/global.less';
+
+.@{prefix}md-viewer {
   position: relative;
   padding: 0 1em;
   color: #000000d9;
@@ -6,4 +8,8 @@
   border: 1px solid #d0d0d0;
   border-radius: 0.2em;
   overflow: auto;
+
+  ::selection {
+    background: #c1def1;
+  }
 }

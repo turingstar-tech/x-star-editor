@@ -12,7 +12,7 @@ export default () => (
 
 使用\`#\`可以定义标题，比如：
 
-\`\`\`
+\`\`\`markdown
 # 这是一级标题
 ## 这是二级标题
 ### 这是三级标题
@@ -22,7 +22,7 @@ export default () => (
 
 使用\`*\`或\`_\`来强调文本，例如：
 
-\`\`\`
+\`\`\`markdown
 *这是斜体*
 **这是粗体**
 ***这是加粗斜体***
@@ -34,7 +34,7 @@ export default () => (
 
 可以使用\`*\`，\`+\`或\`-\`来创建无序列表，例如：
 
-\`\`\`
+\`\`\`markdown
 * 列表项一
 * 列表项二
 * 列表项三
@@ -44,7 +44,7 @@ export default () => (
 
 使用数字和\`.\`来创建有序列表，例如：
 
-\`\`\`
+\`\`\`markdown
 1. 列表项一
 2. 列表项二
 3. 列表项三
@@ -56,7 +56,7 @@ export default () => (
 
 使用\`[]\`包裹链接文本，之后用\`()\`包裹链接地址，例如：
 
-\`\`\`
+\`\`\`markdown
 [Markdown](https://daringfireball.net/projects/markdown/)
 \`\`\`
 
@@ -64,7 +64,7 @@ export default () => (
 
 图片的语法和链接类似，只是在前面多了一个\`!\`，例如：
 
-\`\`\`
+\`\`\`markdown
 ![Markdown Logo](https://daringfireball.net/graphics/logos/)
 \`\`\`
 
@@ -74,7 +74,7 @@ export default () => (
 
 使用\`反引号\`可以创建行内代码，例如：
 
-\`\`\`
+\`\`\`markdown
 这是一个\`行内代码\`示例
 \`\`\`
 
@@ -82,7 +82,7 @@ export default () => (
 
 使用三个\`反引号\`可以创建代码块，例如：
 
-\`\`\`\`
+\`\`\`\`markdown
 \`\`\`
 print('Hello, Markdown!')
 \`\`\`
@@ -92,7 +92,7 @@ print('Hello, Markdown!')
 
 可以使用\`-\`和\`|\`来创建表格，例如：
 
-\`\`\`
+\`\`\`markdown
 | 姓名 | 年龄 |
 | --- | --- |
 | 张三 | 20 |
@@ -103,7 +103,7 @@ print('Hello, Markdown!')
 
 使用\`>\`可以创建引用，例如：
 
-\`\`\`
+\`\`\`markdown
 > 这是一段引用
 \`\`\`
 `}

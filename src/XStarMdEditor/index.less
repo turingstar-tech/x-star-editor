@@ -1,4 +1,6 @@
-.container {
+@import '../styles/global.less';
+
+.@{prefix}md-editor {
   position: relative;
   line-height: 1.6em;
   white-space: break-spaces;
@@ -9,4 +11,8 @@
   border-bottom-left-radius: 0.2em;
   outline: none;
   overflow: auto;
+
+  ::selection {
+    background: #c1def1;
+  }
 }

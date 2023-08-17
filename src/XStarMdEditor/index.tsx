@@ -1,26 +1,36 @@
-import classNames from 'classnames/bind';
+import classNames from 'classnames';
 import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import type { ToolbarItem } from '../components/Toolbar';
 import Toolbar, {
   getDefaultToolbarItemMap,
   getDefaultToolbarItems,
 } from '../components/Toolbar';
-import '../styles/markdown.css';
+import '../styles/markdown.less';
 import type { ContainerSelection } from '../utils/container';
 import { createSelection, getRange, useContainer } from '../utils/container';
+import { prefix } from '../utils/global';
 import type { Executor, KeyboardEventHandler } from '../utils/handler';
 import {
   composeHandlers,
   getDefaultKeyboardEventHandlers,
 } from '../utils/handler';
 import { useHistory } from '../utils/history';
-import styles from './index.module.css';
-
-const cx = classNames.bind(styles);
+import './index.less';
 
 interface EditorOptions {
+  /**
+   * 工具栏项映射
+   */
   toolbarItemMap: Partial<Record<string, ToolbarItem>>;
+
+  /**
+   * 工具栏项
+   */
   toolbarItems: (string | ToolbarItem)[][];
+
+  /**
+   * 键盘事件处理函数
+   */
   keyboardEventHandlers: KeyboardEventHandler[];
 }
 
@@ -277,7 +287,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     return (
       <>
         <Toolbar
-          className={cx(toolbarClassName)}
+          className={classNames(toolbarClassName)}
           style={toolbarStyle}
           itemMap={toolbarItemMap}
           items={toolbarItems}
@@ -285,7 +295,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         />
         <div
           ref={container.ref}
-          className={cx('container', className)}
+          className={classNames(`${prefix}md-editor`, className)}
           style={style}
           contentEditable
           onBeforeInput={formEventHandler}

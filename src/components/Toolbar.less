@@ -1,0 +1,118 @@
+@import '../styles/global.less';
+
+.@{prefix}toolbar {
+  padding: 0.2em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2em;
+  font-size: 1.1em;
+  background-color: #f5771210;
+  border: 1px solid #f5771220;
+  border-top-left-radius: 0.2em;
+  border-top-right-radius: 0.2em;
+
+  .@{prefix}button-container {
+    position: relative;
+
+    > .@{prefix}button {
+      width: 2em;
+      height: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Consolas;
+      border: 1px solid transparent;
+      cursor: pointer;
+      user-select: none;
+
+      &.@{prefix}active {
+        background-color: #f8f8f8;
+        border: 1px solid #f5771280;
+        border-radius: 0.2em;
+      }
+
+      .@{prefix}icon {
+        width: 45%;
+        height: 45%;
+        background-size: contain;
+
+        &.@{prefix}code-library {
+          background-image: url('icons/code-library.svg');
+        }
+
+        &.@{prefix}italic {
+          background-image: url('icons/italic.svg');
+        }
+
+        &.@{prefix}bold {
+          background-image: url('icons/bold.svg');
+        }
+
+        &.@{prefix}code {
+          background-image: url('icons/code.svg');
+        }
+
+        &.@{prefix}link {
+          background-image: url('icons/link.svg');
+        }
+
+        &.@{prefix}image {
+          background-image: url('icons/image.svg');
+        }
+
+        &.@{prefix}strikethrough {
+          background-image: url('icons/strikethrough.svg');
+        }
+      }
+
+      .@{prefix}tooltip {
+        position: absolute;
+        top: 3em;
+        width: max-content;
+        padding: 0.4em;
+        font-size: 0.8em;
+        color: #f8f8f8;
+        background-color: #022679;
+        border-radius: 0.2em;
+        z-index: 2;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: -0.3em;
+          left: 50%;
+          border-top: 0.6em solid #022679;
+          border-right: 0.6em solid transparent;
+          transform-origin: 0 0;
+          transform: rotate(45deg);
+        }
+      }
+    }
+
+    .@{prefix}popover {
+      position: absolute;
+      width: max-content;
+      background-color: #f8f8f8;
+      border: 1px solid #f5771280;
+      border-radius: 0.2em;
+      box-shadow: 0 2px 4px #00000020;
+      opacity: 0;
+      z-index: 1;
+
+      .@{prefix}option {
+        padding: 4px 8px;
+        cursor: pointer;
+        user-select: none;
+
+        &:hover {
+          background-color: #f0f0f0;
+        }
+      }
+    }
+  }
+
+  .@{prefix}divider {
+    margin: 0.4em;
+    border: 1px solid #f5771280;
+  }
+}

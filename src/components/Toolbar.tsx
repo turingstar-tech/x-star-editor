@@ -1,11 +1,10 @@
-import classNames from 'classnames/bind';
+import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
+import { prefix } from '../utils/global';
 import type { Executor } from '../utils/handler';
 import { toggleHandler } from '../utils/handler';
 import FileInput from './FileInput';
-import styles from './Toolbar.module.css';
-
-const cx = classNames.bind(styles);
+import './Toolbar.less';
 
 interface ButtonProps {
   toolbarRef: React.RefObject<HTMLDivElement>;
@@ -60,10 +59,10 @@ const Button = ({
   }, [popoverMount]);
 
   return (
-    <div className={cx('button-container')}>
+    <div className={classNames(`${prefix}button-container`)}>
       <div
-        className={cx('button', {
-          active: tooltipOpen || popoverMount,
+        className={classNames(`${prefix}button`, {
+          [`${prefix}active`]: tooltipOpen || popoverMount,
         })}
         onClick={() => {
           setPopoverOpen(true);
@@ -74,10 +73,12 @@ const Button = ({
         onMouseLeave={() => setTooltipOpen(false)}
       >
         {children}
-        {tooltipMount && <div className={cx('tooltip')}>{tooltip}</div>}
+        {tooltipMount && (
+          <div className={classNames(`${prefix}tooltip`)}>{tooltip}</div>
+        )}
       </div>
       {popoverMount && (
-        <div ref={popoverRef} className={cx('popover')}>
+        <div ref={popoverRef} className={classNames(`${prefix}popover`)}>
           {popover}
         </div>
       )}
@@ -104,7 +105,7 @@ export const getDefaultToolbarItemMap = (
     popoverRender: (exec, close) => {
       const optionRender = (depth: 1 | 2 | 3 | 4 | 5 | 6, fontSize: string) => (
         <div
-          className={cx('option')}
+          className={classNames(`${prefix}option`)}
           style={{ fontSize }}
           onClick={() => {
             exec(toggleHandler({ type: 'heading', depth }));
@@ -140,31 +141,35 @@ export const getDefaultToolbarItemMap = (
   },
 
   code: {
-    children: <div className={cx('icon', 'code-library')} />,
+    children: (
+      <div className={classNames(`${prefix}icon`, `${prefix}code-library`)} />
+    ),
     tooltip: '代码块',
     onClick: (exec) => exec(toggleHandler({ type: 'code' })),
   },
 
   emphasis: {
-    children: <div className={cx('icon', 'italic')} />,
+    children: (
+      <div className={classNames(`${prefix}icon`, `${prefix}italic`)} />
+    ),
     tooltip: '斜体',
     onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
   },
 
   strong: {
-    children: <div className={cx('icon', 'bold')} />,
+    children: <div className={classNames(`${prefix}icon`, `${prefix}bold`)} />,
     tooltip: '粗体',
     onClick: (exec) => exec(toggleHandler({ type: 'strong' })),
   },
 
   inlineCode: {
-    children: <div className={cx('icon', 'code')} />,
+    children: <div className={classNames(`${prefix}icon`, `${prefix}code`)} />,
     tooltip: '行内代码',
     onClick: (exec) => exec(toggleHandler({ type: 'inlineCode' })),
   },
 
   link: {
-    children: <div className={cx('icon', 'link')} />,
+    children: <div className={classNames(`${prefix}icon`, `${prefix}link`)} />,
     tooltip: '链接',
     popoverRender: (exec, close) => (
       <FileInput
@@ -191,7 +196,7 @@ export const getDefaultToolbarItemMap = (
   },
 
   image: {
-    children: <div className={cx('icon', 'image')} />,
+    children: <div className={classNames(`${prefix}icon`, `${prefix}image`)} />,
     tooltip: '图片',
     popoverRender: (exec, close) => (
       <FileInput
@@ -218,7 +223,9 @@ export const getDefaultToolbarItemMap = (
   },
 
   delete: {
-    children: <div className={cx('icon', 'strikethrough')} />,
+    children: (
+      <div className={classNames(`${prefix}icon`, `${prefix}strikethrough`)} />
+    ),
     tooltip: '删除线',
     onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
   },
@@ -255,10 +262,14 @@ const Toolbar = ({ className, style, itemMap, items, exec }: ToolbarProps) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={toolbarRef} className={cx('toolbar', className)} style={style}>
+    <div
+      ref={toolbarRef}
+      className={classNames(`${prefix}toolbar`, className)}
+      style={style}
+    >
       {items.map((group, index) => (
         <React.Fragment key={index}>
-          {!!index && <div className={cx('divider')} />}
+          {!!index && <div className={classNames(`${prefix}divider`)} />}
           {group.map((item, index) => {
             const toolbarItem = typeof item === 'string' ? itemMap[item] : item;
             if (!toolbarItem) {

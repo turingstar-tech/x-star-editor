@@ -1,8 +1,7 @@
-import classNames from 'classnames/bind';
+import classNames from 'classnames';
 import React, { useState } from 'react';
-import styles from './FileInput.module.css';
-
-const cx = classNames.bind(styles);
+import { prefix } from '../utils/global';
+import './FileInput.less';
 
 interface FileInputProps {
   onCancel: () => void;
@@ -20,55 +19,63 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
   const [description, setDescription] = useState('');
 
   return (
-    <div className={cx('container')}>
-      <div className={cx('tabs')}>
+    <div className={classNames(`${prefix}file-input`)}>
+      <div className={classNames(`${prefix}tabs`)}>
         <div
-          className={cx('tab', { active: type === 'file' })}
+          className={classNames(`${prefix}tab`, {
+            [`${prefix}active`]: type === 'file',
+          })}
           onClick={() => setType('file')}
         >
           文件
         </div>
         <div
-          className={cx('tab', { active: type === 'url' })}
+          className={classNames(`${prefix}tab`, {
+            [`${prefix}active`]: type === 'url',
+          })}
           onClick={() => setType('url')}
         >
           网址
         </div>
       </div>
       {type === 'file' ? (
-        <label className={cx('field')}>
+        <label className={classNames(`${prefix}field`)}>
           文件
-          <div className={cx('file-container')}>
+          <div className={classNames(`${prefix}file-container`)}>
             <input
-              className={cx('hidden')}
+              className={classNames(`${prefix}hidden`)}
               type="file"
               onChange={(e) => setFile(e.target.files?.[0])}
             />
-            <input className={cx('input')} readOnly value={file?.name ?? ''} />
-            <button className={cx('button')} type="button">
+            <input
+              className={classNames(`${prefix}input`)}
+              readOnly
+              value={file?.name ?? ''}
+            />
+            <button className={classNames(`${prefix}button`)} type="button">
               选择文件
             </button>
           </div>
         </label>
       ) : (
-        <label className={cx('field')}>
+        <label className={classNames(`${prefix}field`)}>
           网址
           <input
-            className={cx('input')}
+            className={classNames(`${prefix}input`)}
             onChange={(e) => setUrl(e.target.value)}
           />
         </label>
       )}
-      <label className={cx('field')}>
+      <label className={classNames(`${prefix}field`)}>
         描述
         <input
-          className={cx('input')}
+          className={classNames(`${prefix}input`)}
           onChange={(e) => setDescription(e.target.value)}
         />
       </label>
-      <div className={cx('buttons')}>
+      <div className={classNames(`${prefix}buttons`)}>
         <button
-          className={cx('button', 'primary')}
+          className={classNames(`${prefix}button`, `${prefix}primary`)}
           type="button"
           onClick={() => {
             if (type === 'file' && file) {
@@ -80,7 +87,11 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
         >
           确定
         </button>
-        <button className={cx('button')} type="button" onClick={onCancel}>
+        <button
+          className={classNames(`${prefix}button`)}
+          type="button"
+          onClick={onCancel}
+        >
           取消
         </button>
       </div>
