@@ -37,31 +37,31 @@
         background-size: contain;
 
         &.#{$prefix}code-library {
-          background-image: url('icons/code-library.svg');
+          background-image: url(icons/code-library.svg);
         }
 
         &.#{$prefix}italic {
-          background-image: url('icons/italic.svg');
+          background-image: url(icons/italic.svg);
         }
 
         &.#{$prefix}bold {
-          background-image: url('icons/bold.svg');
+          background-image: url(icons/bold.svg);
         }
 
         &.#{$prefix}code {
-          background-image: url('icons/code.svg');
+          background-image: url(icons/code.svg);
         }
 
         &.#{$prefix}link {
-          background-image: url('icons/link.svg');
+          background-image: url(icons/link.svg);
         }
 
         &.#{$prefix}image {
-          background-image: url('icons/image.svg');
+          background-image: url(icons/image.svg);
         }
 
         &.#{$prefix}strikethrough {
-          background-image: url('icons/strikethrough.svg');
+          background-image: url(icons/strikethrough.svg);
         }
       }
 

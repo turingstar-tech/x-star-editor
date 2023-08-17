@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "father build",
+    "build": "father build && sass src/styles/index.scss dist/styles/index.css --style=compressed --no-source-map",
     "build:watch": "father dev",
     "dev": "dumi dev",
     "docs:build": "dumi build",
