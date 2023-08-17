@@ -5,7 +5,6 @@ import Toolbar, {
   getDefaultToolbarItemMap,
   getDefaultToolbarItems,
 } from '../components/Toolbar';
-import '../styles/markdown.less';
 import type { ContainerSelection } from '../utils/container';
 import { createSelection, getRange, useContainer } from '../utils/container';
 import { prefix } from '../utils/global';
@@ -15,7 +14,6 @@ import {
   getDefaultKeyboardEventHandlers,
 } from '../utils/handler';
 import { useHistory } from '../utils/history';
-import './index.less';
 
 interface EditorOptions {
   /**

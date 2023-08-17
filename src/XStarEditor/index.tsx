@@ -5,7 +5,6 @@ import XStarMdEditor, { useMdEditorRef } from '../XStarMdEditor';
 import type { XStarMdViewerHandle, XStarMdViewerProps } from '../XStarMdViewer';
 import XStarMdViewer, { useMdViewerRef } from '../XStarMdViewer';
 import { prefix } from '../utils/global';
-import './index.less';
 
 export interface XStarEditorHandle {
   getEditor: () => XStarMdEditorHandle | null;

@@ -1,12 +1,9 @@
 import classNames from 'classnames';
 import React, { useImperativeHandle, useRef } from 'react';
-import '../styles/katex.css';
-import '../styles/prism.less';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { ViewerOptions } from '../utils/markdown';
 import { getDefaultSchema, viewerRender } from '../utils/markdown';
-import './index.less';
 
 export interface XStarMdViewerPlugin {
   (ctx: ViewerOptions): void;

@@ -4,7 +4,6 @@ import { prefix } from '../utils/global';
 import type { Executor } from '../utils/handler';
 import { toggleHandler } from '../utils/handler';
 import FileInput from './FileInput';
-import './Toolbar.less';
 
 interface ButtonProps {
   toolbarRef: React.RefObject<HTMLDivElement>;

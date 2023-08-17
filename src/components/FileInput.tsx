@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { prefix } from '../utils/global';
-import './FileInput.less';
 
 interface FileInputProps {
   onCancel: () => void;
