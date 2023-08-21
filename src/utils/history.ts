@@ -29,11 +29,11 @@ export interface ToggleAction {
   type: 'toggle';
   payload:
     | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
+    | { type: 'code'; language: string }
     | {
         type:
           | 'thematicBreak'
           | 'blockquote'
-          | 'code'
           | 'emphasis'
           | 'strong'
           | 'inlineCode'
@@ -145,6 +145,17 @@ const stateReducer = (
           };
         }
 
+        case 'code': {
+          const { language } = action.payload;
+          return {
+            sourceCode: `${sourceCode.slice(
+              0,
+              lineEndOffset,
+            )}\n\`\`\`${language} showLineNumbers\n\n\`\`\`\n${lineAfter}`,
+            selection: createSelection(lineEndOffset + language.length + 21),
+          };
+        }
+
         case 'thematicBreak': {
           return {
             sourceCode: `${sourceCode.slice(
@@ -177,16 +188,13 @@ const stateReducer = (
           };
         }
 
-        case 'code':
         case 'math': {
-          const { type } = action.payload;
-          const delimiter = type === 'code' ? '```' : '$$';
           return {
             sourceCode: `${sourceCode.slice(
               0,
               lineEndOffset,
-            )}\n${delimiter}\n\n${delimiter}\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + delimiter.length + 2),
+            )}\n$$\n\n$$\n${lineAfter}`,
+            selection: createSelection(lineEndOffset + 4),
           };
         }
 

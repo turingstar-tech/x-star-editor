@@ -144,7 +144,27 @@ export const getDefaultToolbarItemMap = (
       <div className={classNames(`${prefix}icon`, `${prefix}code-library`)} />
     ),
     tooltip: '代码块',
-    onClick: (exec) => exec(toggleHandler({ type: 'code' })),
+    popoverRender: (exec, close) => {
+      const optionRender = (label: string, language: string) => (
+        <div
+          className={classNames(`${prefix}option`)}
+          onClick={() => {
+            exec(toggleHandler({ type: 'code', language }));
+            close();
+          }}
+        >
+          {label}
+        </div>
+      );
+      return (
+        <>
+          {optionRender('C++', 'cpp')}
+          {optionRender('Java', 'java')}
+          {optionRender('Python', 'py')}
+          {optionRender('Text', 'txt')}
+        </>
+      );
+    },
   },
 
   emphasis: {

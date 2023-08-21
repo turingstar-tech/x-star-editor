@@ -20,7 +20,6 @@ type Schema = typeof defaultSchema;
 
 export const getDefaultSchema = (): Schema => ({
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
   attributes: {
     ...defaultSchema.attributes,
     pre: [...(defaultSchema.attributes?.pre ?? []), 'className', 'style'],
@@ -34,6 +33,11 @@ export const getDefaultSchema = (): Schema => ({
     ],
     custom: ['meta', 'value'],
   },
+  protocols: {
+    ...defaultSchema.protocols,
+    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
+  },
+  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
 });
 
 /**
@@ -57,13 +61,6 @@ const processor = unified()
   .use(rehypePrism, { ignoreMissing: true })
   .use(rehypeKatex)
   .use(rehypeRaw)
-  .use(() => (root) => {
-    for (const node of root.children) {
-      if ('properties' in node && node.properties) {
-        node.properties.line = node.position?.start.line;
-      }
-    }
-  })
   .freeze();
 
 /**
@@ -320,6 +317,13 @@ export const viewerRender = (sourceCode: string, options: ViewerOptions) =>
   toJsxRuntime(
     processor()
       .use(rehypeSanitize, options.customSchema)
+      .use(() => (root) => {
+        for (const node of root.children) {
+          if ('properties' in node && node.properties) {
+            node.properties.line = node.position?.start.line;
+          }
+        }
+      })
       .runSync(processor.parse(sourceCode)),
     {
       Fragment,

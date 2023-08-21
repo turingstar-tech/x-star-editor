@@ -10,15 +10,17 @@
 
   .#{$prefix}md-editor {
     flex: 1;
-    border-top: none;
+    border-right: none;
     border-bottom-right-radius: 0;
   }
 
   .#{$prefix}md-viewer {
+    padding: 0 1em;
     flex: 1;
+    background-color: white;
+    border: 1px solid #d0d0d0;
     border-top: none;
-    border-left: none;
-    border-radius: 0;
     border-bottom-right-radius: 0.2em;
+    overflow: auto;
   }
 }
