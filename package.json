@@ -1,6 +1,6 @@
 {
   "name": "x-star-editor",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "An editor developed by turingstar",
   "license": "MIT",
   "module": "dist/index.js",
