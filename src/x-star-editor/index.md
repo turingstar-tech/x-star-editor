@@ -111,3 +111,7 @@ print('Hello, Markdown!')
   />
 );
 ```
+
+## API
+
+<API id="XStarEditor"></API>

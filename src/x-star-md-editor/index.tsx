@@ -311,7 +311,9 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
   },
 );
 
-XStarMdEditor.displayName = 'XStarMdEditor';
+if (process.env.NODE_ENV !== 'production') {
+  XStarMdEditor.displayName = 'XStarMdEditor';
+}
 
 export default XStarMdEditor;
 

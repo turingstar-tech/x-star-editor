@@ -5,4 +5,8 @@ export default defineConfig({
   themeConfig: {
     name: 'x-star-editor',
   },
+  apiParser: {},
+  resolve: {
+    entryFile: './src/index.ts',
+  },
 });

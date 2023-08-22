@@ -1,8 +1,8 @@
 @import '../components/FileInput';
 @import '../components/Toolbar';
-@import '../XStarEditor/index';
-@import '../XStarMdEditor/index';
-@import '../XStarMdViewer/index';
+@import '../x-star-editor';
+@import '../x-star-md-editor';
+@import '../x-star-md-viewer';
 @import './katex';
 @import './markdown';
 @import './prism';

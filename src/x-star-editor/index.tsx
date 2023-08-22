@@ -1,10 +1,16 @@
 import classNames from 'classnames';
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import type { XStarMdEditorHandle, XStarMdEditorProps } from '../XStarMdEditor';
-import XStarMdEditor, { useMdEditorRef } from '../XStarMdEditor';
-import type { XStarMdViewerHandle, XStarMdViewerProps } from '../XStarMdViewer';
-import XStarMdViewer, { useMdViewerRef } from '../XStarMdViewer';
 import { prefix } from '../utils/global';
+import type {
+  XStarMdEditorHandle,
+  XStarMdEditorProps,
+} from '../x-star-md-editor';
+import XStarMdEditor, { useMdEditorRef } from '../x-star-md-editor';
+import type {
+  XStarMdViewerHandle,
+  XStarMdViewerProps,
+} from '../x-star-md-viewer';
+import XStarMdViewer, { useMdViewerRef } from '../x-star-md-viewer';
 
 export interface XStarEditorHandle {
   getEditor: () => XStarMdEditorHandle | null;
@@ -168,7 +174,9 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
   },
 );
 
-XStarEditor.displayName = 'XStarEditor';
+if (process.env.NODE_ENV !== 'production') {
+  XStarEditor.displayName = 'XStarEditor';
+}
 
 export default XStarEditor;
 

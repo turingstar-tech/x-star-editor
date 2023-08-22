@@ -110,3 +110,7 @@ print('Hello, Markdown!')
   />
 );
 ```
+
+## API
+
+<API id="XStarMdViewer"></API>
