@@ -5,6 +5,7 @@ import Toolbar, {
   getDefaultToolbarItemMap,
   getDefaultToolbarItems,
 } from '../components/Toolbar';
+import { LocaleProvider } from '../locales';
 import type { ContainerSelection } from '../utils/container';
 import { createSelection, getRange, useContainer } from '../utils/container';
 import { prefix } from '../utils/global';
@@ -42,13 +43,49 @@ export interface XStarMdEditorHandle {
 }
 
 export interface XStarMdEditorProps {
+  /**
+   * CSS 类名
+   */
   className?: string;
+
+  /**
+   * CSS 样式
+   */
   style?: React.CSSProperties;
+
+  /**
+   * 工具栏 CSS 类名
+   */
   toolbarClassName?: string;
+
+  /**
+   * 工具栏 CSS 样式
+   */
   toolbarStyle?: React.CSSProperties;
+
+  /**
+   * 语言
+   */
+  locale?: string;
+
+  /**
+   * 初始文本
+   */
   initialValue?: string;
+
+  /**
+   * 插件
+   */
   plugins?: XStarMdEditorPlugin[];
+
+  /**
+   * 文本变化回调函数
+   */
   onChange?: (value: string) => void;
+
+  /**
+   * 文件插入回调函数
+   */
   onInsertFile?: (
     file: File,
     options: { description: string; image: boolean },
@@ -62,6 +99,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       style,
       toolbarClassName,
       toolbarStyle,
+      locale,
       initialValue = '',
       plugins,
       onChange,
@@ -191,7 +229,10 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
               payload: { text: e.data },
               selection: compositionStartSelection.current,
             });
-            setTimeout(() => (compositionStartSelection.current = undefined));
+            // 确保组合事件屏蔽表单和键盘事件
+            window.setTimeout(
+              () => (compositionStartSelection.current = undefined),
+            );
           }
           break;
         }
@@ -207,7 +248,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'drop': {
           const selection = getSelection();
-          setTimeout(() => {
+          window.setTimeout(() => {
             container.normalize();
             dispatch({
               type: 'set',
@@ -227,7 +268,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'blur': {
           blurSelection.current = getSelection();
-          setTimeout(() => {
+          window.setTimeout(() => {
             compositionStartSelection.current = undefined;
             container.setText(sourceCodeLatest.current);
           });
@@ -244,11 +285,10 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'beforeinput': {
           e.preventDefault();
-          const { data } = e as unknown as { data: string };
-          if (data) {
+          if ('data' in e && typeof e.data === 'string') {
             dispatch({
               type: 'insert',
-              payload: { text: data },
+              payload: { text: e.data },
               selection: getSelection(),
             });
           }
@@ -259,7 +299,10 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     const { toolbarItemMap, toolbarItems, keyboardEventHandlers } =
       composeHandlers(plugins)({
-        toolbarItemMap: getDefaultToolbarItemMap(onInsertFile),
+        toolbarItemMap: getDefaultToolbarItemMap(
+          locale,
+          onInsertFileLatest.current,
+        ),
         toolbarItems: getDefaultToolbarItems(),
         keyboardEventHandlers: getDefaultKeyboardEventHandlers(),
       });
@@ -283,7 +326,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     };
 
     return (
-      <>
+      <LocaleProvider locale={locale}>
         <Toolbar
           className={classNames(toolbarClassName)}
           style={toolbarStyle}
@@ -306,7 +349,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           onKeyDown={keyboardEventHandler}
           onPaste={clipboardEventHandler}
         />
-      </>
+      </LocaleProvider>
     );
   },
 );

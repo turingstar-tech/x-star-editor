@@ -18,15 +18,45 @@ export interface XStarEditorHandle {
 }
 
 export interface XStarEditorProps {
+  /**
+   * 编辑器和浏览器的高度（不包括工具栏）
+   */
   height?: React.CSSProperties['height'];
+
+  /**
+   * 语言
+   */
+  locale?: string;
+
+  /**
+   * 初始文本
+   */
   initialValue?: string;
-  editorProps?: Omit<XStarMdEditorProps, 'initialValue' | 'onChange'>;
+
+  /**
+   * 编辑器属性
+   */
+  editorProps?: Omit<
+    XStarMdEditorProps,
+    'locale' | 'initialValue' | 'onChange'
+  >;
+
+  /**
+   * 浏览器属性
+   */
   viewerProps?: Omit<XStarMdViewerProps, 'value'>;
+
+  /**
+   * 文本变化回调函数
+   */
   onChange?: (value: string) => void;
 }
 
 const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
-  ({ height, initialValue, editorProps, viewerProps, onChange }, ref) => {
+  (
+    { height, locale, initialValue, editorProps, viewerProps, onChange },
+    ref,
+  ) => {
     const [value, setValue] = useState(initialValue);
 
     const editorRef = useMdEditorRef();
@@ -69,21 +99,27 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           ) {
             const fromChild = fromElement.children[i];
             const toChild = toElement.children[j];
-            const fromLine = parseInt(fromChild.getAttribute('line') ?? '');
-            const toLine = parseInt(toChild.getAttribute('line') ?? '');
-            if (!(fromChild instanceof HTMLElement) || !fromLine) {
+            if (!(fromChild instanceof HTMLElement)) {
               i++;
-            } else if (!(toChild instanceof HTMLElement) || !toLine) {
-              j++;
-            } else if (fromLine < toLine) {
-              i++;
-            } else if (fromLine > toLine) {
+            } else if (!(toChild instanceof HTMLElement)) {
               j++;
             } else {
-              fromOffsetTops.push(fromChild.offsetTop);
-              toOffsetTops.push(toChild.offsetTop);
-              i++;
-              j++;
+              const fromLine = parseInt(fromChild.dataset.line ?? '');
+              const toLine = parseInt(toChild.dataset.line ?? '');
+              if (!fromLine) {
+                i++;
+              } else if (!toLine) {
+                j++;
+              } else if (fromLine < toLine) {
+                i++;
+              } else if (fromLine > toLine) {
+                j++;
+              } else {
+                fromOffsetTops.push(fromChild.offsetTop);
+                toOffsetTops.push(toChild.offsetTop);
+                i++;
+                j++;
+              }
             }
           }
           for (
@@ -156,7 +192,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         <XStarMdEditor
           ref={editorRef}
           {...editorProps}
-          style={{ height, ...editorProps?.style }}
+          style={{ ...editorProps?.style, height }}
+          locale={locale}
           initialValue={initialValue}
           onChange={(value) => {
             setValue(value);
@@ -166,7 +203,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         <XStarMdViewer
           ref={viewerRef}
           {...viewerProps}
-          style={{ height, ...viewerProps?.style }}
+          style={{ ...viewerProps?.style, height }}
           value={value}
         />
       </div>

@@ -16,14 +16,8 @@
     white-space: pre;
     word-spacing: normal;
     word-break: normal;
-    font-size: 1em;
     line-height: 1.2em;
     tab-size: 4;
-    tab-size: 4;
-    tab-size: 4;
-    hyphens: none;
-    hyphens: none;
-    hyphens: none;
     hyphens: none;
   }
 
@@ -155,17 +149,17 @@
   }
 
   .highlight-line {
-    background: rgba(193, 222, 241, 20%);
+    background: rgb(193 222 241 / 20%);
     background: linear-gradient(
       to left,
-      rgba(193, 222, 241, 20%) 70%,
-      rgba(221, 222, 241, 0%)
+      rgb(193 222 241 / 20%) 70%,
+      rgb(221 222 241 / 0%)
     );
     background: linear-gradient(
       to right,
-      rgba(193, 222, 241, 20%) 70%,
-      rgba(221, 222, 241, 0%)
+      rgb(193 222 241 / 20%) 70%,
+      rgb(221 222 241 / 0%)
     );
-    border-left: 4px solid rgb(59, 130, 246);
+    border-left: 4px solid rgb(59 130 246);
   }
 }

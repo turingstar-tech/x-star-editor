@@ -14,9 +14,24 @@ export interface XStarMdViewerHandle {
 }
 
 export interface XStarMdViewerProps {
+  /**
+   * CSS 类名
+   */
   className?: string;
+
+  /**
+   * CSS 样式
+   */
   style?: React.CSSProperties;
+
+  /**
+   * 文本
+   */
   value?: string;
+
+  /**
+   * 插件
+   */
   plugins?: XStarMdViewerPlugin[];
 }
 

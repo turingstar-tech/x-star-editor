@@ -1,0 +1,26 @@
+export default {
+  fileInput: {
+    cancel: '取消',
+    chooseFile: '选择文件',
+    confirm: '确定',
+    description: '描述',
+    file: '文件',
+    url: '网址',
+  },
+  toolbarItem: {
+    blockquote: '引用',
+    code: '代码块',
+    delete: '删除线',
+    emphasis: '斜体',
+    heading: '标题',
+    image: '图片',
+    inlineCode: '行内代码',
+    inlineMath: '行内公式',
+    link: '链接',
+    math: '公式块',
+    redo: '恢复',
+    strong: '粗体',
+    thematicBreak: '分隔线',
+    undo: '撤销',
+  },
+} as const;

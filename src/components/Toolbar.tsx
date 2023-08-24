@@ -1,21 +1,23 @@
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
+import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
 import type { Executor } from '../utils/handler';
-import { toggleHandler } from '../utils/handler';
+import { redoHandler, toggleHandler, undoHandler } from '../utils/handler';
+import Fade from './Fade';
 import FileInput from './FileInput';
 
 interface ButtonProps {
-  toolbarRef: React.RefObject<HTMLDivElement>;
   children: React.ReactNode;
+  toolbarRef: React.RefObject<HTMLDivElement>;
   tooltip?: React.ReactNode;
   popoverRender?: (close: () => void) => React.ReactNode;
   onClick?: () => void;
 }
 
 const Button = ({
-  toolbarRef,
   children,
+  toolbarRef,
   tooltip,
   popoverRender,
   onClick,
@@ -27,6 +29,7 @@ const Button = ({
   const popoverMount = !!popover && popoverOpen;
   const tooltipMount = !popoverMount && !!tooltip && tooltipOpen;
 
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,7 +39,6 @@ const Button = ({
           toolbarRef.current.getBoundingClientRect().right -
           popoverRef.current.getBoundingClientRect().right;
         popoverRef.current.style.left = `${left < 0 ? left : 0}px`;
-        popoverRef.current.style.opacity = '1';
       }
 
       const listener = (e: MouseEvent) => {
@@ -67,20 +69,21 @@ const Button = ({
           setPopoverOpen(true);
           onClick?.();
         }}
-        onMouseDown={(e) => e.preventDefault()}
         onMouseEnter={() => setTooltipOpen(true)}
         onMouseLeave={() => setTooltipOpen(false)}
       >
         {children}
-        {tooltipMount && (
-          <div className={classNames(`${prefix}tooltip`)}>{tooltip}</div>
-        )}
       </div>
-      {popoverMount && (
+      <Fade nodeRef={tooltipRef} appear={tooltipMount} timeout={300}>
+        <div ref={tooltipRef} className={classNames(`${prefix}tooltip`)}>
+          {tooltip}
+        </div>
+      </Fade>
+      <Fade nodeRef={popoverRef} appear={popoverMount} timeout={300}>
         <div ref={popoverRef} className={classNames(`${prefix}popover`)}>
           {popover}
         </div>
-      )}
+      </Fade>
     </div>
   );
 };
@@ -93,180 +96,225 @@ export interface ToolbarItem {
 }
 
 export const getDefaultToolbarItemMap = (
+  locale = '',
   onInsertFile?: (
     file: File,
     options: { description: string; image: boolean },
   ) => void,
-): Partial<Record<string, ToolbarItem>> => ({
-  heading: {
-    children: 'H',
-    tooltip: '标题',
-    popoverRender: (exec, close) => {
-      const optionRender = (depth: 1 | 2 | 3 | 4 | 5 | 6, fontSize: string) => (
-        <div
-          className={classNames(`${prefix}option`)}
-          style={{ fontSize }}
-          onClick={() => {
-            exec(toggleHandler({ type: 'heading', depth }));
+): Partial<Record<string, ToolbarItem>> => {
+  const t = getFormat(locale, 'toolbarItem');
+
+  return {
+    blockquote: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}blockquote`)} />
+      ),
+      tooltip: t('blockquote'),
+      onClick: (exec) => exec(toggleHandler({ type: 'blockquote' })),
+    },
+
+    code: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}code`)} />
+      ),
+      tooltip: t('code'),
+      popoverRender: (exec, close) => {
+        const optionRender = (label: string, language: string) => (
+          <div
+            className={classNames(`${prefix}option`)}
+            onClick={() => {
+              exec(toggleHandler({ type: 'code', language }));
+              close();
+            }}
+          >
+            {label}
+          </div>
+        );
+        return (
+          <>
+            {optionRender('C++', 'cpp')}
+            {optionRender('Java', 'java')}
+            {optionRender('Python', 'py')}
+            {optionRender('Text', 'txt')}
+          </>
+        );
+      },
+    },
+
+    delete: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}delete`)} />
+      ),
+      tooltip: t('delete'),
+      onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
+    },
+
+    emphasis: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}emphasis`)} />
+      ),
+      tooltip: t('emphasis'),
+      onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
+    },
+
+    heading: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}heading`)} />
+      ),
+      tooltip: t('heading'),
+      popoverRender: (exec, close) => {
+        const optionRender = (
+          depth: 1 | 2 | 3 | 4 | 5 | 6,
+          fontSize: string,
+        ) => (
+          <div
+            className={classNames(`${prefix}option`)}
+            style={{ fontSize }}
+            onClick={() => {
+              exec(toggleHandler({ type: 'heading', depth }));
+              close();
+            }}
+          >
+            H{depth} {t('heading')} {depth}
+          </div>
+        );
+        return (
+          <>
+            {optionRender(1, '1.6em')}
+            {optionRender(2, '1.3em')}
+            {optionRender(3, '1.2em')}
+            {optionRender(4, '1.1em')}
+            {optionRender(5, '1em')}
+            {optionRender(6, '0.9em')}
+          </>
+        );
+      },
+    },
+
+    image: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}image`)} />
+      ),
+      tooltip: t('image'),
+      popoverRender: (exec, close) => (
+        <FileInput
+          onCancel={close}
+          onOk={(data) => {
+            if (data.type === 'file') {
+              onInsertFile?.(data.file, {
+                description: data.description,
+                image: true,
+              });
+            } else {
+              exec(
+                toggleHandler({
+                  type: 'image',
+                  url: data.url,
+                  description: data.description,
+                }),
+              );
+            }
             close();
           }}
-        >
-          标题 {depth}
-        </div>
-      );
-      return (
-        <>
-          {optionRender(1, '1.6em')}
-          {optionRender(2, '1.3em')}
-          {optionRender(3, '1.2em')}
-          {optionRender(4, '1.1em')}
-          {optionRender(5, '1.0em')}
-          {optionRender(6, '0.9em')}
-        </>
-      );
+        />
+      ),
     },
-  },
 
-  thematicBreak: {
-    children: '—',
-    tooltip: '分隔线',
-    onClick: (exec) => exec(toggleHandler({ type: 'thematicBreak' })),
-  },
+    inlineCode: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}inline-code`)} />
+      ),
+      tooltip: t('inlineCode'),
+      onClick: (exec) => exec(toggleHandler({ type: 'inlineCode' })),
+    },
 
-  blockquote: {
-    children: '『』',
-    tooltip: '引用',
-    onClick: (exec) => exec(toggleHandler({ type: 'blockquote' })),
-  },
+    inlineMath: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}inline-math`)} />
+      ),
+      tooltip: t('inlineMath'),
+      onClick: (exec) => exec(toggleHandler({ type: 'inlineMath' })),
+    },
 
-  code: {
-    children: (
-      <div className={classNames(`${prefix}icon`, `${prefix}code-library`)} />
-    ),
-    tooltip: '代码块',
-    popoverRender: (exec, close) => {
-      const optionRender = (label: string, language: string) => (
-        <div
-          className={classNames(`${prefix}option`)}
-          onClick={() => {
-            exec(toggleHandler({ type: 'code', language }));
+    link: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}link`)} />
+      ),
+      tooltip: t('link'),
+      popoverRender: (exec, close) => (
+        <FileInput
+          onCancel={close}
+          onOk={(data) => {
+            if (data.type === 'file') {
+              onInsertFile?.(data.file, {
+                description: data.description,
+                image: false,
+              });
+            } else {
+              exec(
+                toggleHandler({
+                  type: 'link',
+                  url: data.url,
+                  description: data.description,
+                }),
+              );
+            }
             close();
           }}
-        >
-          {label}
-        </div>
-      );
-      return (
-        <>
-          {optionRender('C++', 'cpp')}
-          {optionRender('Java', 'java')}
-          {optionRender('Python', 'py')}
-          {optionRender('Text', 'txt')}
-        </>
-      );
+        />
+      ),
     },
-  },
 
-  emphasis: {
-    children: (
-      <div className={classNames(`${prefix}icon`, `${prefix}italic`)} />
-    ),
-    tooltip: '斜体',
-    onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
-  },
+    math: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}math`)} />
+      ),
+      tooltip: t('math'),
+      onClick: (exec) => exec(toggleHandler({ type: 'math' })),
+    },
 
-  strong: {
-    children: <div className={classNames(`${prefix}icon`, `${prefix}bold`)} />,
-    tooltip: '粗体',
-    onClick: (exec) => exec(toggleHandler({ type: 'strong' })),
-  },
+    redo: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}redo`)} />
+      ),
+      tooltip: t('redo'),
+      onClick: (exec) => exec(redoHandler()),
+    },
 
-  inlineCode: {
-    children: <div className={classNames(`${prefix}icon`, `${prefix}code`)} />,
-    tooltip: '行内代码',
-    onClick: (exec) => exec(toggleHandler({ type: 'inlineCode' })),
-  },
+    strong: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}strong`)} />
+      ),
+      tooltip: t('strong'),
+      onClick: (exec) => exec(toggleHandler({ type: 'strong' })),
+    },
 
-  link: {
-    children: <div className={classNames(`${prefix}icon`, `${prefix}link`)} />,
-    tooltip: '链接',
-    popoverRender: (exec, close) => (
-      <FileInput
-        onCancel={close}
-        onOk={(data) => {
-          if (data.type === 'file') {
-            onInsertFile?.(data.file, {
-              description: data.description,
-              image: false,
-            });
-          } else {
-            exec(
-              toggleHandler({
-                type: 'link',
-                url: data.url,
-                description: data.description,
-              }),
-            );
-          }
-          close();
-        }}
-      />
-    ),
-  },
+    thematicBreak: {
+      children: (
+        <div
+          className={classNames(`${prefix}icon`, `${prefix}thematic-break`)}
+        />
+      ),
+      tooltip: t('thematicBreak'),
+      onClick: (exec) => exec(toggleHandler({ type: 'thematicBreak' })),
+    },
 
-  image: {
-    children: <div className={classNames(`${prefix}icon`, `${prefix}image`)} />,
-    tooltip: '图片',
-    popoverRender: (exec, close) => (
-      <FileInput
-        onCancel={close}
-        onOk={(data) => {
-          if (data.type === 'file') {
-            onInsertFile?.(data.file, {
-              description: data.description,
-              image: true,
-            });
-          } else {
-            exec(
-              toggleHandler({
-                type: 'image',
-                url: data.url,
-                description: data.description,
-              }),
-            );
-          }
-          close();
-        }}
-      />
-    ),
-  },
-
-  delete: {
-    children: (
-      <div className={classNames(`${prefix}icon`, `${prefix}strikethrough`)} />
-    ),
-    tooltip: '删除线',
-    onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
-  },
-
-  math: {
-    children: 'π',
-    tooltip: '公式块',
-    onClick: (exec) => exec(toggleHandler({ type: 'math' })),
-  },
-
-  inlineMath: {
-    children: '𝑥',
-    tooltip: '行内公式',
-    onClick: (exec) => exec(toggleHandler({ type: 'inlineMath' })),
-  },
-});
+    undo: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${prefix}undo`)} />
+      ),
+      tooltip: t('undo'),
+      onClick: (exec) => exec(undoHandler()),
+    },
+  };
+};
 
 export const getDefaultToolbarItems = (): (string | ToolbarItem)[][] => [
   ['heading', 'strong', 'emphasis', 'delete'],
   ['thematicBreak', 'blockquote'],
   ['link', 'image'],
   ['inlineCode', 'code', 'inlineMath', 'math'],
+  ['undo', 'redo'],
 ];
 
 interface ToolbarProps {

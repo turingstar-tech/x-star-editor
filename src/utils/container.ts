@@ -54,6 +54,15 @@ export const useContainer = () => {
   const ref = useRef<HTMLDivElement>(null);
 
   /**
+   * 是否在遍历时忽略节点及其子节点
+   *
+   * @param node 节点
+   * @returns 是否忽略
+   */
+  const isIgnore = (node: Node) =>
+    node instanceof HTMLElement && node.dataset.ignore !== undefined;
+
+  /**
    * 将 DOM 树规范化
    *
    * 检查每个行节点的末尾是否为零宽空格，如果不是，则删除行中的零宽空格并在末尾添加零宽空格
@@ -64,6 +73,9 @@ export const useContainer = () => {
     }
 
     const traverse = (node: Node, depth: number) => {
+      if (isIgnore(node)) {
+        return;
+      }
       if (depth === 2) {
         // 检查行节点的末尾
         if (node.lastChild?.nodeType === Node.TEXT_NODE) {
@@ -107,6 +119,9 @@ export const useContainer = () => {
     let text = '';
 
     const traverse = (node: Node) => {
+      if (isIgnore(node)) {
+        return;
+      }
       if (node.nodeType === Node.TEXT_NODE) {
         if (node.nodeValue) {
           text += node.nodeValue;
@@ -158,7 +173,10 @@ export const useContainer = () => {
           }
         } else {
           // 节点名称相同，更新属性和子节点
-          if (newChild instanceof Element && oldChild instanceof Element) {
+          if (
+            newChild instanceof HTMLElement &&
+            oldChild instanceof HTMLElement
+          ) {
             for (const oldAttrName of oldChild.getAttributeNames()) {
               if (!newChild.hasAttribute(oldAttrName)) {
                 // 移除新节点没有的属性
@@ -225,6 +243,9 @@ export const useContainer = () => {
       let offset = 0;
 
       const traverse = (node: Node) => {
+        if (isIgnore(node)) {
+          return;
+        }
         if (node === targetNode) {
           if (node.nodeType === Node.TEXT_NODE) {
             if (node.nodeValue) {
@@ -293,6 +314,9 @@ export const useContainer = () => {
       let offset = targetOffset;
 
       const traverse = (node: Node): Node | undefined => {
+        if (isIgnore(node)) {
+          return;
+        }
         if (node.nodeType === Node.TEXT_NODE) {
           if (node.nodeValue) {
             if (

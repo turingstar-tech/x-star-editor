@@ -28,20 +28,20 @@ export interface DeleteAction {
 export interface ToggleAction {
   type: 'toggle';
   payload:
-    | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
-    | { type: 'code'; language: string }
     | {
         type:
-          | 'thematicBreak'
           | 'blockquote'
-          | 'emphasis'
-          | 'strong'
-          | 'inlineCode'
           | 'delete'
+          | 'emphasis'
+          | 'inlineCode'
+          | 'inlineMath'
           | 'math'
-          | 'inlineMath';
+          | 'strong'
+          | 'thematicBreak';
       }
-    | { type: 'link' | 'image'; url: string; description: string };
+    | { type: 'code'; language: string }
+    | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
+    | { type: 'image' | 'link'; url: string; description: string };
   selection: ContainerSelection;
 }
 
@@ -114,58 +114,6 @@ const stateReducer = (
       const lineAfter = sourceCode.slice(lineEndOffset);
 
       switch (action.payload.type) {
-        case 'heading': {
-          const { depth } = action.payload;
-          const lines = sourceCode
-            .slice(lineStartOffset, lineEndOffset)
-            .split('\n');
-          const values = lines.map((line) =>
-            [1, 2, 3, 4, 5, 6].find((value) =>
-              new RegExp(`^ {0,3}#{${value}} +`).test(line),
-            ),
-          );
-          for (let i = 0; i < values.length; i++) {
-            const value = values[i];
-            if (value) {
-              lines[i] = lines[i].replace(
-                new RegExp(`^ {0,3}#{${value}} +`),
-                '',
-              );
-            }
-          }
-          if (values.some((value) => value !== depth)) {
-            for (let i = 0; i < lines.length; i++) {
-              lines[i] = `${'#'.repeat(depth)} ${lines[i]}`;
-            }
-          }
-          const text = lines.join('\n');
-          return {
-            sourceCode: `${lineBefore}${text}${lineAfter}`,
-            selection: createSelection(lineStartOffset + text.length),
-          };
-        }
-
-        case 'code': {
-          const { language } = action.payload;
-          return {
-            sourceCode: `${sourceCode.slice(
-              0,
-              lineEndOffset,
-            )}\n\`\`\`${language} showLineNumbers\n\n\`\`\`\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + language.length + 21),
-          };
-        }
-
-        case 'thematicBreak': {
-          return {
-            sourceCode: `${sourceCode.slice(
-              0,
-              lineEndOffset,
-            )}\n***\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + 5),
-          };
-        }
-
         case 'blockquote': {
           const lines = sourceCode
             .slice(lineStartOffset, lineEndOffset)
@@ -188,21 +136,22 @@ const stateReducer = (
           };
         }
 
-        case 'math': {
+        case 'code': {
+          const { language } = action.payload;
           return {
             sourceCode: `${sourceCode.slice(
               0,
               lineEndOffset,
-            )}\n$$\n\n$$\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + 4),
+            )}\n\`\`\`${language} showLineNumbers\n\n\`\`\`\n${lineAfter}`,
+            selection: createSelection(lineEndOffset + language.length + 21),
           };
         }
 
-        case 'emphasis':
-        case 'strong':
-        case 'inlineCode':
         case 'delete':
-        case 'inlineMath': {
+        case 'emphasis':
+        case 'inlineCode':
+        case 'inlineMath':
+        case 'strong': {
           const { type } = action.payload;
           const delimiters =
             type === 'emphasis'
@@ -241,8 +190,39 @@ const stateReducer = (
           };
         }
 
-        case 'link':
-        case 'image': {
+        case 'heading': {
+          const { depth } = action.payload;
+          const lines = sourceCode
+            .slice(lineStartOffset, lineEndOffset)
+            .split('\n');
+          const values = lines.map((line) =>
+            [1, 2, 3, 4, 5, 6].find((value) =>
+              new RegExp(`^ {0,3}#{${value}} +`).test(line),
+            ),
+          );
+          for (let i = 0; i < values.length; i++) {
+            const value = values[i];
+            if (value) {
+              lines[i] = lines[i].replace(
+                new RegExp(`^ {0,3}#{${value}} +`),
+                '',
+              );
+            }
+          }
+          if (values.some((value) => value !== depth)) {
+            for (let i = 0; i < lines.length; i++) {
+              lines[i] = `${'#'.repeat(depth)} ${lines[i]}`;
+            }
+          }
+          const text = lines.join('\n');
+          return {
+            sourceCode: `${lineBefore}${text}${lineAfter}`,
+            selection: createSelection(lineStartOffset + text.length),
+          };
+        }
+
+        case 'image':
+        case 'link': {
           const { type, url, description } = action.payload;
           return {
             sourceCode: `${before}${
@@ -255,6 +235,26 @@ const stateReducer = (
                 4 +
                 (type === 'link' ? 0 : 1),
             ),
+          };
+        }
+
+        case 'math': {
+          return {
+            sourceCode: `${sourceCode.slice(
+              0,
+              lineEndOffset,
+            )}\n$$\n\n$$\n${lineAfter}`,
+            selection: createSelection(lineEndOffset + 4),
+          };
+        }
+
+        case 'thematicBreak': {
+          return {
+            sourceCode: `${sourceCode.slice(
+              0,
+              lineEndOffset,
+            )}\n***\n${lineAfter}`,
+            selection: createSelection(lineEndOffset + 5),
           };
         }
 
