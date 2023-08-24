@@ -2,19 +2,25 @@
 
 .#{$prefix}file-input {
   margin: 0.5em 1em 1em;
+  font-size: 0.9em;
 
   .#{$prefix}tabs {
     display: flex;
 
     .#{$prefix}tab {
       padding: 0.4em 1em;
-      border-bottom: 1px solid #f5771280;
+      border-bottom: 1px solid $color-border;
       cursor: pointer;
       user-select: none;
 
+      &:hover {
+        color: $color-primary-hover;
+        border-bottom: 1px solid $color-primary;
+      }
+
       &.#{$prefix}active {
-        color: #f57712;
-        border-bottom: 2px solid #f57712;
+        color: $color-primary;
+        border-bottom: 2px solid $color-primary;
       }
     }
   }
@@ -27,16 +33,20 @@
 
   .#{$prefix}button {
     padding: 0.4em 1em;
-    background-color: #f0f0f0;
-    border: 1px solid #d0d0d0;
-    border-radius: 0.2em;
+    background-color: $color-bg-container;
+    border: 1px solid $color-border;
+    border-radius: $border-radius;
     cursor: pointer;
     user-select: none;
 
     &.#{$prefix}primary {
-      color: #fff;
-      background-color: #f57712;
+      color: $color-text-light-solid;
+      background-color: $color-primary;
       border: none;
+
+      &:hover {
+        background-color: $color-primary-hover;
+      }
     }
   }
 
@@ -50,12 +60,12 @@
     .#{$prefix}input {
       width: 20em;
       padding: 0.4em;
-      border: 1px solid #d0d0d0;
-      border-radius: 0.2em;
+      border: 1px solid $color-border;
+      border-radius: $border-radius;
       outline: none;
 
       &:focus {
-        border: 1px solid #f57712;
+        border: 1px solid $color-primary;
       }
     }
 
@@ -72,11 +82,11 @@
       }
 
       .#{$prefix}input {
-        width: 14em;
+        width: 12em;
       }
 
       .#{$prefix}button {
-        padding: 0.3em 0.4em;
+        width: 7.5em;
       }
     }
   }

@@ -2,9 +2,9 @@
 
 .#{$prefix}md-viewer {
   position: relative;
-  color: #000000d9;
+  color: $color-text;
 
   ::selection {
-    background: #c1def1;
+    background-color: $color-selection;
   }
 }
