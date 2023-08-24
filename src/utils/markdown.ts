@@ -80,7 +80,7 @@ export const editorRender = (sourceCode: string) => {
   /**
    * CSS 类名前缀
    */
-  const classNamePrefix = `${prefix}md-editor-`;
+  const mdPrefix = `${prefix}md-`;
 
   /**
    * 扫描偏移量，表示已经添加到 DOM 树的文本
@@ -88,9 +88,9 @@ export const editorRender = (sourceCode: string) => {
   let scanOffset = 0;
 
   /**
-   * 遍历 Mdast 树时的栈，保存 Mdast 节点、对应的 DOM 元素、是否为 Mdast 节点的第一个子元素
+   * 遍历 Mdast 树时的栈，保存 Mdast 节点、对应的 DOM 元素、为第几个子元素
    */
-  const stack: { node: MdastNode; el: Element; first: boolean }[] = [];
+  const stack: { node: MdastNode; el: HTMLElement; counter: number }[] = [];
 
   /**
    * 块级元素
@@ -110,49 +110,36 @@ export const editorRender = (sourceCode: string) => {
    */
   const isFlowContent = (node: MdastNode) =>
     node.type === 'blockquote' ||
-    node.type === 'listItem' ||
-    node.type === 'footnoteDefinition';
+    node.type === 'footnoteDefinition' ||
+    node.type === 'listItem';
 
   /**
    * 将栈中指定索引的 DOM 元素推到对应的父元素中
    *
    * @param index 索引
-   * @param last 是否为 Mdast 节点的最后一个子元素，默认为 `false`
    */
-  const pushElement = (index: number, last = false) => {
-    const { node, first } = stack[index];
+  const pushElement = (index: number) => {
+    const { node } = stack[index];
 
     // 如果节点为流内容，则将样式添加到该行的 `<div>` 元素上，否则添加到该节点的元素上
     const styleElement =
       stack[index && !isFlowContent(stack[index - 1].node) ? index : 0].el;
-    styleElement.classList.add(`${classNamePrefix}${node.type}`);
+    styleElement.classList.add(`${mdPrefix}${node.type}`);
     if (node.type === 'heading') {
-      styleElement.classList.add(`${classNamePrefix}heading${node.depth}`);
-    } else if (
-      node.type === 'html' ||
-      node.type === 'code' ||
-      node.type === 'math'
-    ) {
-      if (first) {
-        styleElement.classList.add(`${classNamePrefix}first`);
-      }
-      if (last) {
-        styleElement.classList.add(`${classNamePrefix}last`);
-      }
+      styleElement.classList.add(`${mdPrefix}heading${node.depth}`);
     }
 
     // 如果索引为 0，则父节点为块级元素，否则为前一个索引的 DOM 元素
     const parentElement = index ? stack[index - 1].el : block;
     parentElement.append(stack[index].el);
     stack[index].el = document.createElement(index ? 'span' : 'div');
-    stack[index].first = false;
+    stack[index].counter++;
   };
 
   /**
    * 将块级元素推到 DOM 树根元素中
    */
   const pushBlock = () => {
-    block.classList.add(`${classNamePrefix}block`);
     el.append(block);
     block = document.createElement('div');
   };
@@ -166,7 +153,7 @@ export const editorRender = (sourceCode: string) => {
   const createDelimiter = (text: string) => {
     const temp = document.createElement('span');
     temp.append(text);
-    temp.classList.add(`${classNamePrefix}delimiter`);
+    temp.classList.add(`${mdPrefix}delimiter`);
     return temp;
   };
 
@@ -250,7 +237,7 @@ export const editorRender = (sourceCode: string) => {
       stack.push({
         node,
         el: document.createElement(stack.length ? 'span' : 'div'),
-        first: true,
+        counter: 0,
       });
 
       if ('children' in node) {
@@ -260,12 +247,12 @@ export const editorRender = (sourceCode: string) => {
       }
 
       if (stack.length > 1) {
-        pushElement(stack.length - 1, true);
+        pushElement(stack.length - 1);
       } else {
         // 如果栈大小为 1，说明为块级元素终点
         stack[0].el.append('\u200B');
-        pushElement(0, true);
-        block.setAttribute('line', `${node.position?.start.line}`);
+        pushElement(0);
+        block.dataset.line = `${node.position?.start.line}`;
         pushBlock();
         scanOffset++;
       }
@@ -320,7 +307,7 @@ export const viewerRender = (sourceCode: string, options: ViewerOptions) =>
       .use(() => (root) => {
         for (const node of root.children) {
           if ('properties' in node && node.properties) {
-            node.properties.line = node.position?.start.line;
+            node.properties['data-line'] = node.position?.start.line;
           }
         }
       })

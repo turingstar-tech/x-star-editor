@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
+import { useLocale } from '../locales';
 import { prefix } from '../utils/global';
 
 interface FileInputProps {
@@ -17,6 +18,8 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
 
+  const { format: t } = useLocale('fileInput');
+
   return (
     <div className={classNames(`${prefix}file-input`)}>
       <div className={classNames(`${prefix}tabs`)}>
@@ -26,7 +29,7 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
           })}
           onClick={() => setType('file')}
         >
-          文件
+          {t('file')}
         </div>
         <div
           className={classNames(`${prefix}tab`, {
@@ -34,12 +37,12 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
           })}
           onClick={() => setType('url')}
         >
-          网址
+          {t('url')}
         </div>
       </div>
       {type === 'file' ? (
         <label className={classNames(`${prefix}field`)}>
-          文件
+          {t('file')}
           <div className={classNames(`${prefix}file-container`)}>
             <input
               className={classNames(`${prefix}hidden`)}
@@ -52,13 +55,13 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
               value={file?.name ?? ''}
             />
             <button className={classNames(`${prefix}button`)} type="button">
-              选择文件
+              {t('chooseFile')}
             </button>
           </div>
         </label>
       ) : (
         <label className={classNames(`${prefix}field`)}>
-          网址
+          {t('url')}
           <input
             className={classNames(`${prefix}input`)}
             onChange={(e) => setUrl(e.target.value)}
@@ -66,7 +69,7 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
         </label>
       )}
       <label className={classNames(`${prefix}field`)}>
-        描述
+        {t('description')}
         <input
           className={classNames(`${prefix}input`)}
           onChange={(e) => setDescription(e.target.value)}
@@ -84,14 +87,14 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
             }
           }}
         >
-          确定
+          {t('confirm')}
         </button>
         <button
           className={classNames(`${prefix}button`)}
           type="button"
           onClick={onCancel}
         >
-          取消
+          {t('cancel')}
         </button>
       </div>
     </div>
