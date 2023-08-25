@@ -32,13 +32,15 @@ export const getDefaultSchema = (): Schema => ({
       'style',
       'line',
     ],
+    svg: ['xmlns', 'width', 'height', 'viewBox', 'preserveAspectRatio'],
+    path: ['d'],
     custom: ['meta', 'value'],
   },
   protocols: {
     ...defaultSchema.protocols,
     src: [...(defaultSchema.protocols?.src ?? []), 'data'],
   },
-  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
+  tagNames: [...(defaultSchema.tagNames ?? []), 'svg', 'path', 'custom'],
 });
 
 /**

@@ -9,6 +9,8 @@ export default () => (
     locale="en_US"
     initialValue={`# Markdown 语法示例
 
+$$ \\sqrt{2} \\quad or \\quad \\sqrt[n]{3} $$
+
 ## 标题
 
 使用\`#\`可以定义标题，比如：
