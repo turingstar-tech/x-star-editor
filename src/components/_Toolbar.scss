@@ -21,6 +21,14 @@
       cursor: pointer;
       user-select: none;
 
+      &.#{$prefix}disabled::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: color.adjust($color-primary-bg, $alpha: -0.3);
+        cursor: not-allowed;
+      }
+
       &.#{$prefix}active {
         background-color: $color-primary-bg-hover;
       }
