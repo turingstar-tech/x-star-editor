@@ -3,13 +3,14 @@
 $md-prefix: #{$prefix}md-;
 
 .#{$md-prefix}editor {
-  .#{$md-prefix}delimiter,
-  .#{$md-prefix}break {
+  .#{$md-prefix}break,
+  .#{$md-prefix}delimiter {
     color: color.adjust($color-text, $alpha: -0.6);
   }
 
   .#{$md-prefix}code,
-  .#{$md-prefix}html {
+  .#{$md-prefix}html,
+  .#{$md-prefix}inlineCode {
     tab-size: 4;
     font-family: Consolas, 'Bitstream Vera Sans Mono', 'Courier New', Courier,
       monospace;
@@ -17,8 +18,9 @@ $md-prefix: #{$prefix}md-;
 
   .#{$md-prefix}code,
   .#{$md-prefix}html,
+  .#{$md-prefix}inlineCode,
+  .#{$md-prefix}inlineMath,
   .#{$md-prefix}math {
-    position: relative;
     color: $color-primary-active;
   }
 
@@ -43,11 +45,11 @@ $md-prefix: #{$prefix}md-;
   }
 
   .#{$md-prefix}heading {
-    font-weight: bold;
     line-height: 1.6em;
+    font-weight: bold;
 
     @mixin heading-size($level, $size) {
-      &.#{$md-prefix}heading#{$level} {
+      &.#{$md-prefix}heading-#{$level} {
         font-size: $size;
       }
     }
@@ -58,17 +60,6 @@ $md-prefix: #{$prefix}md-;
     @include heading-size(4, 1.1em);
     @include heading-size(5, 1em);
     @include heading-size(6, 0.9em);
-  }
-
-  .#{$md-prefix}inlineCode {
-    tab-size: 4;
-    font-family: Consolas, 'Bitstream Vera Sans Mono', 'Courier New', Courier,
-      monospace;
-  }
-
-  .#{$md-prefix}inlineCode,
-  .#{$md-prefix}inlineMath {
-    color: $color-primary-active;
   }
 
   .#{$md-prefix}strong {

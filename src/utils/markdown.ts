@@ -32,7 +32,7 @@ export const getDefaultSchema = (): Schema => ({
       'style',
       'line',
     ],
-    svg: ['xmlns', 'width', 'height', 'viewBox', 'preserveAspectRatio'],
+    svg: ['xmlns', 'viewBox', 'preserveAspectRatio'],
     path: ['d'],
     custom: ['meta', 'value'],
   },
@@ -129,7 +129,7 @@ export const editorRender = (sourceCode: string) => {
       stack[index && !isFlowContent(stack[index - 1].node) ? index : 0].el;
     styleElement.classList.add(`${mdPrefix}${node.type}`);
     if (node.type === 'heading') {
-      styleElement.classList.add(`${mdPrefix}heading${node.depth}`);
+      styleElement.classList.add(`${mdPrefix}heading-${node.depth}`);
     }
 
     // 如果索引为 0，则父节点为块级元素，否则为前一个索引的 DOM 元素
@@ -327,15 +327,14 @@ export const viewerRender = (sourceCode: string, options: ViewerOptions) =>
     },
   );
 
-const toHastProcessor = unified()
+const toHTMLProcessor = unified()
   .use(remarkParse)
   .use(remarkBreaks)
   .use(remarkGfm)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
+  .use(rehypeStringify)
   .freeze();
-
-const toHTMLProcessor = unified().use(rehypeStringify).freeze();
 
 /**
  * 将 Markdown 文本转成 HTML 文本
@@ -344,9 +343,7 @@ const toHTMLProcessor = unified().use(rehypeStringify).freeze();
  * @returns HTML 文本
  */
 export const toHTML = (sourceCode: string) =>
-  toHTMLProcessor.stringify(
-    toHastProcessor.runSync(toHastProcessor.parse(sourceCode)),
-  );
+  toHTMLProcessor.processSync(sourceCode).toString();
 
 const toMarkdownProcessor = unified()
   .use(rehypeRemark)
@@ -364,7 +361,7 @@ const toMarkdownProcessor = unified()
 export const toMarkdown = (sourceCode: string) =>
   toMarkdownProcessor.stringify(
     toMarkdownProcessor.runSync(
-      toHastProcessor.runSync(toHastProcessor.parse(sourceCode)),
+      toHTMLProcessor.runSync(toHTMLProcessor.parse(sourceCode)),
     ),
   );
 

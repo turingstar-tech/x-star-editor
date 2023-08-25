@@ -13,7 +13,7 @@
 
       &:hover {
         color: $color-primary-hover;
-        border-bottom: 1px solid $color-primary;
+        border-bottom: 1px solid $color-primary-hover;
       }
 
       &.#{$prefix}active {
@@ -80,11 +80,11 @@
       }
 
       .#{$prefix}input {
-        width: 12em;
+        width: 11.5em;
       }
 
       .#{$prefix}button {
-        width: 7.5em;
+        width: 8em;
       }
     }
   }
