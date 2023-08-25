@@ -39,7 +39,7 @@
         background-size: contain;
 
         @mixin icon-image($type) {
-          &.#{$prefix}#{$type} {
+          &.#{$prefix}icon-#{$type} {
             background-image: url(icons/#{$type}.svg);
           }
         }
@@ -115,4 +115,6 @@
     margin: 0.4em;
     border: 1px solid $color-border;
   }
+
+  @include common;
 }

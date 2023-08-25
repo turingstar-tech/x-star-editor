@@ -15,7 +15,7 @@
   .#{$prefix}md-viewer {
     padding: 0 1em;
     flex: 1;
-    background-color: white;
+    background-color: $color-bg-container;
     border: 1px solid $color-border;
     border-top: none;
     border-bottom-right-radius: $border-radius;

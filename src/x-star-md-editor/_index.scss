@@ -1,10 +1,10 @@
 .#{$prefix}md-editor {
-  padding: 0 1em;
   position: relative;
+  padding: 0 1em;
   line-height: 1.6em;
   white-space: break-spaces;
   color: $color-text;
-  background-color: white;
+  background-color: $color-bg-container;
   border: 1px solid $color-border;
   border-top: none;
   border-bottom-right-radius: $border-radius;
@@ -20,7 +20,5 @@
     margin-bottom: 1em;
   }
 
-  ::selection {
-    background-color: $color-selection;
-  }
+  @include common;
 }

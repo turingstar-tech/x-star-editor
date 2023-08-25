@@ -112,12 +112,16 @@ export const getDefaultToolbarItemMap = (
     options: { description: string; image: boolean },
   ) => void,
 ): ToolbarItemMap => {
+  const iconPrefix = `${prefix}icon-`;
+
   const t = getFormat(locale, 'toolbarItem');
 
   return {
     blockquote: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}blockquote`)} />
+        <div
+          className={classNames(`${prefix}icon`, `${iconPrefix}blockquote`)}
+        />
       ),
       tooltip: t('blockquote'),
       onClick: (exec) => exec(toggleHandler({ type: 'blockquote' })),
@@ -125,7 +129,7 @@ export const getDefaultToolbarItemMap = (
 
     code: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}code`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}code`)} />
       ),
       tooltip: t('code'),
       popoverRender: (exec, close) => {
@@ -153,7 +157,7 @@ export const getDefaultToolbarItemMap = (
 
     delete: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}delete`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}delete`)} />
       ),
       tooltip: t('delete'),
       onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
@@ -161,7 +165,7 @@ export const getDefaultToolbarItemMap = (
 
     emphasis: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}emphasis`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}emphasis`)} />
       ),
       tooltip: t('emphasis'),
       onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
@@ -169,7 +173,7 @@ export const getDefaultToolbarItemMap = (
 
     heading: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}heading`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}heading`)} />
       ),
       tooltip: t('heading'),
       popoverRender: (exec, close) => {
@@ -203,7 +207,7 @@ export const getDefaultToolbarItemMap = (
 
     image: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}image`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}image`)} />
       ),
       tooltip: t('image'),
       popoverRender: (exec, close) => (
@@ -232,7 +236,9 @@ export const getDefaultToolbarItemMap = (
 
     inlineCode: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}inline-code`)} />
+        <div
+          className={classNames(`${prefix}icon`, `${iconPrefix}inline-code`)}
+        />
       ),
       tooltip: t('inlineCode'),
       onClick: (exec) => exec(toggleHandler({ type: 'inlineCode' })),
@@ -240,7 +246,9 @@ export const getDefaultToolbarItemMap = (
 
     inlineMath: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}inline-math`)} />
+        <div
+          className={classNames(`${prefix}icon`, `${iconPrefix}inline-math`)}
+        />
       ),
       tooltip: t('inlineMath'),
       onClick: (exec) => exec(toggleHandler({ type: 'inlineMath' })),
@@ -248,7 +256,7 @@ export const getDefaultToolbarItemMap = (
 
     link: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}link`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}link`)} />
       ),
       tooltip: t('link'),
       popoverRender: (exec, close) => (
@@ -277,7 +285,7 @@ export const getDefaultToolbarItemMap = (
 
     math: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}math`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}math`)} />
       ),
       tooltip: t('math'),
       onClick: (exec) => exec(toggleHandler({ type: 'math' })),
@@ -285,7 +293,7 @@ export const getDefaultToolbarItemMap = (
 
     redo: ({ history }) => ({
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}redo`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}redo`)} />
       ),
       disabled: history.index === history.states.length - 1,
       tooltip: t('redo'),
@@ -294,7 +302,7 @@ export const getDefaultToolbarItemMap = (
 
     strong: {
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}strong`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}strong`)} />
       ),
       tooltip: t('strong'),
       onClick: (exec) => exec(toggleHandler({ type: 'strong' })),
@@ -303,7 +311,7 @@ export const getDefaultToolbarItemMap = (
     thematicBreak: {
       children: (
         <div
-          className={classNames(`${prefix}icon`, `${prefix}thematic-break`)}
+          className={classNames(`${prefix}icon`, `${iconPrefix}thematic-break`)}
         />
       ),
       tooltip: t('thematicBreak'),
@@ -312,7 +320,7 @@ export const getDefaultToolbarItemMap = (
 
     undo: ({ history }) => ({
       children: (
-        <div className={classNames(`${prefix}icon`, `${prefix}undo`)} />
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}undo`)} />
       ),
       disabled: !history.index,
       tooltip: t('undo'),

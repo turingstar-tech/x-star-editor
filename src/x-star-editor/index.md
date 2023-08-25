@@ -1,15 +1,24 @@
 # XStarEditor
 
 ```jsx
+import { useState } from 'react';
 import { XStarEditor } from 'x-star-editor';
 
-export default () => (
-  <XStarEditor
-    height="80vh"
-    locale="en_US"
-    initialValue={`# Markdown 语法示例
+export default () => {
+  const [locale, setLocale] = useState('zh_CN');
 
-$$ \\sqrt{2} \\quad or \\quad \\sqrt[n]{3} $$
+  return (
+    <>
+      <button
+        style={{ marginBottom: 8 }}
+        onClick={() => setLocale(locale === 'zh_CN' ? 'en_US' : 'zh_CN')}
+      >
+        当前语言：{locale}
+      </button>
+      <XStarEditor
+        height="80vh"
+        locale={locale}
+        initialValue={`# Markdown 语法示例
 
 ## 标题
 
@@ -181,8 +190,10 @@ print('Hello, Markdown!')
 
 > 这是一段引用
 `}
-  />
-);
+      />
+    </>
+  );
+};
 ```
 
 ## API
