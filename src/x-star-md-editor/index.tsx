@@ -1,13 +1,13 @@
 import classNames from 'classnames';
 import React, { useEffect, useImperativeHandle, useRef } from 'react';
-import type { ToolbarItem } from '../components/Toolbar';
+import type { ToolbarItemMap, ToolbarItems } from '../components/Toolbar';
 import Toolbar, {
   getDefaultToolbarItemMap,
   getDefaultToolbarItems,
 } from '../components/Toolbar';
 import { LocaleProvider } from '../locales';
 import type { ContainerSelection } from '../utils/container';
-import { createSelection, getRange, useContainer } from '../utils/container';
+import { getRange, useContainer } from '../utils/container';
 import { prefix } from '../utils/global';
 import type { Executor, KeyboardEventHandler } from '../utils/handler';
 import {
@@ -20,12 +20,12 @@ interface EditorOptions {
   /**
    * 工具栏项映射
    */
-  toolbarItemMap: Partial<Record<string, ToolbarItem>>;
+  toolbarItemMap: ToolbarItemMap;
 
   /**
    * 工具栏项
    */
-  toolbarItems: (string | ToolbarItem)[][];
+  toolbarItems: ToolbarItems;
 
   /**
    * 键盘事件处理函数
@@ -108,7 +108,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     ref,
   ) => {
     const container = useContainer();
-    const { sourceCode, selection, dispatch } = useHistory(initialValue);
+    const { history, sourceCode, selection, dispatch } =
+      useHistory(initialValue);
 
     const initialized = useRef(false);
 
@@ -140,13 +141,16 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       };
     }, []);
 
+    const historyLatest = useRef(history);
+    historyLatest.current = history;
+
     const sourceCodeLatest = useRef(sourceCode);
     sourceCodeLatest.current = sourceCode;
 
     /**
      * 失焦时的选区
      */
-    const blurSelection = useRef<ContainerSelection>();
+    const blurSelection = useRef(selection);
 
     /**
      * 获取选区，如果焦点不在容器内，则返回失焦时的选区
@@ -156,13 +160,13 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const getSelection = () => {
       const selection = container.getSelection();
       return selection.anchorOffset === -1 || selection.focusOffset === -1
-        ? blurSelection.current ??
-            createSelection(sourceCodeLatest.current.length)
+        ? blurSelection.current
         : selection;
     };
 
     const exec = useRef<Executor>((handler) =>
       handler({
+        history: historyLatest.current,
         sourceCode: sourceCodeLatest.current,
         selection: getSelection(),
         dispatch,
@@ -315,6 +319,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'keydown': {
           composeHandlers(keyboardEventHandlers)({
+            history: historyLatest.current,
             sourceCode: sourceCodeLatest.current,
             selection: getSelection(),
             dispatch,
