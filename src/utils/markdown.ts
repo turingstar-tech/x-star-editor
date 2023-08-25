@@ -13,6 +13,7 @@ import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
+import strip from 'strip-markdown';
 import { unified } from 'unified';
 import { prefix } from './global';
 
@@ -364,3 +365,14 @@ export const toMarkdown = (sourceCode: string) =>
       toHastProcessor.runSync(toHastProcessor.parse(sourceCode)),
     ),
   );
+
+const toTextProcessor = unified().use(strip).freeze();
+
+/**
+ * 将 Markdown 文本转成纯文本
+ *
+ * @param sourceCode Markdown 文本
+ * @returns 纯文本
+ */
+export const toText = (sourceCode: string) =>
+  toTextProcessor.processSync(sourceCode).toString();

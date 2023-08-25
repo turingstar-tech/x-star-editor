@@ -9,7 +9,7 @@ export {
   undoHandler,
 } from './utils/handler';
 export type { Handler } from './utils/handler';
-export { toHTML, toMarkdown } from './utils/markdown';
+export { toHTML, toMarkdown, toText } from './utils/markdown';
 export { default as XStarEditor, useEditorRef } from './x-star-editor';
 export type { XStarEditorHandle, XStarEditorProps } from './x-star-editor';
 export { default as XStarMdEditor, useMdEditorRef } from './x-star-md-editor';

@@ -1,11 +1,11 @@
-@import './global';
+@use 'sass:color';
 
 $md-prefix: #{$prefix}md-;
 
 .#{$md-prefix}editor {
   .#{$md-prefix}delimiter,
   .#{$md-prefix}break {
-    color: $color-text-quaternary;
+    color: color.adjust($color-text, $alpha: -0.6);
   }
 
   .#{$md-prefix}code,

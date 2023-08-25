@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
-import type { Executor } from '../utils/handler';
+import type { Executor, Handler } from '../utils/handler';
 import { redoHandler, toggleHandler, undoHandler } from '../utils/handler';
 import Fade from './Fade';
 import FileInput from './FileInput';
@@ -10,6 +10,7 @@ import FileInput from './FileInput';
 interface ButtonProps {
   children: React.ReactNode;
   toolbarRef: React.RefObject<HTMLDivElement>;
+  disabled?: boolean;
   tooltip?: React.ReactNode;
   popoverRender?: (close: () => void) => React.ReactNode;
   onClick?: () => void;
@@ -18,6 +19,7 @@ interface ButtonProps {
 const Button = ({
   children,
   toolbarRef,
+  disabled,
   tooltip,
   popoverRender,
   onClick,
@@ -63,11 +65,14 @@ const Button = ({
     <div className={classNames(`${prefix}button-container`)}>
       <div
         className={classNames(`${prefix}button`, {
+          [`${prefix}disabled`]: disabled,
           [`${prefix}active`]: tooltipOpen || popoverMount,
         })}
         onClick={() => {
-          setPopoverOpen(true);
-          onClick?.();
+          if (!disabled) {
+            setPopoverOpen(true);
+            onClick?.();
+          }
         }}
         onMouseEnter={() => setTooltipOpen(true)}
         onMouseLeave={() => setTooltipOpen(false)}
@@ -88,12 +93,17 @@ const Button = ({
   );
 };
 
-export interface ToolbarItem {
+interface ToolbarItemProps {
   children: React.ReactNode;
+  disabled?: boolean;
   tooltip?: React.ReactNode;
   popoverRender?: (exec: Executor, close: () => void) => React.ReactNode;
   onClick?: (exec: Executor) => void;
 }
+
+type ToolbarItem = ToolbarItemProps | Handler<ToolbarItemProps>;
+
+export type ToolbarItemMap = Partial<Record<string, ToolbarItem>>;
 
 export const getDefaultToolbarItemMap = (
   locale = '',
@@ -101,7 +111,7 @@ export const getDefaultToolbarItemMap = (
     file: File,
     options: { description: string; image: boolean },
   ) => void,
-): Partial<Record<string, ToolbarItem>> => {
+): ToolbarItemMap => {
   const t = getFormat(locale, 'toolbarItem');
 
   return {
@@ -273,13 +283,14 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'math' })),
     },
 
-    redo: {
+    redo: ({ history }) => ({
       children: (
         <div className={classNames(`${prefix}icon`, `${prefix}redo`)} />
       ),
+      disabled: history.index === history.states.length - 1,
       tooltip: t('redo'),
       onClick: (exec) => exec(redoHandler()),
-    },
+    }),
 
     strong: {
       children: (
@@ -299,17 +310,20 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'thematicBreak' })),
     },
 
-    undo: {
+    undo: ({ history }) => ({
       children: (
         <div className={classNames(`${prefix}icon`, `${prefix}undo`)} />
       ),
+      disabled: !history.index,
       tooltip: t('undo'),
       onClick: (exec) => exec(undoHandler()),
-    },
+    }),
   };
 };
 
-export const getDefaultToolbarItems = (): (string | ToolbarItem)[][] => [
+export type ToolbarItems = (string | ToolbarItem)[][];
+
+export const getDefaultToolbarItems = (): ToolbarItems => [
   ['heading', 'strong', 'emphasis', 'delete'],
   ['thematicBreak', 'blockquote'],
   ['link', 'image'],
@@ -328,6 +342,8 @@ interface ToolbarProps {
 const Toolbar = ({ className, style, itemMap, items, exec }: ToolbarProps) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
 
+  const ctx = exec((ctx) => ctx);
+
   return (
     <div
       ref={toolbarRef}
@@ -342,11 +358,15 @@ const Toolbar = ({ className, style, itemMap, items, exec }: ToolbarProps) => {
             if (!toolbarItem) {
               return undefined;
             }
-            const { children, tooltip, popoverRender, onClick } = toolbarItem;
+            const { children, disabled, tooltip, popoverRender, onClick } =
+              typeof toolbarItem === 'function'
+                ? toolbarItem(ctx)
+                : toolbarItem;
             return (
               <Button
                 key={index}
                 toolbarRef={toolbarRef}
+                disabled={disabled}
                 tooltip={tooltip}
                 popoverRender={(close) => popoverRender?.(exec, close)}
                 onClick={() => onClick?.(exec)}

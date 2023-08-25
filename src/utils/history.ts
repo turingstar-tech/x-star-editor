@@ -51,10 +51,9 @@ export interface SetAction {
   selection: ContainerSelection;
 }
 
-const stateReducer = (
-  { sourceCode }: State,
-  action: InsertAction | DeleteAction | ToggleAction | SetAction,
-): State => {
+type StateAction = InsertAction | DeleteAction | ToggleAction | SetAction;
+
+const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
   const { anchorOffset, focusOffset } = action.selection;
   const { startOffset, endOffset } = getRange(action.selection);
   const before = sourceCode.slice(0, startOffset);
@@ -281,7 +280,7 @@ const stateReducer = (
  * 编辑器历史
  */
 interface History {
-  states: (State & { actionSelection: ContainerSelection })[];
+  states: (State & { action: StateAction })[];
   index: number;
   selection: ContainerSelection;
 }
@@ -299,16 +298,11 @@ export interface SelectAction {
   selection: ContainerSelection;
 }
 
+type HistoryAction = UndoAction | RedoAction | SelectAction;
+
 const historyReducer = (
   { states, index, selection }: History,
-  action:
-    | UndoAction
-    | RedoAction
-    | SelectAction
-    | InsertAction
-    | DeleteAction
-    | ToggleAction
-    | SetAction,
+  action: HistoryAction | StateAction,
 ): History => {
   switch (action.type) {
     case 'undo': {
@@ -318,7 +312,7 @@ const historyReducer = (
       return {
         states,
         index: index - 1,
-        selection: states[index].actionSelection,
+        selection: states[index].action.selection,
       };
     }
 
@@ -348,10 +342,10 @@ const historyReducer = (
       }
       return {
         states: [
-          ...states.slice(index < 32 ? 0 : index - 31, index + 1),
-          { ...state, actionSelection: action.selection },
+          ...states.slice(index < 100 ? 0 : index - 99, index + 1),
+          { ...state, action },
         ],
-        index: index < 32 ? index + 1 : 32,
+        index: index < 100 ? index + 1 : 100,
         selection: state.selection,
       };
     }
@@ -359,19 +353,29 @@ const historyReducer = (
 };
 
 export const useHistory = (initialSourceCode: string) => {
-  const [history, dispatch] = useReducer(historyReducer, {
-    states: [
-      {
-        sourceCode: initialSourceCode,
+  const [history, dispatch] = useReducer<typeof historyReducer, string>(
+    historyReducer,
+    initialSourceCode,
+    (text) => {
+      const action: InsertAction = {
+        type: 'insert',
+        payload: { text },
         selection: createSelection(0),
-        actionSelection: createSelection(0),
-      },
-    ],
-    index: 0,
-    selection: createSelection(0),
-  });
+      };
+      const state = stateReducer(
+        { sourceCode: '', selection: createSelection(0) },
+        action,
+      );
+      return {
+        states: [{ ...state, action }],
+        index: 0,
+        selection: state.selection,
+      };
+    },
+  );
 
   return {
+    history,
     sourceCode: history.states[history.index].sourceCode,
     selection: history.selection,
     dispatch,
