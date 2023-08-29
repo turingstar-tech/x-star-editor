@@ -26,7 +26,7 @@ export interface XStarEditorProps {
   /**
    * 语言
    */
-  locale?: string;
+  locale?: XStarMdEditorProps['locale'];
 
   /**
    * 初始文本
@@ -34,27 +34,46 @@ export interface XStarEditorProps {
   initialValue?: string;
 
   /**
+   * 是否启用 Web Worker
+   */
+  enableWebWorker?: XStarMdViewerProps['enableWebWorker'];
+
+  /**
    * 编辑器属性
    */
   editorProps?: Omit<
     XStarMdEditorProps,
-    'locale' | 'initialValue' | 'onChange'
+    'locale' | 'initialValue' | 'onChange' | 'onInsertFile'
   >;
 
   /**
    * 浏览器属性
    */
-  viewerProps?: Omit<XStarMdViewerProps, 'value'>;
+  viewerProps?: Omit<XStarMdViewerProps, 'value' | 'enableWebWorker'>;
 
   /**
    * 文本变化回调函数
    */
-  onChange?: (value: string) => void;
+  onChange?: XStarMdEditorProps['onChange'];
+
+  /**
+   * 文件插入回调函数
+   */
+  onInsertFile?: XStarMdEditorProps['onInsertFile'];
 }
 
 const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
   (
-    { height, locale, initialValue, editorProps, viewerProps, onChange },
+    {
+      height,
+      locale,
+      initialValue,
+      enableWebWorker,
+      editorProps,
+      viewerProps,
+      onChange,
+      onInsertFile,
+    },
     ref,
   ) => {
     const [value, setValue] = useState(initialValue);
@@ -91,6 +110,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         const toOffsetTops = [0];
         const fromLimit = fromElement.scrollHeight - fromElement.clientHeight;
         const toLimit = toElement.scrollHeight - toElement.clientHeight;
+
         if (fromLimit > 0 && toLimit > 0) {
           for (
             let i = 0, j = 0;
@@ -122,6 +142,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
               }
             }
           }
+
           for (
             ;
             fromOffsetTops[fromOffsetTops.length - 1] >= fromLimit ||
@@ -131,9 +152,11 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             fromOffsetTops.pop();
             toOffsetTops.pop();
           }
+
           fromOffsetTops.push(fromLimit);
           toOffsetTops.push(toLimit);
         }
+
         return [fromOffsetTops, toOffsetTops];
       };
 
@@ -148,12 +171,14 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         if (ignore || !editor || !viewer) {
           return;
         }
+
         const [fromElement, toElement] =
           e.currentTarget === editor ? [editor, viewer] : [viewer, editor];
         const [fromOffsetTops, toOffsetTops] = getOffsetTops(
           fromElement,
           toElement,
         );
+
         for (let i = 0; i < fromOffsetTops.length - 1; i++) {
           if (
             fromOffsetTops[i] <= fromElement.scrollTop &&
@@ -199,12 +224,14 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             setValue(value);
             onChange?.(value);
           }}
+          onInsertFile={onInsertFile}
         />
         <XStarMdViewer
           ref={viewerRef}
           {...viewerProps}
           style={{ ...viewerProps?.style, height }}
           value={value}
+          enableWebWorker={enableWebWorker}
         />
       </div>
     );

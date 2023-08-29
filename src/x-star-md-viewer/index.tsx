@@ -1,13 +1,34 @@
 import classNames from 'classnames';
+import type { Components } from 'hast-util-to-jsx-runtime';
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
-import type { HastRoot, ViewerOptions } from '../utils/markdown';
+import type { HastRoot, Schema } from '../utils/markdown';
 import {
   getDefaultSchema,
   postViewerRender,
   preViewerRender,
+  viewerRender,
 } from '../utils/markdown';
+
+export interface ViewerOptions {
+  /**
+   * 自定义过滤模式
+   */
+  customSchema: Schema;
+
+  /**
+   * 自定义 HTML 元素
+   */
+  customHTMLElements: Partial<Components>;
+
+  /**
+   * 自定义块
+   */
+  customBlocks: Partial<
+    Record<string, React.ComponentType<{ children: string }>>
+  >;
+}
 
 export interface XStarMdViewerPlugin {
   (ctx: ViewerOptions): void;
@@ -37,10 +58,15 @@ export interface XStarMdViewerProps {
    * 插件
    */
   plugins?: XStarMdViewerPlugin[];
+
+  /**
+   * 是否启用 Web Worker
+   */
+  enableWebWorker?: boolean;
 }
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
-  ({ className, style, value = '', plugins }, ref) => {
+  ({ className, style, value = '', plugins, enableWebWorker }, ref) => {
     const container = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(
@@ -62,20 +88,26 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     const worker = useRef<Worker>();
 
     useEffect(() => {
-      worker.current = new Worker(
-        new URL('../workers/markdown.worker.js', import.meta.url),
-      );
-      worker.current.addEventListener('message', (e: MessageEvent<HastRoot>) =>
-        setChildren(postViewerRender(e.data, optionsLatest.current)),
-      );
-      return () => worker.current?.terminate();
-    }, []);
+      if (enableWebWorker) {
+        worker.current = new Worker(
+          new URL('../workers/markdown.worker.js', import.meta.url),
+        );
+        worker.current.addEventListener(
+          'message',
+          ({ data }: MessageEvent<HastRoot>) =>
+            setChildren(postViewerRender(data, optionsLatest.current)),
+        );
+        return () => worker.current?.terminate();
+      }
+    }, [enableWebWorker]);
 
     useEffect(() => {
-      worker.current?.postMessage([
-        preViewerRender(value),
-        optionsLatest.current.customSchema,
-      ]);
+      const params = [preViewerRender(value), options.customSchema] as const;
+      if (enableWebWorker) {
+        worker.current?.postMessage(params);
+      } else {
+        setChildren(postViewerRender(viewerRender(...params), options));
+      }
     }, [value, plugins]);
 
     return (

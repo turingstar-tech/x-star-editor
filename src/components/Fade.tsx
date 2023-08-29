@@ -24,7 +24,7 @@ const Fade = ({ children, nodeRef, appear, timeout }: FadeProps) => {
       const timer = window.setTimeout(() => setMount(false), timeout);
       return () => window.clearTimeout(timer);
     }
-  }, [appear, timeout]);
+  }, [appear]);
 
   return <>{(appear || mount) && children}</>;
 };

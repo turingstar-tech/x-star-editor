@@ -113,17 +113,11 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     const initialized = useRef(false);
 
-    const onChangeLatest = useRef(onChange);
-    onChangeLatest.current = onChange;
-
-    const onInsertFileLatest = useRef(onInsertFile);
-    onInsertFileLatest.current = onInsertFile;
-
     // 将文本同步到容器
     useEffect(() => {
       container.setText(sourceCode);
       if (initialized.current) {
-        onChangeLatest.current?.(sourceCode);
+        onChange?.(sourceCode);
       }
     }, [sourceCode]);
 
@@ -190,7 +184,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           if (startOffset < endOffset) {
             e.clipboardData.setData(
               'text/plain',
-              sourceCodeLatest.current.slice(startOffset, endOffset),
+              sourceCode.slice(startOffset, endOffset),
             );
             if (e.type === 'cut') {
               dispatch({ type: 'delete', selection });
@@ -209,7 +203,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
             });
           } else if (e.clipboardData.types.includes('Files')) {
             const file = e.clipboardData.files[0];
-            onInsertFileLatest.current?.(file, {
+            onInsertFile?.(file, {
               description: file.name,
               image: file.type.startsWith('image/'),
             });
@@ -303,10 +297,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     const { toolbarItemMap, toolbarItems, keyboardEventHandlers } =
       composeHandlers(plugins)({
-        toolbarItemMap: getDefaultToolbarItemMap(
-          locale,
-          onInsertFileLatest.current,
-        ),
+        toolbarItemMap: getDefaultToolbarItemMap(locale, onInsertFile),
         toolbarItems: getDefaultToolbarItems(),
         keyboardEventHandlers: getDefaultKeyboardEventHandlers(),
       });
@@ -319,8 +310,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'keydown': {
           composeHandlers(keyboardEventHandlers)({
-            history: historyLatest.current,
-            sourceCode: sourceCodeLatest.current,
+            history,
+            sourceCode,
             selection: getSelection(),
             dispatch,
             e,
