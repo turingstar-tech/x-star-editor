@@ -4,6 +4,8 @@
     "declaration": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "module": "es2022",
+    "moduleResolution": "node",
     "jsx": "react",
     "baseUrl": "./",
     "paths": {

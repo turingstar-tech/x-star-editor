@@ -33,7 +33,11 @@ export const useLocale = <T extends keyof MessageMap>(slice: T) => {
   return { locale: { zh_CN, en_US }[locale] ? locale : 'zh_CN', format };
 };
 
-export const getFormat =
-  <T extends keyof MessageMap>(locale: string, slice: T) =>
-  <U extends keyof MessageMap[T]>(key: U) =>
-    (({ zh_CN, en_US }[locale] ?? zh_CN)[slice][key]);
+export const getFormat = <T extends keyof MessageMap>(
+  locale: string,
+  slice: T,
+) => {
+  const message = ({ zh_CN, en_US }[locale] ?? zh_CN)[slice];
+
+  return <U extends keyof MessageMap[T]>(key: U) => message[key];
+};
