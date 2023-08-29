@@ -5,7 +5,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
 import rehypeRemark from 'rehype-remark';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import { defaultSchema } from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -17,61 +17,37 @@ import strip from 'strip-markdown';
 import { unified } from 'unified';
 import { prefix } from './global';
 
-type Schema = typeof defaultSchema;
-
-export const getDefaultSchema = (): Schema => ({
-  ...defaultSchema,
-  attributes: {
-    ...defaultSchema.attributes,
-    pre: [...(defaultSchema.attributes?.pre ?? []), 'className', 'style'],
-    code: [...(defaultSchema.attributes?.code ?? []), 'className', 'style'],
-    div: [...(defaultSchema.attributes?.div ?? []), 'className', 'style'],
-    span: [
-      ...(defaultSchema.attributes?.span ?? []),
-      'className',
-      'style',
-      'line',
-    ],
-    svg: ['xmlns', 'viewBox', 'preserveAspectRatio'],
-    path: ['d'],
-    custom: ['meta', 'value'],
-  },
-  protocols: {
-    ...defaultSchema.protocols,
-    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
-  },
-  tagNames: [...(defaultSchema.tagNames ?? []), 'svg', 'path', 'custom'],
-});
-
 /**
- * 将 Markdown 文本解析为 Mdast 树并转换为 Hast 树的处理器
+ * 将 Markdown 文本解析为 Mdast 树的处理器
  */
-const processor = unified()
+const toMdastProcessor = unified()
   .use(remarkParse)
-  .use(remarkBreaks)
   .use(remarkGfm)
   .use(remarkMath)
-  .use(remarkRehype, {
-    allowDangerousHtml: true,
-    handlers: {
-      math: (h, node) =>
-        // 如果 Math 节点的 `meta` 属性不为空，则视为自定义块
-        node.meta
-          ? h(node.position, 'custom', { meta: node.meta, value: node.value })
-          : h(node, 'div'),
-    },
-  })
-  .use(rehypePrism, { ignoreMissing: true })
-  .use(rehypeKatex)
-  .use(rehypeRaw)
   .freeze();
+
+/**
+ * Mdast 根节点
+ */
+type MdastRoot = ReturnType<(typeof toMdastProcessor)['parse']>;
+
+/**
+ * 带缓存的解析函数
+ *
+ * @param sourceCode Markdown 文本
+ * @returns Mdast 树
+ */
+const cachedParse = (() => {
+  let cache: Record<string, MdastRoot> = {};
+  return (sourceCode: string) =>
+    cache[sourceCode] ??
+    (cache = { [sourceCode]: toMdastProcessor.parse(sourceCode) })[sourceCode];
+})();
 
 /**
  * Mdast 节点
  */
-export type MdastNode = ReturnType<
-  (typeof processor)['parse']
->['children'][number];
+type MdastNode = MdastRoot['children'][number];
 
 /**
  * 将 Markdown 文本映射到 DOM 树，第一层为 `<div>` 块元素，第二层为 `<div>` 行元素，之后均为 `<span>` 元素
@@ -266,7 +242,7 @@ export const editorRender = (sourceCode: string) => {
     addText(sourceCode.slice(scanOffset, parentEndOffset), true);
   };
 
-  getChildren(processor.parse(sourceCode).children, sourceCode.length);
+  getChildren(cachedParse(sourceCode).children, sourceCode.length);
 
   if (scanOffset <= sourceCode.length) {
     // 添加最后一行文本
@@ -276,6 +252,68 @@ export const editorRender = (sourceCode: string) => {
 
   return el;
 };
+
+/**
+ * 将 Mdast 树转成 Hast 树的处理器
+ */
+const toHastProcessor = unified()
+  .use(remarkBreaks)
+  .use(remarkRehype, {
+    allowDangerousHtml: true,
+    handlers: {
+      math: (h, node) =>
+        // 如果 Math 节点的 `meta` 属性不为空，则视为自定义块
+        node.meta
+          ? h(node.position, 'custom', { meta: node.meta, value: node.value })
+          : h(node, 'div'),
+    },
+  })
+  .use(rehypePrism, { ignoreMissing: true })
+  .use(rehypeKatex)
+  .freeze();
+
+/**
+ * Hast 根节点
+ */
+export type HastRoot = ReturnType<(typeof toHastProcessor)['runSync']>;
+
+/**
+ * 将 Markdown 文本转成 Hast 树
+ *
+ * @param sourceCode Markdown 文本
+ * @returns Hast 树
+ */
+export const preViewerRender = (sourceCode: string) =>
+  toHastProcessor.runSync(cachedParse(sourceCode));
+
+/**
+ * 过滤模式
+ */
+export type Schema = typeof defaultSchema;
+
+export const getDefaultSchema = (): Schema => ({
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    pre: [...(defaultSchema.attributes?.pre ?? []), 'className', 'style'],
+    code: [...(defaultSchema.attributes?.code ?? []), 'className', 'style'],
+    div: [...(defaultSchema.attributes?.div ?? []), 'className', 'style'],
+    span: [
+      ...(defaultSchema.attributes?.span ?? []),
+      'className',
+      'style',
+      'line',
+    ],
+    svg: ['xmlns', 'viewBox', 'preserveAspectRatio'],
+    path: ['d'],
+    custom: ['meta', 'value'],
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
+  },
+  tagNames: [...(defaultSchema.tagNames ?? []), 'svg', 'path', 'custom'],
+});
 
 export interface ViewerOptions {
   /**
@@ -297,40 +335,28 @@ export interface ViewerOptions {
 }
 
 /**
- * 将 Markdown 文本映射到 React 虚拟 DOM 树
+ * 将 Hast 树映射到 React 虚拟 DOM 树
  *
- * @param sourceCode Markdown 文本
+ * @param root Hast 树
  * @param options 配置项
  * @returns React 虚拟 DOM 树
  */
-export const viewerRender = (sourceCode: string, options: ViewerOptions) =>
-  toJsxRuntime(
-    processor()
-      .use(rehypeSanitize, options.customSchema)
-      .use(() => (root) => {
-        for (const node of root.children) {
-          if ('properties' in node && node.properties) {
-            node.properties['data-line'] = node.position?.start.line;
-          }
-        }
-      })
-      .runSync(processor.parse(sourceCode)),
-    {
-      Fragment,
-      jsx,
-      jsxs,
-      components: {
-        ...options.customHTMLElements,
-        custom: ({ meta, value }: { meta: string; value: string }) =>
-          jsx(options.customBlocks[meta] ?? 'div', { children: value }),
-      } as never,
-    },
-  );
+export const postViewerRender = (root: HastRoot, options: ViewerOptions) =>
+  toJsxRuntime(root, {
+    Fragment,
+    jsx,
+    jsxs,
+    components: {
+      ...options.customHTMLElements,
+      custom: ({ meta, value }: { meta: string; value: string }) =>
+        jsx(options.customBlocks[meta] ?? 'div', { children: value }),
+    } as never,
+  });
 
 const toHTMLProcessor = unified()
   .use(remarkParse)
-  .use(remarkBreaks)
   .use(remarkGfm)
+  .use(remarkBreaks)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
   .use(rehypeStringify)
@@ -348,7 +374,6 @@ export const toHTML = (sourceCode: string) =>
 const toMarkdownProcessor = unified()
   .use(rehypeRemark)
   .use(remarkGfm)
-  .use(remarkBreaks)
   .use(remarkStringify)
   .freeze();
 

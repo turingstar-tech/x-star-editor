@@ -45,13 +45,13 @@
   },
   "dependencies": {
     "classnames": "^2.3.2",
-    "hast-util-to-jsx-runtime": "^1.2.0",
+    "hast-util-to-jsx-runtime": "^2.0.0",
     "rehype-katex": "^6.0.3",
-    "rehype-prism-plus": "^1.6.1",
-    "rehype-raw": "^6.1.1",
+    "rehype-prism-plus": "^1.6.3",
+    "rehype-raw": "^7.0.0",
     "rehype-remark": "^9.1.2",
-    "rehype-sanitize": "^5.0.1",
-    "rehype-stringify": "^9.0.4",
+    "rehype-sanitize": "^6.0.0",
+    "rehype-stringify": "^10.0.0",
     "remark-breaks": "^3.0.3",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
@@ -59,7 +59,7 @@
     "remark-rehype": "^10.1.0",
     "remark-stringify": "^10.0.3",
     "strip-markdown": "^5.0.1",
-    "unified": "^10.1.2"
+    "unified": "^11.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.22.10",

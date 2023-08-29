@@ -1,9 +1,13 @@
 import classNames from 'classnames';
-import React, { useImperativeHandle, useRef } from 'react';
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
-import type { ViewerOptions } from '../utils/markdown';
-import { getDefaultSchema, viewerRender } from '../utils/markdown';
+import type { HastRoot, ViewerOptions } from '../utils/markdown';
+import {
+  getDefaultSchema,
+  postViewerRender,
+  preViewerRender,
+} from '../utils/markdown';
 
 export interface XStarMdViewerPlugin {
   (ctx: ViewerOptions): void;
@@ -45,20 +49,42 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       [],
     );
 
+    const options = composeHandlers(plugins)({
+      customSchema: getDefaultSchema(),
+      customHTMLElements: {},
+      customBlocks: {},
+    });
+    const optionsLatest = useRef(options);
+    optionsLatest.current = options;
+
+    const [children, setChildren] = useState<JSX.Element>();
+
+    const worker = useRef<Worker>();
+
+    useEffect(() => {
+      worker.current = new Worker(
+        new URL('../workers/markdown.worker.js', import.meta.url),
+      );
+      worker.current.addEventListener('message', (e: MessageEvent<HastRoot>) =>
+        setChildren(postViewerRender(e.data, optionsLatest.current)),
+      );
+      return () => worker.current?.terminate();
+    }, []);
+
+    useEffect(() => {
+      worker.current?.postMessage([
+        preViewerRender(value),
+        optionsLatest.current.customSchema,
+      ]);
+    }, [value, plugins]);
+
     return (
       <div
         ref={container}
         className={classNames(`${prefix}md-viewer`, className)}
         style={style}
       >
-        {viewerRender(
-          value,
-          composeHandlers(plugins)({
-            customSchema: getDefaultSchema(),
-            customHTMLElements: {},
-            customBlocks: {},
-          }),
-        )}
+        {children}
       </div>
     );
   },
