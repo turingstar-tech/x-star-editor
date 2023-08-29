@@ -1,11 +1,10 @@
-import type { Components } from 'hast-util-to-jsx-runtime';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
 import rehypeRemark from 'rehype-remark';
-import { defaultSchema } from 'rehype-sanitize';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -15,6 +14,7 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import strip from 'strip-markdown';
 import { unified } from 'unified';
+import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 
 /**
@@ -315,24 +315,25 @@ export const getDefaultSchema = (): Schema => ({
   tagNames: [...(defaultSchema.tagNames ?? []), 'svg', 'path', 'custom'],
 });
 
-export interface ViewerOptions {
-  /**
-   * 自定义过滤模式
-   */
-  customSchema: Schema;
-
-  /**
-   * 自定义 HTML 元素
-   */
-  customHTMLElements: Partial<Components>;
-
-  /**
-   * 自定义块
-   */
-  customBlocks: Partial<
-    Record<string, React.ComponentType<{ children: string }>>
-  >;
-}
+/**
+ * 将 Hast 树转成新的 Hast 树
+ *
+ * @param root Hast 树
+ * @param schema 过滤模式
+ * @returns 新的 Hast 树
+ */
+export const viewerRender = (root: HastRoot, schema: Schema) =>
+  unified()
+    .use(rehypeRaw)
+    .use(rehypeSanitize, schema)
+    .use(() => (root) => {
+      for (const node of root.children) {
+        if ('properties' in node && node.properties) {
+          node.properties['data-line'] = node.position?.start.line;
+        }
+      }
+    })
+    .runSync(root);
 
 /**
  * 将 Hast 树映射到 React 虚拟 DOM 树
