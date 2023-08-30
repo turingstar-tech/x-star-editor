@@ -6,7 +6,8 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "workers"
   ],
   "scripts": {
     "build": "father build && sass src:dist --no-source-map",
@@ -44,6 +45,7 @@
     ]
   },
   "dependencies": {
+    "@babel/runtime": "^7.22.11",
     "classnames": "^2.3.2",
     "hast-util-to-jsx-runtime": "^1.2.0",
     "rehype-katex": "^6.0.3",

@@ -101,7 +101,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     useEffect(() => {
       if (enableWebWorker) {
         worker.current = new Worker(
-          new URL('../workers/markdown.worker.js', import.meta.url),
+          new URL('../../workers/markdown.worker.js', import.meta.url),
         );
         worker.current.addEventListener(
           'message',
