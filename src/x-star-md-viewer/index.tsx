@@ -1,6 +1,12 @@
 import classNames from 'classnames';
 import type { Components } from 'hast-util-to-jsx-runtime';
-import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { HastRoot, Schema } from '../utils/markdown';
@@ -75,11 +81,16 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       [],
     );
 
-    const options = composeHandlers(plugins)({
-      customSchema: getDefaultSchema(),
-      customHTMLElements: {},
-      customBlocks: {},
-    });
+    const options = useMemo(
+      () =>
+        composeHandlers(plugins)({
+          customSchema: getDefaultSchema(),
+          customHTMLElements: {},
+          customBlocks: {},
+        }),
+      [plugins],
+    );
+
     const optionsLatest = useRef(options);
     optionsLatest.current = options;
 
@@ -108,7 +119,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       } else {
         setChildren(postViewerRender(viewerRender(...params), options));
       }
-    }, [value, plugins]);
+    }, [value, options]);
 
     return (
       <div

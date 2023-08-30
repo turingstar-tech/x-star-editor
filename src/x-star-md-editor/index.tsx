@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useEffect, useImperativeHandle, useRef } from 'react';
+import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import type { ToolbarItemMap, ToolbarItems } from '../components/Toolbar';
 import Toolbar, {
   getDefaultToolbarItemMap,
@@ -218,6 +218,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
      */
     const compositionStartSelection = useRef<ContainerSelection>();
 
+    const compositionEndTimer = useRef<number>();
+
     const compositionEventHandler = (e: React.CompositionEvent) => {
       switch (e.type) {
         case 'compositionend': {
@@ -228,7 +230,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
               selection: compositionStartSelection.current,
             });
             // 确保组合事件屏蔽表单和键盘事件
-            window.setTimeout(
+            compositionEndTimer.current = window.setTimeout(
               () => (compositionStartSelection.current = undefined),
             );
           }
@@ -236,6 +238,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         }
 
         case 'compositionstart': {
+          window.clearTimeout(compositionEndTimer.current);
           compositionStartSelection.current = getSelection();
           break;
         }
@@ -277,6 +280,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     const formEventHandler = (e: React.FormEvent) => {
       if (compositionStartSelection.current) {
+        e.preventDefault();
         return;
       }
 
@@ -295,21 +299,25 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       }
     };
 
-    const { toolbarItemMap, toolbarItems, keyboardEventHandlers } =
-      composeHandlers(plugins)({
-        toolbarItemMap: getDefaultToolbarItemMap(locale, onInsertFile),
-        toolbarItems: getDefaultToolbarItems(),
-        keyboardEventHandlers: getDefaultKeyboardEventHandlers(),
-      });
+    const options = useMemo(
+      () =>
+        composeHandlers(plugins)({
+          toolbarItemMap: getDefaultToolbarItemMap(locale, onInsertFile),
+          toolbarItems: getDefaultToolbarItems(),
+          keyboardEventHandlers: getDefaultKeyboardEventHandlers(),
+        }),
+      [plugins],
+    );
 
     const keyboardEventHandler = (e: React.KeyboardEvent) => {
       if (compositionStartSelection.current) {
+        e.preventDefault();
         return;
       }
 
       switch (e.type) {
         case 'keydown': {
-          composeHandlers(keyboardEventHandlers)({
+          composeHandlers(options.keyboardEventHandlers)({
             history,
             sourceCode,
             selection: getSelection(),
@@ -326,8 +334,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         <Toolbar
           className={classNames(toolbarClassName)}
           style={toolbarStyle}
-          itemMap={toolbarItemMap}
-          items={toolbarItems}
+          itemMap={options.toolbarItemMap}
+          items={options.toolbarItems}
           exec={exec}
         />
         <div
