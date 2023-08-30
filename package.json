@@ -70,6 +70,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@umijs/lint": "^4.0.0",
+    "babel-plugin-inline-import": "^3.0.0",
     "dumi": "^2.2.0",
     "eslint": "^8.23.0",
     "father": "^4.1.0",

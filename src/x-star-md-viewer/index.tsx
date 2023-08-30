@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import workerRaw from '../../workers/markdown.worker.js';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { HastRoot, Schema } from '../utils/markdown';
@@ -101,7 +102,9 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     useEffect(() => {
       if (enableWebWorker) {
         worker.current = new Worker(
-          new URL('../../workers/markdown.worker.js', import.meta.url),
+          URL.createObjectURL(
+            new Blob([workerRaw], { type: 'text/javascript' }),
+          ),
         );
         worker.current.addEventListener(
           'message',
