@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { editorRender } from './markdown';
 
 /**
@@ -353,45 +353,27 @@ export const useContainer = () => {
       focus.node,
       focus.offset,
     );
+
+    if (!ref.current) {
+      return;
+    }
+
+    const range = document.createRange();
+    range.setStart(focus.node, focus.offset);
+    range.setEnd(focus.node, focus.offset);
+
+    const rangeRect = range.getBoundingClientRect();
+    const containerRect = ref.current.getBoundingClientRect();
+    const topOffset = rangeRect.top - containerRect.top;
+    const bottomOffset = rangeRect.bottom - containerRect.bottom;
+
+    // 将光标滚动到视口内
+    if (topOffset < 0) {
+      ref.current.scrollTop += topOffset;
+    } else if (bottomOffset > 0) {
+      ref.current.scrollTop += bottomOffset;
+    }
   };
-
-  // 容器选区改变后将光标滚动到视口内
-  useEffect(() => {
-    const listener = () => {
-      const selection = window.getSelection();
-      if (
-        !selection ||
-        !selection.focusNode ||
-        !ref.current ||
-        !ref.current.contains(selection.focusNode)
-      ) {
-        return;
-      }
-
-      const range = document.createRange();
-      range.setStart(selection.focusNode, selection.focusOffset);
-      range.setEnd(selection.focusNode, selection.focusOffset);
-
-      const rangeRect = range.getBoundingClientRect();
-      const containerRect = ref.current.getBoundingClientRect();
-      const topOffset = rangeRect.top - containerRect.top;
-      const bottomOffset = rangeRect.bottom - containerRect.bottom;
-      if (topOffset < 10) {
-        ref.current.scrollTop += topOffset - 10;
-      } else if (bottomOffset > -10) {
-        ref.current.scrollTop += bottomOffset + 10;
-      }
-    };
-
-    document.addEventListener('selectionchange', listener, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      document.removeEventListener('selectionchange', listener, {
-        capture: true,
-      });
-  }, []);
 
   return useRef({
     ref,
