@@ -1,6 +1,10 @@
 # XStarEditor
 
 ```jsx
+/**
+ * title: 基本用法
+ */
+
 import { useState } from 'react';
 import { XStarEditor } from 'x-star-editor';
 
@@ -16,7 +20,7 @@ export default () => {
         当前语言：{locale}
       </button>
       <XStarEditor
-        height="80vh"
+        height="50vh"
         locale={locale}
         initialValue={`# Markdown 语法示例
 
@@ -195,6 +199,167 @@ print('Hello, Markdown!')
     </>
   );
 };
+```
+
+```jsx
+/**
+ * title: 操作编辑器
+ */
+
+import {
+  XStarEditor,
+  createSelection,
+  insertHandler,
+  useEditorRef,
+} from 'x-star-editor';
+
+export default () => {
+  const ref = useEditorRef();
+
+  return (
+    <>
+      <div style={{ marginBottom: 8 }}>
+        <button
+          style={{ marginRight: 8 }}
+          onClick={() =>
+            // 使用内置 Handler
+            ref.current?.exec(insertHandler({ text: 'Hello world!\n' }))
+          }
+        >
+          插入一段话
+        </button>
+        <button
+          onClick={() => {
+            const editor = ref.current?.getEditorContainer();
+            // 使用自定义 Handler
+            ref.current?.exec(({ selection, dispatch }) =>
+              dispatch({
+                type: 'set',
+                payload: {
+                  sourceCode: JSON.stringify(editor?.getBoundingClientRect()),
+                  selection: createSelection(0),
+                },
+                selection,
+              }),
+            );
+          }}
+        >
+          获取容器
+        </button>
+      </div>
+      <XStarEditor ref={ref} height="50vh" />
+    </>
+  );
+};
+```
+
+```jsx
+/**
+ * 使用插件
+ */
+
+import type { XStarMdEditorPlugin, XStarMdViewerPlugin } from 'x-star-editor';
+import { XStarEditor, createSelection, getRange } from 'x-star-editor';
+
+const toolbarPlugin = (): XStarMdEditorPlugin => (ctx) => {
+  // 工具栏
+  ctx.toolbarItems.push([
+    // 点击时将选中的文本替换成 click
+    {
+      children: (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          @
+        </div>
+      ),
+      tooltip: '测试',
+      onClick: (exec) =>
+        exec(({ sourceCode, selection, dispatch }) => {
+          const { startOffset, endOffset } = getRange(selection);
+          dispatch({
+            type: 'set',
+            payload: {
+              sourceCode: `${sourceCode.slice(
+                0,
+                startOffset,
+              )}click${sourceCode.slice(endOffset)}`,
+              selection: createSelection(startOffset, startOffset + 5),
+            },
+            selection,
+          });
+        }),
+    },
+  ]);
+};
+
+const keyboardPlugin = (): XStarMdEditorPlugin => (ctx) => {
+  // 键盘事件处理函数
+  ctx.keyboardEventHandlers.push(({ sourceCode, selection, dispatch, e }) => {
+    // 按下 Ctrl + Shift + C 将选中的文本替换成 press
+    if (!e.altKey && e.ctrlKey && !e.metaKey && e.shiftKey && e.key === 'C') {
+      e.preventDefault();
+      const { startOffset, endOffset } = getRange(selection);
+      dispatch({
+        type: 'set',
+        payload: {
+          sourceCode: `${sourceCode.slice(
+            0,
+            startOffset,
+          )}press${sourceCode.slice(endOffset)}`,
+          selection: createSelection(startOffset, startOffset + 5),
+        },
+        selection,
+      });
+    }
+  });
+};
+
+const htmlPlugin = (): XStarMdViewerPlugin => (ctx) => {
+  // 自定义 HTML 元素
+  ctx.customHTMLElements.pre = (props) => (
+    <pre {...props} style={{ borderRadius: '1em' }} />
+  );
+};
+
+const blockPlugin = (): XStarMdViewerPlugin => (ctx) => {
+  // 自定义块
+  ctx.customBlocks.question = ({ children }) => (
+    <strong>question block: {children}</strong>
+  );
+};
+
+export default () => (
+  <XStarEditor
+    height="50vh"
+    initialValue={`
+\`\`\`cpp
+#include <iostream>
+using namespace std;
+int main() {
+  cout << "Hello world!" << endl;
+  return 0;
+}
+\`\`\`
+
+$$
+\\delta=b^2-4ac
+$$
+
+$$question
+Hello world!
+$$
+`}
+    editorProps={{ plugins: [toolbarPlugin(), keyboardPlugin()] }}
+    viewerProps={{ plugins: [htmlPlugin(), blockPlugin()] }}
+  />
+);
 ```
 
 ## API

@@ -12,12 +12,21 @@ import type {
 } from '../x-star-md-viewer';
 import XStarMdViewer, { useMdViewerRef } from '../x-star-md-viewer';
 
-export interface XStarEditorHandle {
-  getEditor: () => XStarMdEditorHandle | null;
-  getViewer: () => XStarMdViewerHandle | null;
-}
+export interface XStarEditorHandle
+  extends XStarMdEditorHandle,
+    XStarMdViewerHandle {}
 
 export interface XStarEditorProps {
+  /**
+   * CSS 类名
+   */
+  className?: string;
+
+  /**
+   * CSS 样式
+   */
+  style?: React.CSSProperties;
+
   /**
    * 编辑器和浏览器的高度（不包括工具栏）
    */
@@ -65,6 +74,8 @@ export interface XStarEditorProps {
 const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
   (
     {
+      className,
+      style,
       height,
       locale,
       initialValue,
@@ -84,16 +95,16 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
     useImperativeHandle(
       ref,
       () => ({
-        getEditor: () => editorRef.current,
-        getViewer: () => viewerRef.current,
+        ...editorRef.current!,
+        ...viewerRef.current!,
       }),
       [],
     );
 
     // 同步滚动
     useEffect(() => {
-      const editor = editorRef.current?.getContainer();
-      const viewer = viewerRef.current?.getContainer();
+      const editor = editorRef.current?.getEditorContainer();
+      const viewer = viewerRef.current?.getViewerContainer();
 
       /**
        * 获取两个父元素的子元素到各自父元素顶部的距离
@@ -213,11 +224,11 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
     }, []);
 
     return (
-      <div className={classNames(`${prefix}editor`)}>
+      <div className={classNames(`${prefix}editor`, className)} style={style}>
         <XStarMdEditor
           ref={editorRef}
           {...editorProps}
-          style={{ ...editorProps?.style, height }}
+          height={height}
           locale={locale}
           initialValue={initialValue}
           onChange={(value) => {
@@ -229,7 +240,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         <XStarMdViewer
           ref={viewerRef}
           {...viewerProps}
-          style={{ ...viewerProps?.style, height }}
+          height={height}
           value={value}
           enableWebWorker={enableWebWorker}
         />
