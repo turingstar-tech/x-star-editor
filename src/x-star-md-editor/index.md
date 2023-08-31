@@ -5,7 +5,7 @@ import { XStarMdEditor } from 'x-star-editor';
 
 export default () => (
   <XStarMdEditor
-    style={{ height: '80vh' }}
+    height="50vh"
     initialValue={`# Markdown 语法示例
 
 ## 标题
