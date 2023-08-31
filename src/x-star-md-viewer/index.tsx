@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import workerRaw from '../../workers/markdown.worker.js';
+import workerRaw from '../../workers-dist/markdown.worker.js';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { HastRoot, Schema } from '../utils/markdown';
@@ -42,7 +42,7 @@ export interface XStarMdViewerPlugin {
 }
 
 export interface XStarMdViewerHandle {
-  getContainer: () => HTMLDivElement | null;
+  getViewerContainer: () => HTMLDivElement;
 }
 
 export interface XStarMdViewerProps {
@@ -55,6 +55,11 @@ export interface XStarMdViewerProps {
    * CSS 样式
    */
   style?: React.CSSProperties;
+
+  /**
+   * 浏览器的高度
+   */
+  height?: React.CSSProperties['height'];
 
   /**
    * 文本
@@ -73,12 +78,12 @@ export interface XStarMdViewerProps {
 }
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
-  ({ className, style, value = '', plugins, enableWebWorker }, ref) => {
+  ({ className, style, height, value = '', plugins, enableWebWorker }, ref) => {
     const container = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(
       ref,
-      () => ({ getContainer: () => container.current }),
+      () => ({ getViewerContainer: () => container.current! }),
       [],
     );
 
@@ -116,11 +121,11 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     }, [enableWebWorker]);
 
     useEffect(() => {
-      const params = [preViewerRender(value), options.customSchema] as const;
+      const args = [preViewerRender(value), options.customSchema] as const;
       if (enableWebWorker) {
-        worker.current?.postMessage(params);
+        worker.current?.postMessage(args);
       } else {
-        setChildren(postViewerRender(viewerRender(...params), options));
+        setChildren(postViewerRender(viewerRender(...args), options));
       }
     }, [value, options]);
 
@@ -128,7 +133,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       <div
         ref={container}
         className={classNames(`${prefix}md-viewer`, className)}
-        style={style}
+        style={{ ...style, height }}
       >
         {children}
       </div>

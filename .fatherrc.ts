@@ -8,6 +8,6 @@ export default defineConfig({
   esm: { output: 'dist', ignores: ['{src,test}/**/*.{scss,worker.ts}'] },
   umd: {
     entry: 'src/utils/markdown.worker',
-    output: { path: 'workers', filename: 'markdown.worker.js' },
+    output: { path: 'workers-dist', filename: 'markdown.worker.js' },
   },
 });

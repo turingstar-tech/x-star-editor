@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "workers"
+    "workers-dist"
   ],
   "scripts": {
     "build": "father build && sass src:dist --no-source-map",
@@ -61,6 +61,7 @@
     "remark-rehype": "^10.1.0",
     "remark-stringify": "^10.0.3",
     "strip-markdown": "^5.0.1",
+    "tinykeys": "^2.1.0",
     "unified": "^10.1.2"
   },
   "devDependencies": {

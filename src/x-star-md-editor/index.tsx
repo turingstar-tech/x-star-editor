@@ -39,7 +39,7 @@ export interface XStarMdEditorPlugin {
 
 export interface XStarMdEditorHandle {
   exec: Executor;
-  getContainer: () => HTMLDivElement | null;
+  getEditorContainer: () => HTMLDivElement;
 }
 
 export interface XStarMdEditorProps {
@@ -52,6 +52,11 @@ export interface XStarMdEditorProps {
    * CSS 样式
    */
   style?: React.CSSProperties;
+
+  /**
+   * 编辑器的高度（不包括工具栏）
+   */
+  height?: React.CSSProperties['height'];
 
   /**
    * 工具栏 CSS 类名
@@ -97,6 +102,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     {
       className,
       style,
+      height,
       toolbarClassName,
       toolbarStyle,
       locale,
@@ -169,7 +175,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     useImperativeHandle(
       ref,
-      () => ({ exec, getContainer: () => container.ref.current }),
+      () => ({ exec, getEditorContainer: () => container.ref.current! }),
       [],
     );
 
@@ -218,27 +224,56 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
      */
     const compositionStartSelection = useRef<ContainerSelection>();
 
-    const compositionEndTimer = useRef<number>();
+    /**
+     * 容器同步控制器
+     */
+    const syncController = useMemo(() => {
+      let timer = 0;
+
+      /**
+       * 将最新的文本和选区同步到容器
+       */
+      const sync = () => {
+        if (compositionStartSelection.current) {
+          const selection = getSelection();
+          container.setText(sourceCodeLatest.current);
+          container.setSelection(selection);
+          compositionStartSelection.current = undefined;
+        }
+        timer = 0;
+      };
+
+      return {
+        /**
+         * 在下个事件循环中同步
+         */
+        start: () => {
+          if (!timer) {
+            timer = window.setTimeout(sync);
+          }
+        },
+
+        /**
+         * 立即执行下个事件循环中的同步
+         */
+        flush: () => {
+          if (timer) {
+            window.clearTimeout(timer);
+            sync();
+          }
+        },
+      };
+    }, []);
 
     const compositionEventHandler = (e: React.CompositionEvent) => {
       switch (e.type) {
         case 'compositionend': {
-          if (compositionStartSelection.current) {
-            dispatch({
-              type: 'insert',
-              payload: { text: e.data },
-              selection: compositionStartSelection.current,
-            });
-            // 确保组合事件屏蔽表单和键盘事件
-            compositionEndTimer.current = window.setTimeout(
-              () => (compositionStartSelection.current = undefined),
-            );
-          }
+          syncController.start();
           break;
         }
 
         case 'compositionstart': {
-          window.clearTimeout(compositionEndTimer.current);
+          syncController.flush();
           compositionStartSelection.current = getSelection();
           break;
         }
@@ -269,21 +304,12 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'blur': {
           blurSelection.current = getSelection();
-          window.setTimeout(() => {
-            compositionStartSelection.current = undefined;
-            container.setText(sourceCodeLatest.current);
-          });
           break;
         }
       }
     };
 
     const formEventHandler = (e: React.FormEvent) => {
-      if (compositionStartSelection.current) {
-        e.preventDefault();
-        return;
-      }
-
       switch (e.type) {
         case 'beforeinput': {
           e.preventDefault();
@@ -291,39 +317,44 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
             dispatch({
               type: 'insert',
               payload: { text: e.data },
-              selection: getSelection(),
+              selection: compositionStartSelection.current ?? getSelection(),
             });
+            compositionStartSelection.current = undefined;
           }
           break;
         }
       }
     };
 
+    const onInsertFileLatest = useRef(onInsertFile);
+    onInsertFileLatest.current = onInsertFile;
+
     const options = useMemo(
       () =>
         composeHandlers(plugins)({
-          toolbarItemMap: getDefaultToolbarItemMap(locale, onInsertFile),
+          toolbarItemMap: getDefaultToolbarItemMap(locale, (...args) =>
+            onInsertFileLatest.current?.(...args),
+          ),
           toolbarItems: getDefaultToolbarItems(),
           keyboardEventHandlers: getDefaultKeyboardEventHandlers(),
         }),
-      [plugins],
+      [locale, plugins],
     );
 
     const keyboardEventHandler = (e: React.KeyboardEvent) => {
-      if (compositionStartSelection.current) {
-        e.preventDefault();
-        return;
-      }
-
       switch (e.type) {
         case 'keydown': {
-          composeHandlers(options.keyboardEventHandlers)({
-            history,
-            sourceCode,
-            selection: getSelection(),
-            dispatch,
-            e,
-          });
+          if (compositionStartSelection.current) {
+            e.preventDefault();
+          } else {
+            composeHandlers(options.keyboardEventHandlers)({
+              history,
+              sourceCode,
+              selection: getSelection(),
+              dispatch,
+              e,
+            });
+          }
           break;
         }
       }
@@ -341,7 +372,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         <div
           ref={container.ref}
           className={classNames(`${prefix}md-editor`, className)}
-          style={style}
+          style={{ ...style, height }}
           contentEditable
           onBeforeInput={formEventHandler}
           onBlur={focusEventHandler}

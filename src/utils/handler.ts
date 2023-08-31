@@ -1,3 +1,4 @@
+import { createKeybindingsHandler } from 'tinykeys';
 import { createSelection, getRange } from './container';
 import type {
   DeleteAction,
@@ -72,117 +73,163 @@ export interface KeyboardEventHandler {
 }
 
 export const getDefaultKeyboardEventHandlers = (): KeyboardEventHandler[] => [
-  // 处理 Enter 和 Tab
-  ({ selection, dispatch, e }) => {
-    if (
-      !e.altKey &&
-      !e.ctrlKey &&
-      !e.metaKey &&
-      (e.key === 'Enter' || e.key === 'Tab')
-    ) {
-      e.preventDefault();
-      dispatch({
-        type: 'insert',
-        payload: { text: e.key === 'Enter' ? '\n' : '\t' },
-        selection,
-      });
-    }
-  },
+  ({ sourceCode, selection, dispatch, e }) =>
+    createKeybindingsHandler({
+      Tab: (e) => {
+        e.preventDefault();
+        dispatch({ type: 'insert', payload: { text: '\t' }, selection });
+      },
 
-  // 处理 Backspace 和 Delete
-  ({ selection, dispatch, e }) => {
-    if (
-      !e.altKey &&
-      !e.metaKey &&
-      (e.key === 'Backspace' || e.key === 'Delete')
-    ) {
-      e.preventDefault();
-      dispatch({
-        type: 'delete',
-        payload: {
-          direction: e.key === 'Backspace' ? 'backward' : 'forward',
-          boundary: !e.ctrlKey ? 'char' : 'line',
-        },
-        selection,
-      });
-    }
-  },
+      Backspace: (e) => {
+        e.preventDefault();
+        dispatch({
+          type: 'delete',
+          payload: { direction: 'backward', boundary: 'char' },
+          selection,
+        });
+      },
 
-  // 处理斜体和粗体
-  ({ selection, dispatch, e }) => {
-    if (
-      !e.altKey &&
-      e.ctrlKey &&
-      !e.metaKey &&
-      (e.key === 'i' || e.key === 'b')
-    ) {
-      e.preventDefault();
-      dispatch({
-        type: 'toggle',
-        payload: { type: e.key === 'i' ? 'emphasis' : 'strong' },
-        selection,
-      });
-    }
-  },
+      '$mod+Backspace': (e) => {
+        e.preventDefault();
+        dispatch({
+          type: 'delete',
+          payload: { direction: 'backward', boundary: 'line' },
+          selection,
+        });
+      },
 
-  // 处理撤销和恢复
-  ({ dispatch, e }) => {
-    if (
-      !e.altKey &&
-      e.ctrlKey &&
-      !e.metaKey &&
-      (e.key === 'z' || e.key === 'y')
-    ) {
-      e.preventDefault();
-      dispatch({ type: e.key === 'z' ? 'undo' : 'redo' });
-    }
-  },
+      'Shift+Backspace': (e) => {
+        e.preventDefault();
+        dispatch({
+          type: 'delete',
+          payload: { direction: 'backward', boundary: 'char' },
+          selection,
+        });
+      },
 
-  // 处理左键和右键
-  ({ sourceCode, selection, dispatch, e }) => {
-    if (
-      !e.altKey &&
-      !e.ctrlKey &&
-      !e.metaKey &&
-      (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
-    ) {
-      e.preventDefault();
-      const { anchorOffset, focusOffset } = selection;
-      const { startOffset, endOffset } = getRange(selection);
-      if (e.shiftKey) {
-        if (e.key === 'ArrowLeft' && focusOffset) {
-          dispatch({
-            type: 'select',
-            selection: createSelection(anchorOffset, focusOffset - 1),
-          });
-        } else if (e.key === 'ArrowRight' && focusOffset < sourceCode.length) {
-          dispatch({
-            type: 'select',
-            selection: createSelection(anchorOffset, focusOffset + 1),
-          });
-        }
-      } else {
+      'Meta+Backspace': (e) => e.preventDefault(),
+      'Alt+Backspace': (e) => e.preventDefault(),
+      'Control+Backspace': (e) => e.preventDefault(),
+      'Shift+Meta+Backspace': (e) => e.preventDefault(),
+      'Shift+Alt+Backspace': (e) => e.preventDefault(),
+      'Shift+Control+Backspace': (e) => e.preventDefault(),
+      'Meta+Alt+Backspace': (e) => e.preventDefault(),
+      'Meta+Control+Backspace': (e) => e.preventDefault(),
+      'Alt+Control+Backspace': (e) => e.preventDefault(),
+      'Shift+Meta+Alt+Backspace': (e) => e.preventDefault(),
+      'Shift+Meta+Control+Backspace': (e) => e.preventDefault(),
+      'Shift+Alt+Control+Backspace': (e) => e.preventDefault(),
+      'Meta+Alt+Control+Backspace': (e) => e.preventDefault(),
+
+      Delete: (e) => {
+        e.preventDefault();
+        dispatch({
+          type: 'delete',
+          payload: { direction: 'forward', boundary: 'char' },
+          selection,
+        });
+      },
+
+      '$mod+Delete': (e) => {
+        e.preventDefault();
+        dispatch({
+          type: 'delete',
+          payload: { direction: 'forward', boundary: 'line' },
+          selection,
+        });
+      },
+
+      'Shift+Delete': (e) => {
+        e.preventDefault();
+        dispatch({
+          type: 'delete',
+          payload: { direction: 'forward', boundary: 'char' },
+          selection,
+        });
+      },
+
+      'Meta+Delete': (e) => e.preventDefault(),
+      'Alt+Delete': (e) => e.preventDefault(),
+      'Control+Delete': (e) => e.preventDefault(),
+      'Shift+Meta+Delete': (e) => e.preventDefault(),
+      'Shift+Alt+Delete': (e) => e.preventDefault(),
+      'Shift+Control+Delete': (e) => e.preventDefault(),
+      'Meta+Alt+Delete': (e) => e.preventDefault(),
+      'Meta+Control+Delete': (e) => e.preventDefault(),
+      'Alt+Control+Delete': (e) => e.preventDefault(),
+      'Shift+Meta+Alt+Delete': (e) => e.preventDefault(),
+      'Shift+Meta+Control+Delete': (e) => e.preventDefault(),
+      'Shift+Alt+Control+Delete': (e) => e.preventDefault(),
+      'Meta+Alt+Control+Delete': (e) => e.preventDefault(),
+
+      '$mod+KeyI': (e) => {
+        e.preventDefault();
+        dispatch({ type: 'toggle', payload: { type: 'emphasis' }, selection });
+      },
+
+      '$mod+KeyB': (e) => {
+        e.preventDefault();
+        dispatch({ type: 'toggle', payload: { type: 'strong' }, selection });
+      },
+
+      '$mod+KeyZ': (e) => {
+        e.preventDefault();
+        dispatch({ type: 'undo' });
+      },
+
+      '$mod+KeyY': (e) => {
+        e.preventDefault();
+        dispatch({ type: 'redo' });
+      },
+
+      ArrowLeft: (e) => {
+        e.preventDefault();
+        const { startOffset, endOffset } = getRange(selection);
         if (startOffset < endOffset) {
-          dispatch({
-            type: 'select',
-            selection: createSelection(
-              e.key === 'ArrowLeft' ? startOffset : endOffset,
-            ),
-          });
-        } else if (e.key === 'ArrowLeft' && startOffset) {
+          dispatch({ type: 'select', selection: createSelection(startOffset) });
+        } else if (startOffset) {
           dispatch({
             type: 'select',
             selection: createSelection(startOffset - 1),
           });
-        } else if (e.key === 'ArrowRight' && startOffset < sourceCode.length) {
+        }
+      },
+
+      'Shift+ArrowLeft': (e) => {
+        e.preventDefault();
+        const { anchorOffset, focusOffset } = selection;
+        if (focusOffset) {
+          dispatch({
+            type: 'select',
+            selection: createSelection(anchorOffset, focusOffset - 1),
+          });
+        }
+      },
+
+      ArrowRight: (e) => {
+        e.preventDefault();
+        const { startOffset, endOffset } = getRange(selection);
+        if (startOffset < endOffset) {
+          dispatch({ type: 'select', selection: createSelection(endOffset) });
+        } else if (startOffset < sourceCode.length) {
           dispatch({
             type: 'select',
             selection: createSelection(startOffset + 1),
           });
         }
-      }
-    }
-  },
+      },
+
+      'Shift+ArrowRight': (e) => {
+        e.preventDefault();
+        const { anchorOffset, focusOffset } = selection;
+        if (focusOffset < sourceCode.length) {
+          dispatch({
+            type: 'select',
+            selection: createSelection(anchorOffset, focusOffset + 1),
+          });
+        }
+      },
+    })(e.nativeEvent),
 ];
 
 /**
