@@ -1,8 +1,13 @@
 # XStarEditor
 
-```jsx
+带浏览的 Markdown 编辑器。只需要编辑或浏览 Markdown 时，请使用 XStarMdEditor 或 XStarMdViewer。
+
+## 代码演示
+
+```tsx
 /**
- * title: 基本用法
+ * title: 基本使用
+ * description: 使用 `locale` 属性切换语言，目前仅支持 `zh_CN` 和 `en_US`。使用 `enableWebWorker` 属性启用 Web Worker 渲染。
  */
 
 import { useState } from 'react';
@@ -201,9 +206,14 @@ print('Hello, Markdown!')
 };
 ```
 
-```jsx
+:::warning
+使用 `enableWebWorker` 时，每个编辑器会单独启动一个 Web Worker，且渲染会存在短暂延迟。
+:::
+
+```tsx
 /**
  * title: 操作编辑器
+ * description: 使用 `useEditorRef()` 或 `useRef<XStarEditorHandle>(null)` 创建 ref，方法详见 [Methods](#methods)。
  */
 
 import {
@@ -223,7 +233,7 @@ export default () => {
           style={{ marginRight: 8 }}
           onClick={() =>
             // 使用内置 Handler
-            ref.current?.exec(insertHandler({ text: 'Hello world!\n' }))
+            ref.current?.exec(insertHandler({ text: 'Hello *world*!\n' }))
           }
         >
           插入一段话
@@ -244,18 +254,55 @@ export default () => {
             );
           }}
         >
-          获取容器
+          获取容器盒子
         </button>
       </div>
-      <XStarEditor ref={ref} height="50vh" />
+      <XStarEditor ref={ref} height="50vh" initialValue={'Hello **XYD**!\n'} />
     </>
   );
 };
 ```
 
-```jsx
+```tsx
 /**
- * 使用插件
+ * title: 插入文件
+ * description: 使用 `onInsertFile` 属性将文件上传到服务器并将链接或图片的 Markdown 源码插入编辑器。
+ */
+
+import { XStarEditor, insertHandler, useEditorRef } from 'x-star-editor';
+
+const upload = async (file: File) => {
+  return 'mock-url';
+};
+
+export default () => {
+  const ref = useEditorRef();
+
+  return (
+    <XStarEditor
+      ref={ref}
+      height="50vh"
+      initialValue={
+        '将文件**粘贴**进编辑器\n或点击工具栏的**链接**或**图片**\n'
+      }
+      onInsertFile={(file, { description, image }) =>
+        upload(file).then((url) =>
+          ref.current?.exec(
+            insertHandler({
+              text: `${image ? '!' : ''}[${description}](${url})`,
+            }),
+          ),
+        )
+      }
+    />
+  );
+};
+```
+
+```tsx
+/**
+ * title: 使用插件
+ * description: 使用 `editorProps.plugins` 属性传入编辑器插件（参考 XStarMdEditor API）。使用 `viewerProps.plugins` 属性传入浏览器插件（参考 XStarMdViewer API）。
  */
 
 import type { XStarMdEditorPlugin, XStarMdViewerPlugin } from 'x-star-editor';
@@ -274,6 +321,7 @@ const toolbarPlugin = (): XStarMdEditorPlugin => (ctx) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            color: 'red',
           }}
         >
           @
@@ -364,4 +412,14 @@ $$
 
 ## API
 
+### XStarEditor
+
 <API id="XStarEditor"></API>
+
+#### Methods
+
+| 属性名             | 类型                   | 描述                  |
+| ------------------ | ---------------------- | --------------------- |
+| exec               | `Executor`             | 执行函数              |
+| getEditorContainer | `() => HTMLDivElement` | 获取编辑器 `div` 元素 |
+| getViewerContainer | `() => HTMLDivElement` | 获取浏览器 `div` 元素 |

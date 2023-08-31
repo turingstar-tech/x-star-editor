@@ -23,7 +23,7 @@ interface EditorOptions {
   toolbarItemMap: ToolbarItemMap;
 
   /**
-   * 工具栏项
+   * 工具栏项数组
    */
   toolbarItems: ToolbarItems;
 
