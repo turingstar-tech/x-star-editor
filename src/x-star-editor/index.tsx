@@ -52,13 +52,16 @@ export interface XStarEditorProps {
    */
   editorProps?: Omit<
     XStarMdEditorProps,
-    'locale' | 'initialValue' | 'onChange' | 'onInsertFile'
+    'height' | 'locale' | 'initialValue' | 'onChange' | 'onInsertFile'
   >;
 
   /**
    * 浏览器属性
    */
-  viewerProps?: Omit<XStarMdViewerProps, 'value' | 'enableWebWorker'>;
+  viewerProps?: Omit<
+    XStarMdViewerProps,
+    'height' | 'value' | 'enableWebWorker'
+  >;
 
   /**
    * 文本变化回调函数
