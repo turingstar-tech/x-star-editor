@@ -57,7 +57,7 @@ export interface XStarMdViewerProps {
   style?: React.CSSProperties;
 
   /**
-   * 浏览器的高度
+   * 查看器的高度
    */
   height?: React.CSSProperties['height'];
 

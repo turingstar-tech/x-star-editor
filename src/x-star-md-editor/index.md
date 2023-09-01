@@ -1,6 +1,6 @@
 # XStarMdEditor
 
-Markdown 编辑器。需要浏览正在编辑的 Markdown 时，请使用 XStarEditor。
+Markdown 编辑器。需要查看正在编辑的 Markdown 时，请使用 XStarEditor。
 
 ## 代码演示
 
@@ -264,7 +264,7 @@ type ToolbarItem = ToolbarItemProps | Handler<ToolbarItemProps>;
 | disabled      | `boolean`                                                | 是否禁用         |
 | tooltip       | `React.ReactNode`                                        | 文字提示         |
 | popoverRender | `(exec: Executor, close: () => void) => React.ReactNode` | 气泡卡片渲染函数 |
-| onClick       | `(exec: Executor) => void`                               | 点击回调         |
+| onClick       | `(exec: Executor) => void`                               | 点击回调函数     |
 
 :::warning
 如果工具栏项是一个函数，在 `popoverRender` 和 `onClick` 中，请始终使用 `exec` 获取最新的上下文。

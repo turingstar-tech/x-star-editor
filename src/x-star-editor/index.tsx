@@ -14,7 +14,9 @@ import XStarMdViewer, { useMdViewerRef } from '../x-star-md-viewer';
 
 export interface XStarEditorHandle
   extends XStarMdEditorHandle,
-    XStarMdViewerHandle {}
+    XStarMdViewerHandle {
+  getContainer: () => HTMLDivElement;
+}
 
 export interface XStarEditorProps {
   /**
@@ -28,7 +30,7 @@ export interface XStarEditorProps {
   style?: React.CSSProperties;
 
   /**
-   * 编辑器和浏览器的高度（不包括工具栏）
+   * 编辑器和查看器的高度（不包括工具栏）
    */
   height?: React.CSSProperties['height'];
 
@@ -56,7 +58,7 @@ export interface XStarEditorProps {
   >;
 
   /**
-   * 浏览器属性
+   * 查看器属性
    */
   viewerProps?: Omit<
     XStarMdViewerProps,
@@ -90,16 +92,16 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
     },
     ref,
   ) => {
-    const [value, setValue] = useState(initialValue);
-
     const editorRef = useMdEditorRef();
     const viewerRef = useMdViewerRef();
+    const container = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(
       ref,
       () => ({
         ...editorRef.current!,
         ...viewerRef.current!,
+        getContainer: () => container.current!,
       }),
       [],
     );
@@ -226,8 +228,14 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       };
     }, []);
 
+    const [value, setValue] = useState(initialValue);
+
     return (
-      <div className={classNames(`${prefix}editor`, className)} style={style}>
+      <div
+        ref={container}
+        className={classNames(`${prefix}editor`, className)}
+        style={style}
+      >
         <XStarMdEditor
           ref={editorRef}
           {...editorProps}

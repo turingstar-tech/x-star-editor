@@ -1,13 +1,13 @@
 # XStarMdViewer
 
-Markdown 浏览器。
+Markdown 查看器。
 
 ## 代码演示
 
 ```tsx
 /**
  * title: 基本使用
- * description: 使用 `value` 属性传入要浏览的 Markdown 源码。使用 `enableWebWorker` 属性启用 Web Worker 渲染。更多示例可参考 XStarEditor。
+ * description: 使用 `value` 属性传入要查看的 Markdown 源码。使用 `enableWebWorker` 属性启用 Web Worker 渲染。更多示例可参考 XStarEditor。
  */
 
 import { XStarMdViewer } from 'x-star-editor';
@@ -191,7 +191,7 @@ print('Hello, Markdown!')
 ```
 
 :::warning
-使用 `enableWebWorker` 时，每个浏览器会单独启动一个 Web Worker，且渲染会存在短暂延迟。
+使用 `enableWebWorker` 时，每个查看器会单独启动一个 Web Worker，且渲染会存在短暂延迟。
 :::
 
 ## API
@@ -204,11 +204,11 @@ print('Hello, Markdown!')
 
 | 属性名             | 类型                   | 描述                  |
 | ------------------ | ---------------------- | --------------------- |
-| getViewerContainer | `() => HTMLDivElement` | 获取浏览器 `div` 元素 |
+| getViewerContainer | `() => HTMLDivElement` | 获取查看器 `div` 元素 |
 
 ### XStarMdViewerPlugin
 
-浏览器插件是一个函数，接收一个浏览器选项对象，对其进行操作。
+查看器插件是一个函数，接收一个查看器选项对象，对其进行操作。
 
 ```ts
 interface XStarMdViewerPlugin {

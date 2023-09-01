@@ -1,6 +1,6 @@
 # XStarEditor
 
-带浏览的 Markdown 编辑器。只需要编辑或浏览 Markdown 时，请使用 XStarMdEditor 或 XStarMdViewer。
+带查看的 Markdown 编辑器。只需要编辑或查看 Markdown 时，请使用 XStarMdEditor 或 XStarMdViewer。
 
 ## 代码演示
 
@@ -207,7 +207,7 @@ print('Hello, Markdown!')
 ```
 
 :::warning
-使用 `enableWebWorker` 时，每个编辑器会单独启动一个 Web Worker，且渲染会存在短暂延迟。
+使用 `enableWebWorker` 时，每个查看器会单独启动一个 Web Worker，且渲染会存在短暂延迟。
 :::
 
 ```tsx
@@ -302,7 +302,7 @@ export default () => {
 ```tsx
 /**
  * title: 使用插件
- * description: 使用 `editorProps.plugins` 属性传入编辑器插件（参考 XStarMdEditor API）。使用 `viewerProps.plugins` 属性传入浏览器插件（参考 XStarMdViewer API）。
+ * description: 使用 `editorProps.plugins` 属性传入编辑器插件（参考 XStarMdEditor API）。使用 `viewerProps.plugins` 属性传入查看器插件（参考 XStarMdViewer API）。
  */
 
 import type { XStarMdEditorPlugin, XStarMdViewerPlugin } from 'x-star-editor';
@@ -422,4 +422,5 @@ $$
 | ------------------ | ---------------------- | --------------------- |
 | exec               | `Executor`             | 执行函数              |
 | getEditorContainer | `() => HTMLDivElement` | 获取编辑器 `div` 元素 |
-| getViewerContainer | `() => HTMLDivElement` | 获取浏览器 `div` 元素 |
+| getViewerContainer | `() => HTMLDivElement` | 获取查看器 `div` 元素 |
+| getContainer       | `() => HTMLDivElement` | 获取外层 `div` 元素   |
