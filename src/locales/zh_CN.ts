@@ -21,6 +21,8 @@ export default {
     redo: '恢复',
     strong: '粗体',
     thematicBreak: '分隔线',
+    toHTML: '转成 HTML',
+    toMarkdown: '转成 Markdown',
     undo: '撤销',
   },
 } as const;

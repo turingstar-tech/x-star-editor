@@ -21,6 +21,8 @@ export default {
     redo: 'Redo',
     strong: 'Bold',
     thematicBreak: 'Thematic Break',
+    toHTML: 'To HTML',
+    toMarkdown: 'To Markdown',
     undo: 'Undo',
   },
 } as const;
