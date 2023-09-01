@@ -391,7 +391,12 @@ export const toMarkdown = (sourceCode: string) =>
     ),
   );
 
-const toTextProcessor = unified().use(strip).freeze();
+const toTextProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(strip)
+  .use(remarkStringify)
+  .freeze();
 
 /**
  * 将 Markdown 文本转成纯文本

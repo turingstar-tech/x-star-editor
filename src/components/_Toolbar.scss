@@ -48,16 +48,23 @@
         @include icon-image(code);
         @include icon-image(delete);
         @include icon-image(emphasis);
+        @include icon-image(fullscreen-enter);
+        @include icon-image(fullscreen-exit);
         @include icon-image(heading);
         @include icon-image(image);
         @include icon-image(inline-code);
         @include icon-image(inline-math);
         @include icon-image(link);
         @include icon-image(math);
+        @include icon-image(ordered-list);
         @include icon-image(redo);
         @include icon-image(strong);
+        @include icon-image(table);
         @include icon-image(thematic-break);
+        @include icon-image(to-html);
+        @include icon-image(to-markdown);
         @include icon-image(undo);
+        @include icon-image(unordered-list);
       }
     }
 

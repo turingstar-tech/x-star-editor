@@ -1,9 +1,11 @@
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import { getFormat } from '../locales';
+import { createSelection } from '../utils/container';
 import { prefix } from '../utils/global';
 import type { Executor, Handler } from '../utils/handler';
 import { redoHandler, toggleHandler, undoHandler } from '../utils/handler';
+import { toHTML, toMarkdown } from '../utils/markdown';
 import Fade from './Fade';
 import FileInput from './FileInput';
 
@@ -171,6 +173,17 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
     },
 
+    // fullscreen: {
+    //   children: (
+    //     <div
+    //       className={classNames(
+    //         `${prefix}icon`,
+    //         `${iconPrefix}fullscreen-enter`,
+    //       )}
+    //     />
+    //   ),
+    // },
+
     heading: {
       children: (
         <div className={classNames(`${prefix}icon`, `${iconPrefix}heading`)} />
@@ -291,6 +304,14 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'math' })),
     },
 
+    // orderedList: {
+    //   children: (
+    //     <div
+    //       className={classNames(`${prefix}icon`, `${iconPrefix}ordered-list`)}
+    //     />
+    //   ),
+    // },
+
     redo: ({ history }) => ({
       children: (
         <div className={classNames(`${prefix}icon`, `${iconPrefix}redo`)} />
@@ -308,6 +329,12 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'strong' })),
     },
 
+    // table: {
+    //   children: (
+    //     <div className={classNames(`${prefix}icon`, `${iconPrefix}table`)} />
+    //   ),
+    // },
+
     thematicBreak: {
       children: (
         <div
@@ -318,6 +345,44 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'thematicBreak' })),
     },
 
+    toHTML: {
+      children: (
+        <div className={classNames(`${prefix}icon`, `${iconPrefix}to-html`)} />
+      ),
+      tooltip: t('toHTML'),
+      onClick: (exec) =>
+        exec(({ sourceCode, selection, dispatch }) =>
+          dispatch({
+            type: 'set',
+            payload: {
+              sourceCode: toHTML(sourceCode),
+              selection: createSelection(0),
+            },
+            selection,
+          }),
+        ),
+    },
+
+    toMarkdown: {
+      children: (
+        <div
+          className={classNames(`${prefix}icon`, `${iconPrefix}to-markdown`)}
+        />
+      ),
+      tooltip: t('toMarkdown'),
+      onClick: (exec) =>
+        exec(({ sourceCode, selection, dispatch }) =>
+          dispatch({
+            type: 'set',
+            payload: {
+              sourceCode: toMarkdown(sourceCode),
+              selection: createSelection(0),
+            },
+            selection,
+          }),
+        ),
+    },
+
     undo: ({ history }) => ({
       children: (
         <div className={classNames(`${prefix}icon`, `${iconPrefix}undo`)} />
@@ -326,6 +391,14 @@ export const getDefaultToolbarItemMap = (
       tooltip: t('undo'),
       onClick: (exec) => exec(undoHandler()),
     }),
+
+    // unorderedList: {
+    //   children: (
+    //     <div
+    //       className={classNames(`${prefix}icon`, `${iconPrefix}unordered-list`)}
+    //     />
+    //   ),
+    // },
   };
 };
 
@@ -334,9 +407,12 @@ export type ToolbarItems = (string | ToolbarItem)[][];
 export const getDefaultToolbarItems = (): ToolbarItems => [
   ['heading', 'strong', 'emphasis', 'delete'],
   ['thematicBreak', 'blockquote'],
+  // ['table', 'orderedList', 'unorderedList'],
   ['link', 'image'],
   ['inlineCode', 'code', 'inlineMath', 'math'],
+  ['toMarkdown', 'toHTML'],
   ['undo', 'redo'],
+  // ['fullscreen'],
 ];
 
 interface ToolbarProps {
