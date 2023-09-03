@@ -94,14 +94,14 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
   ) => {
     const editorRef = useMdEditorRef();
     const viewerRef = useMdViewerRef();
-    const container = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(
       ref,
       () => ({
         ...editorRef.current!,
         ...viewerRef.current!,
-        getContainer: () => container.current!,
+        getContainer: () => containerRef.current!,
       }),
       [],
     );
@@ -232,7 +232,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
 
     return (
       <div
-        ref={container}
+        ref={containerRef}
         className={classNames(`${prefix}editor`, className)}
         style={style}
       >

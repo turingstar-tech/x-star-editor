@@ -357,7 +357,6 @@ export const postViewerRender = (root: HastRoot, options: ViewerOptions) =>
 const toHTMLProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
-  .use(remarkBreaks)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
   .use(rehypeStringify)
@@ -373,7 +372,7 @@ export const toHTML = (sourceCode: string) =>
   toHTMLProcessor.processSync(sourceCode).toString();
 
 const toMarkdownProcessor = unified()
-  .use(rehypeRemark)
+  .use(rehypeRemark, { newlines: true })
   .use(remarkGfm)
   .use(remarkStringify)
   .freeze();

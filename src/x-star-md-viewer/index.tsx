@@ -18,6 +18,10 @@ import {
   viewerRender,
 } from '../utils/markdown';
 
+const workerURL = URL.createObjectURL(
+  new Blob([workerRaw], { type: 'text/javascript' }),
+);
+
 export interface ViewerOptions {
   /**
    * 自定义过滤模式
@@ -79,11 +83,11 @@ export interface XStarMdViewerProps {
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
   ({ className, style, height, value = '', plugins, enableWebWorker }, ref) => {
-    const container = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(
       ref,
-      () => ({ getViewerContainer: () => container.current! }),
+      () => ({ getViewerContainer: () => containerRef.current! }),
       [],
     );
 
@@ -106,11 +110,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     useEffect(() => {
       if (enableWebWorker) {
-        worker.current = new Worker(
-          URL.createObjectURL(
-            new Blob([workerRaw], { type: 'text/javascript' }),
-          ),
-        );
+        worker.current = new Worker(workerURL);
         worker.current.addEventListener(
           'message',
           ({ data }: MessageEvent<HastRoot>) =>
@@ -131,7 +131,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     return (
       <div
-        ref={container}
+        ref={containerRef}
         className={classNames(`${prefix}md-viewer`, className)}
         style={{ ...style, height }}
       >

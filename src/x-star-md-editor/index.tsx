@@ -113,7 +113,9 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     },
     ref,
   ) => {
-    const container = useContainer();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const container = useContainer(containerRef);
+
     const { history, sourceCode, selection, dispatch } =
       useHistory(initialValue);
 
@@ -175,7 +177,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     useImperativeHandle(
       ref,
-      () => ({ exec, getEditorContainer: () => container.ref.current! }),
+      () => ({ exec, getEditorContainer: () => containerRef.current! }),
       [],
     );
 
@@ -370,7 +372,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           exec={exec}
         />
         <div
-          ref={container.ref}
+          ref={containerRef}
           className={classNames(`${prefix}md-editor`, className)}
           style={{ ...style, height }}
           contentEditable
