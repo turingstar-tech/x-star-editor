@@ -328,8 +328,8 @@ export const getDefaultSchema = (): Schema => ({
  * @param schema 过滤模式
  * @returns 新的 Hast 树
  */
-export const viewerRender = async (root: HastRoot, schema: Schema) =>
-  await unified()
+export const viewerRender = (root: HastRoot, schema: Schema) =>
+  unified()
     .use(rehypeRaw)
     .use(rehypeSanitize, schema)
     .use(() => (root) => {
@@ -339,7 +339,7 @@ export const viewerRender = async (root: HastRoot, schema: Schema) =>
         }
       }
     })
-    .run(root);
+    .runSync(root);
 
 /**
  * 将 Hast 树映射到 React 虚拟 DOM 树
@@ -374,8 +374,8 @@ const toHTMLProcessor = unified()
  * @param sourceCode Markdown 文本
  * @returns HTML 文本
  */
-export const toHTML = async (sourceCode: string) =>
-  (await toHTMLProcessor.process(sourceCode)).toString();
+export const toHTML = (sourceCode: string) =>
+  toHTMLProcessor.processSync(sourceCode).toString();
 
 const toMarkdownProcessor = unified()
   .use(rehypeRemark, { newlines: true })
@@ -389,10 +389,10 @@ const toMarkdownProcessor = unified()
  * @param sourceCode 带有 HTML 的 Markdown 文本
  * @returns Markdown 文本
  */
-export const toMarkdown = async (sourceCode: string) =>
+export const toMarkdown = (sourceCode: string) =>
   toMarkdownProcessor.stringify(
-    await toMarkdownProcessor.run(
-      await toHTMLProcessor.run(toHTMLProcessor.parse(sourceCode)),
+    toMarkdownProcessor.runSync(
+      toHTMLProcessor.runSync(toHTMLProcessor.parse(sourceCode)),
     ),
   );
 
@@ -409,5 +409,5 @@ const toTextProcessor = unified()
  * @param sourceCode Markdown 文本
  * @returns 纯文本
  */
-export const toText = async (sourceCode: string) =>
-  (await toTextProcessor.process(sourceCode)).toString();
+export const toText = (sourceCode: string) =>
+  toTextProcessor.processSync(sourceCode).toString();

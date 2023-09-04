@@ -129,7 +129,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
         if (enableWebWorker) {
           worker.current?.postMessage(args);
         } else {
-          setChildren(postViewerRender(await viewerRender(...args), options));
+          setChildren(postViewerRender(viewerRender(...args), options));
         }
       })();
     }, [value, options]);

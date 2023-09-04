@@ -285,13 +285,11 @@ export default () => {
       initialValue={
         '将文件**粘贴**进编辑器\n或点击工具栏的**链接**或**图片**\n'
       }
-      onInsertFile={(file, { description, image }) =>
-        upload(file).then((url) =>
-          ref.current?.exec(
-            insertHandler({
-              text: `${image ? '!' : ''}[${description}](${url})`,
-            }),
-          ),
+      onInsertFile={async (file, { description, image }) =>
+        ref.current?.exec(
+          insertHandler({
+            text: `${image ? '!' : ''}[${description}](${await upload(file)})`,
+          }),
         )
       }
     />
