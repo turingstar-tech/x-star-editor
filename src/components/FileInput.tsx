@@ -15,7 +15,7 @@ interface FileInputProps {
 const FileInput = ({ onCancel, onOk }: FileInputProps) => {
   const [type, setType] = useState<'file' | 'url'>('file');
   const [file, setFile] = useState<File>();
-  const [url, setUrl] = useState('');
+  const [url, setURL] = useState('');
   const [description, setDescription] = useState('');
 
   const { format: t } = useLocale('fileInput');
@@ -64,7 +64,7 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
           {t('url')}
           <input
             className={classNames(`${prefix}input`)}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => setURL(e.target.value)}
           />
         </label>
       )}

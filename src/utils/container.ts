@@ -45,14 +45,10 @@ export const getRange = ({
 /**
  * 获取一个可以设置文本和选区的容器
  *
+ * @param ref 容器挂载的 DOM 节点
  * @returns 容器
  */
-export const useContainer = () => {
-  /**
-   * 容器挂载的 DOM 节点
-   */
-  const ref = useRef<HTMLDivElement>(null);
-
+export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
   /**
    * 是否在遍历时忽略节点及其子节点
    *
@@ -376,7 +372,6 @@ export const useContainer = () => {
   };
 
   return useRef({
-    ref,
     normalize,
     getText,
     setText,

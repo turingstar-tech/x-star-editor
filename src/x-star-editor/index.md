@@ -313,20 +313,7 @@ const toolbarPlugin = (): XStarMdEditorPlugin => (ctx) => {
   ctx.toolbarItems.push([
     // 点击时将选中的文本替换成 click
     {
-      children: (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'red',
-          }}
-        >
-          @
-        </div>
-      ),
+      children: <div style={{ color: 'red' }}>@</div>,
       tooltip: '测试',
       onClick: (exec) =>
         exec(({ sourceCode, selection, dispatch }) => {

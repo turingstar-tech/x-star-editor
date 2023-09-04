@@ -5,7 +5,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5em;
-  color: $color-text;
   background-color: $color-primary-bg;
   border: 1px solid $color-border;
   border-top-left-radius: $border-radius;
@@ -17,6 +16,9 @@
     > .#{$prefix}button {
       width: 2em;
       height: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border-radius: $border-radius;
       cursor: pointer;
       user-select: none;
@@ -34,37 +36,7 @@
       }
 
       .#{$prefix}icon {
-        width: 100%;
-        height: 100%;
-        background-size: contain;
-
-        @mixin icon-image($type) {
-          &.#{$prefix}icon-#{$type} {
-            background-image: url(icons/#{$type}.svg);
-          }
-        }
-
-        @include icon-image(blockquote);
-        @include icon-image(code);
-        @include icon-image(delete);
-        @include icon-image(emphasis);
-        @include icon-image(fullscreen-enter);
-        @include icon-image(fullscreen-exit);
-        @include icon-image(heading);
-        @include icon-image(image);
-        @include icon-image(inline-code);
-        @include icon-image(inline-math);
-        @include icon-image(link);
-        @include icon-image(math);
-        @include icon-image(ordered-list);
-        @include icon-image(redo);
-        @include icon-image(strong);
-        @include icon-image(table);
-        @include icon-image(thematic-break);
-        @include icon-image(to-html);
-        @include icon-image(to-markdown);
-        @include icon-image(undo);
-        @include icon-image(unordered-list);
+        font-size: 1.75em;
       }
     }
 
