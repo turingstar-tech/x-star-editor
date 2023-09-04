@@ -1,16 +1,10 @@
 import { defineConfig } from 'dumi';
 
 export default defineConfig({
-  base: '/x-star-editor/',
-  publicPath: '/x-star-editor/',
-  extraBabelPlugins: [
-    ['babel-plugin-inline-import', { extensions: ['.worker.js'] }],
-  ],
-  apiParser: {},
   resolve: {
     entryFile: './src/index.ts',
   },
-  outputPath: 'docs-dist',
+  apiParser: {},
   themeConfig: {
     name: 'x-star-editor',
     footer:
@@ -19,4 +13,10 @@ export default defineConfig({
       github: 'https://github.com/turingstar-tech/x-star-editor',
     },
   },
+  base: '/x-star-editor/',
+  extraBabelPlugins: [
+    ['babel-plugin-inline-import', { extensions: ['.worker.js'] }],
+  ],
+  outputPath: 'docs-dist',
+  publicPath: '/x-star-editor/',
 });

@@ -36,7 +36,6 @@ jobs:
       - name: Build with dumi
         run: |
           yarn
-          yarn build
           yarn docs:build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2

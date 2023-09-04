@@ -9,16 +9,16 @@
     "dist"
   ],
   "scripts": {
-    "build": "father build && sass src:dist --no-source-map",
+    "build": "webpack && father build && sass src:dist --no-source-map",
     "build:watch": "father dev",
     "dev": "dumi dev",
-    "docs:build": "dumi build",
+    "docs:build": "webpack && dumi build",
     "doctor": "father doctor",
     "lint": "npm run lint:es && npm run lint:css",
     "lint:css": "stylelint \"{src,test}/**/*.{css,scss}\"",
     "lint:es": "eslint \"{src,test}/**/*.{js,jsx,ts,tsx}\"",
     "prepare": "husky install && dumi setup",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "father doctor && npm run build",
     "start": "npm run dev"
   },
   "commitlint": {
@@ -65,11 +65,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.22.10",
+    "@babel/preset-typescript": "^7.22.11",
     "@commitlint/cli": "^17.1.2",
     "@commitlint/config-conventional": "^17.1.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@umijs/lint": "^4.0.0",
+    "babel-loader": "^9.1.3",
     "babel-plugin-inline-import": "^3.0.0",
     "dumi": "^2.2.0",
     "eslint": "^8.23.0",
@@ -86,7 +88,8 @@
     "stylelint": "^14.9.1",
     "stylelint-config-standard-scss": "^6.1.0",
     "typescript": "^5.1.6",
-    "webpack": "^5.88.2"
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "peerDependencies": {
     "react": ">=16.9.0",
