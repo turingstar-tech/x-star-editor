@@ -1,5 +1,26 @@
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
+import SvgBlockquote from '../icons/Blockquote';
+import SvgCode from '../icons/Code';
+import SvgDelete from '../icons/Delete';
+import SvgEmphasis from '../icons/Emphasis';
+import SvgEnterFullscreen from '../icons/EnterFullscreen';
+import SvgExitFullscreen from '../icons/ExitFullscreen';
+import SvgHeading from '../icons/Heading';
+import SvgImage from '../icons/Image';
+import SvgInlineCode from '../icons/InlineCode';
+import SvgInlineMath from '../icons/InlineMath';
+import SvgLink from '../icons/Link';
+import SvgMath from '../icons/Math';
+import SvgOrderedList from '../icons/OrderedList';
+import SvgRedo from '../icons/Redo';
+import SvgStrong from '../icons/Strong';
+import SvgTable from '../icons/Table';
+import SvgThematicBreak from '../icons/ThematicBreak';
+import SvgToHTML from '../icons/ToHtml';
+import SvgToMarkdown from '../icons/ToMarkdown';
+import SvgUndo from '../icons/Undo';
+import SvgUnorderedList from '../icons/UnorderedList';
 import { getFormat } from '../locales';
 import { createSelection } from '../utils/container';
 import { prefix } from '../utils/global';
@@ -114,25 +135,17 @@ export const getDefaultToolbarItemMap = (
     options: { description: string; image: boolean },
   ) => void,
 ): ToolbarItemMap => {
-  const iconPrefix = `${prefix}icon-`;
-
   const t = getFormat(locale, 'toolbarItem');
 
   return {
     blockquote: {
-      children: (
-        <div
-          className={classNames(`${prefix}icon`, `${iconPrefix}blockquote`)}
-        />
-      ),
+      children: <SvgBlockquote className={classNames(`${prefix}icon`)} />,
       tooltip: t('blockquote'),
       onClick: (exec) => exec(toggleHandler({ type: 'blockquote' })),
     },
 
     code: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}code`)} />
-      ),
+      children: <SvgCode className={classNames(`${prefix}icon`)} />,
       tooltip: t('code'),
       popoverRender: (exec, close) => {
         const optionRender = (label: string, language: string) => (
@@ -158,36 +171,26 @@ export const getDefaultToolbarItemMap = (
     },
 
     delete: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}delete`)} />
-      ),
+      children: <SvgDelete className={classNames(`${prefix}icon`)} />,
       tooltip: t('delete'),
       onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
     },
 
     emphasis: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}emphasis`)} />
-      ),
+      children: <SvgEmphasis className={classNames(`${prefix}icon`)} />,
       tooltip: t('emphasis'),
       onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
     },
 
-    // fullscreen: {
-    //   children: (
-    //     <div
-    //       className={classNames(
-    //         `${prefix}icon`,
-    //         `${iconPrefix}fullscreen-enter`,
-    //       )}
-    //     />
-    //   ),
-    // },
+    fullscreen: {
+      children: (
+        <SvgEnterFullscreen className={classNames(`${prefix}icon`)} />
+      ) ?? <SvgExitFullscreen className={classNames(`${prefix}icon`)} />,
+      tooltip: t('enterFullscreen') ?? t('exitFullscreen'),
+    },
 
     heading: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}heading`)} />
-      ),
+      children: <SvgHeading className={classNames(`${prefix}icon`)} />,
       tooltip: t('heading'),
       popoverRender: (exec, close) => {
         const optionRender = (
@@ -219,9 +222,7 @@ export const getDefaultToolbarItemMap = (
     },
 
     image: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}image`)} />
-      ),
+      children: <SvgImage className={classNames(`${prefix}icon`)} />,
       tooltip: t('image'),
       popoverRender: (exec, close) => (
         <FileInput
@@ -248,29 +249,19 @@ export const getDefaultToolbarItemMap = (
     },
 
     inlineCode: {
-      children: (
-        <div
-          className={classNames(`${prefix}icon`, `${iconPrefix}inline-code`)}
-        />
-      ),
+      children: <SvgInlineCode className={classNames(`${prefix}icon`)} />,
       tooltip: t('inlineCode'),
       onClick: (exec) => exec(toggleHandler({ type: 'inlineCode' })),
     },
 
     inlineMath: {
-      children: (
-        <div
-          className={classNames(`${prefix}icon`, `${iconPrefix}inline-math`)}
-        />
-      ),
+      children: <SvgInlineMath className={classNames(`${prefix}icon`)} />,
       tooltip: t('inlineMath'),
       onClick: (exec) => exec(toggleHandler({ type: 'inlineMath' })),
     },
 
     link: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}link`)} />
-      ),
+      children: <SvgLink className={classNames(`${prefix}icon`)} />,
       tooltip: t('link'),
       popoverRender: (exec, close) => (
         <FileInput
@@ -297,58 +288,42 @@ export const getDefaultToolbarItemMap = (
     },
 
     math: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}math`)} />
-      ),
+      children: <SvgMath className={classNames(`${prefix}icon`)} />,
       tooltip: t('math'),
       onClick: (exec) => exec(toggleHandler({ type: 'math' })),
     },
 
-    // orderedList: {
-    //   children: (
-    //     <div
-    //       className={classNames(`${prefix}icon`, `${iconPrefix}ordered-list`)}
-    //     />
-    //   ),
-    // },
+    orderedList: {
+      children: <SvgOrderedList className={classNames(`${prefix}icon`)} />,
+      tooltip: t('orderedList'),
+    },
 
     redo: ({ history }) => ({
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}redo`)} />
-      ),
+      children: <SvgRedo className={classNames(`${prefix}icon`)} />,
       disabled: history.index === history.states.length - 1,
       tooltip: t('redo'),
       onClick: (exec) => exec(redoHandler()),
     }),
 
     strong: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}strong`)} />
-      ),
+      children: <SvgStrong className={classNames(`${prefix}icon`)} />,
       tooltip: t('strong'),
       onClick: (exec) => exec(toggleHandler({ type: 'strong' })),
     },
 
-    // table: {
-    //   children: (
-    //     <div className={classNames(`${prefix}icon`, `${iconPrefix}table`)} />
-    //   ),
-    // },
+    table: {
+      children: <SvgTable className={classNames(`${prefix}icon`)} />,
+      tooltip: t('table'),
+    },
 
     thematicBreak: {
-      children: (
-        <div
-          className={classNames(`${prefix}icon`, `${iconPrefix}thematic-break`)}
-        />
-      ),
+      children: <SvgThematicBreak className={classNames(`${prefix}icon`)} />,
       tooltip: t('thematicBreak'),
       onClick: (exec) => exec(toggleHandler({ type: 'thematicBreak' })),
     },
 
     toHTML: {
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}to-html`)} />
-      ),
+      children: <SvgToHTML className={classNames(`${prefix}icon`)} />,
       tooltip: t('toHTML'),
       onClick: (exec) =>
         exec(({ sourceCode, selection, dispatch }) =>
@@ -364,11 +339,7 @@ export const getDefaultToolbarItemMap = (
     },
 
     toMarkdown: {
-      children: (
-        <div
-          className={classNames(`${prefix}icon`, `${iconPrefix}to-markdown`)}
-        />
-      ),
+      children: <SvgToMarkdown className={classNames(`${prefix}icon`)} />,
       tooltip: t('toMarkdown'),
       onClick: (exec) =>
         exec(({ sourceCode, selection, dispatch }) =>
@@ -384,21 +355,16 @@ export const getDefaultToolbarItemMap = (
     },
 
     undo: ({ history }) => ({
-      children: (
-        <div className={classNames(`${prefix}icon`, `${iconPrefix}undo`)} />
-      ),
+      children: <SvgUndo className={classNames(`${prefix}icon`)} />,
       disabled: !history.index,
       tooltip: t('undo'),
       onClick: (exec) => exec(undoHandler()),
     }),
 
-    // unorderedList: {
-    //   children: (
-    //     <div
-    //       className={classNames(`${prefix}icon`, `${iconPrefix}unordered-list`)}
-    //     />
-    //   ),
-    // },
+    unorderedList: {
+      children: <SvgUnorderedList className={classNames(`${prefix}icon`)} />,
+      tooltip: t('unorderedList'),
+    },
   };
 };
 

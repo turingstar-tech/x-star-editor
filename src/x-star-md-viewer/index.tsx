@@ -104,7 +104,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     const optionsLatest = useRef(options);
     optionsLatest.current = options;
 
-    const [children, setChildren] = useState<JSX.Element>();
+    const [children, setChildren] = useState<React.JSX.Element>();
 
     const worker = useRef<Worker>();
 
