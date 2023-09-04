@@ -326,11 +326,11 @@ export const getDefaultToolbarItemMap = (
       children: <SvgToHTML className={classNames(`${prefix}icon`)} />,
       tooltip: t('toHTML'),
       onClick: (exec) =>
-        exec(({ sourceCode, selection, dispatch }) =>
+        exec(async ({ sourceCode, selection, dispatch }) =>
           dispatch({
             type: 'set',
             payload: {
-              sourceCode: toHTML(sourceCode),
+              sourceCode: await toHTML(sourceCode),
               selection: createSelection(0),
             },
             selection,
@@ -342,11 +342,11 @@ export const getDefaultToolbarItemMap = (
       children: <SvgToMarkdown className={classNames(`${prefix}icon`)} />,
       tooltip: t('toMarkdown'),
       onClick: (exec) =>
-        exec(({ sourceCode, selection, dispatch }) =>
+        exec(async ({ sourceCode, selection, dispatch }) =>
           dispatch({
             type: 'set',
             payload: {
-              sourceCode: toMarkdown(sourceCode),
+              sourceCode: await toMarkdown(sourceCode),
               selection: createSelection(0),
             },
             selection,

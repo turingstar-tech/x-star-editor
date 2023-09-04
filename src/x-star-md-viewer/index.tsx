@@ -121,12 +121,17 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     }, [enableWebWorker]);
 
     useEffect(() => {
-      const args = [preViewerRender(value), options.customSchema] as const;
-      if (enableWebWorker) {
-        worker.current?.postMessage(args);
-      } else {
-        setChildren(postViewerRender(viewerRender(...args), options));
-      }
+      (async () => {
+        const args = [
+          await preViewerRender(value),
+          options.customSchema,
+        ] as const;
+        if (enableWebWorker) {
+          worker.current?.postMessage(args);
+        } else {
+          setChildren(postViewerRender(await viewerRender(...args), options));
+        }
+      })();
     }, [value, options]);
 
     return (

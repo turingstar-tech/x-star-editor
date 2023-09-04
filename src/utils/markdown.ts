@@ -1,6 +1,7 @@
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
+import rehypeMermaid from 'rehype-mermaidjs';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
 import rehypeRemark from 'rehype-remark';
@@ -69,7 +70,8 @@ export const editorRender = (sourceCode: string) => {
   /**
    * 遍历 Mdast 树时的栈，保存 Mdast 节点、对应的 DOM 元素、为第几个子元素
    */
-  const stack: { node: MdastNode; el: HTMLElement; counter: number }[] = [];
+  const stack: { node: MdastNode; element: HTMLElement; counter: number }[] =
+    [];
 
   /**
    * 块级元素
@@ -79,7 +81,7 @@ export const editorRender = (sourceCode: string) => {
   /**
    * DOM 树根元素
    */
-  const el = document.createElement('div');
+  const root = document.createElement('div');
 
   /**
    * 判断一个 Mdast 节点的子节点是否为流内容
@@ -102,16 +104,16 @@ export const editorRender = (sourceCode: string) => {
 
     // 如果节点为流内容，则将样式添加到该行的 `<div>` 元素上，否则添加到该节点的元素上
     const styleElement =
-      stack[index && !isFlowContent(stack[index - 1].node) ? index : 0].el;
+      stack[index && !isFlowContent(stack[index - 1].node) ? index : 0].element;
     styleElement.classList.add(`${mdPrefix}${node.type}`);
     if (node.type === 'heading') {
       styleElement.classList.add(`${mdPrefix}heading-${node.depth}`);
     }
 
     // 如果索引为 0，则父节点为块级元素，否则为前一个索引的 DOM 元素
-    const parentElement = index ? stack[index - 1].el : block;
-    parentElement.append(stack[index].el);
-    stack[index].el = document.createElement(index ? 'span' : 'div');
+    const parentElement = index ? stack[index - 1].element : block;
+    parentElement.append(stack[index].element);
+    stack[index].element = document.createElement(index ? 'span' : 'div');
     stack[index].counter++;
   };
 
@@ -119,7 +121,7 @@ export const editorRender = (sourceCode: string) => {
    * 将块级元素推到 DOM 树根元素中
    */
   const pushBlock = () => {
-    el.append(block);
+    root.append(block);
     block = document.createElement('div');
   };
 
@@ -160,7 +162,7 @@ export const editorRender = (sourceCode: string) => {
     if (stack.length) {
       // 如果栈不为空，说明为块级元素内的文本，每一行都应推到块级元素中
       if (lines[0]) {
-        stack[stack.length - 1].el.append(
+        stack[stack.length - 1].element.append(
           delimiter ? createDelimiter(lines[0]) : lines[0],
         );
       }
@@ -168,10 +170,10 @@ export const editorRender = (sourceCode: string) => {
         for (let j = stack.length - 1; j; j--) {
           pushElement(j);
         }
-        stack[0].el.append('\u200B');
+        stack[0].element.append('\u200B');
         pushElement(0);
         if (lines[i]) {
-          stack[stack.length - 1].el.append(
+          stack[stack.length - 1].element.append(
             delimiter ? createDelimiter(lines[i]) : lines[i],
           );
         }
@@ -215,7 +217,7 @@ export const editorRender = (sourceCode: string) => {
       // 为 Mdast 节点创建 DOM 元素
       stack.push({
         node,
-        el: document.createElement(stack.length ? 'span' : 'div'),
+        element: document.createElement(stack.length ? 'span' : 'div'),
         counter: 0,
       });
 
@@ -229,7 +231,7 @@ export const editorRender = (sourceCode: string) => {
         pushElement(stack.length - 1);
       } else {
         // 如果栈大小为 1，说明为块级元素终点
-        stack[0].el.append('\u200B');
+        stack[0].element.append('\u200B');
         pushElement(0);
         block.dataset.line = `${node.position?.start.line}`;
         pushBlock();
@@ -250,7 +252,7 @@ export const editorRender = (sourceCode: string) => {
     pushBlock();
   }
 
-  return el;
+  return root;
 };
 
 /**
@@ -268,6 +270,10 @@ const toHastProcessor = unified()
           : h(node, 'div'),
     },
   })
+  .use(rehypeMermaid, {
+    errorFallback: (element) => element,
+    strategy: 'img-svg',
+  })
   .use(rehypePrism, { ignoreMissing: true })
   .use(rehypeKatex)
   .freeze();
@@ -275,7 +281,7 @@ const toHastProcessor = unified()
 /**
  * Hast 根节点
  */
-export type HastRoot = ReturnType<(typeof toHastProcessor)['runSync']>;
+export type HastRoot = Awaited<ReturnType<(typeof toHastProcessor)['run']>>;
 
 /**
  * 将 Markdown 文本转成 Hast 树
@@ -283,8 +289,8 @@ export type HastRoot = ReturnType<(typeof toHastProcessor)['runSync']>;
  * @param sourceCode Markdown 文本
  * @returns Hast 树
  */
-export const preViewerRender = (sourceCode: string) =>
-  toHastProcessor.runSync(cachedParse(sourceCode));
+export const preViewerRender = async (sourceCode: string) =>
+  await toHastProcessor.run(cachedParse(sourceCode));
 
 /**
  * 过滤模式
@@ -322,8 +328,8 @@ export const getDefaultSchema = (): Schema => ({
  * @param schema 过滤模式
  * @returns 新的 Hast 树
  */
-export const viewerRender = (root: HastRoot, schema: Schema) =>
-  unified()
+export const viewerRender = async (root: HastRoot, schema: Schema) =>
+  await unified()
     .use(rehypeRaw)
     .use(rehypeSanitize, schema)
     .use(() => (root) => {
@@ -333,7 +339,7 @@ export const viewerRender = (root: HastRoot, schema: Schema) =>
         }
       }
     })
-    .runSync(root);
+    .run(root);
 
 /**
  * 将 Hast 树映射到 React 虚拟 DOM 树
@@ -368,8 +374,8 @@ const toHTMLProcessor = unified()
  * @param sourceCode Markdown 文本
  * @returns HTML 文本
  */
-export const toHTML = (sourceCode: string) =>
-  toHTMLProcessor.processSync(sourceCode).toString();
+export const toHTML = async (sourceCode: string) =>
+  (await toHTMLProcessor.process(sourceCode)).toString();
 
 const toMarkdownProcessor = unified()
   .use(rehypeRemark, { newlines: true })
@@ -383,10 +389,10 @@ const toMarkdownProcessor = unified()
  * @param sourceCode 带有 HTML 的 Markdown 文本
  * @returns Markdown 文本
  */
-export const toMarkdown = (sourceCode: string) =>
+export const toMarkdown = async (sourceCode: string) =>
   toMarkdownProcessor.stringify(
-    toMarkdownProcessor.runSync(
-      toHTMLProcessor.runSync(toHTMLProcessor.parse(sourceCode)),
+    await toMarkdownProcessor.run(
+      await toHTMLProcessor.run(toHTMLProcessor.parse(sourceCode)),
     ),
   );
 
@@ -403,5 +409,5 @@ const toTextProcessor = unified()
  * @param sourceCode Markdown 文本
  * @returns 纯文本
  */
-export const toText = (sourceCode: string) =>
-  toTextProcessor.processSync(sourceCode).toString();
+export const toText = async (sourceCode: string) =>
+  (await toTextProcessor.process(sourceCode)).toString();

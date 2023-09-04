@@ -5,9 +5,9 @@ import type { HastRoot, Schema } from './markdown';
 
 self.addEventListener(
   'message',
-  ({ data: [root, schema] }: MessageEvent<[HastRoot, Schema]>) => {
+  async ({ data: [root, schema] }: MessageEvent<[HastRoot, Schema]>) =>
     self.postMessage(
-      unified()
+      await unified()
         .use(rehypeRaw)
         .use(rehypeSanitize, schema)
         .use(() => (root) => {
@@ -17,7 +17,6 @@ self.addEventListener(
             }
           }
         })
-        .runSync(root),
-    );
-  },
+        .run(root),
+    ),
 );
