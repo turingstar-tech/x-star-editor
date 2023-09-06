@@ -3,26 +3,30 @@ import React, { useEffect, useRef, useState } from 'react';
 import SvgBlockquote from '../icons/Blockquote';
 import SvgCode from '../icons/Code';
 import SvgDelete from '../icons/Delete';
+import SvgEditOnly from '../icons/EditOnly';
 import SvgEmphasis from '../icons/Emphasis';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgExitFullscreen from '../icons/ExitFullscreen';
 import SvgHeading from '../icons/Heading';
+import SvgHelp from '../icons/Help';
 import SvgImage from '../icons/Image';
 import SvgInlineCode from '../icons/InlineCode';
 import SvgInlineMath from '../icons/InlineMath';
 import SvgLink from '../icons/Link';
 import SvgMath from '../icons/Math';
+import SvgMermaid from '../icons/Mermaid';
 import SvgOrderedList from '../icons/OrderedList';
 import SvgRedo from '../icons/Redo';
 import SvgStrong from '../icons/Strong';
 import SvgTable from '../icons/Table';
+import SvgTaskList from '../icons/TaskList';
 import SvgThematicBreak from '../icons/ThematicBreak';
 import SvgToHTML from '../icons/ToHtml';
 import SvgToMarkdown from '../icons/ToMarkdown';
 import SvgUndo from '../icons/Undo';
 import SvgUnorderedList from '../icons/UnorderedList';
+import SvgViewOnly from '../icons/ViewOnly';
 import { getFormat } from '../locales';
-import { createSelection } from '../utils/container';
 import { prefix } from '../utils/global';
 import type { Executor, Handler } from '../utils/handler';
 import { redoHandler, toggleHandler, undoHandler } from '../utils/handler';
@@ -124,7 +128,7 @@ interface ToolbarItemProps {
   onClick?: (exec: Executor) => void;
 }
 
-type ToolbarItem = ToolbarItemProps | Handler<ToolbarItemProps>;
+export type ToolbarItem = ToolbarItemProps | Handler<ToolbarItemProps>;
 
 export type ToolbarItemMap = Partial<Record<string, ToolbarItem>>;
 
@@ -148,11 +152,18 @@ export const getDefaultToolbarItemMap = (
       children: <SvgCode className={classNames(`${prefix}icon`)} />,
       tooltip: t('code'),
       popoverRender: (exec, close) => {
-        const optionRender = (label: string, language: string) => (
+        const optionRender = (label: string, lang: string) => (
           <div
             className={classNames(`${prefix}option`)}
             onClick={() => {
-              exec(toggleHandler({ type: 'code', language }));
+              exec(
+                toggleHandler({
+                  type: 'code',
+                  lang,
+                  value: '',
+                  showLineNumbers: true,
+                }),
+              );
               close();
             }}
           >
@@ -174,6 +185,11 @@ export const getDefaultToolbarItemMap = (
       children: <SvgDelete className={classNames(`${prefix}icon`)} />,
       tooltip: t('delete'),
       onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
+    },
+
+    editOnly: {
+      children: <SvgEditOnly className={classNames(`${prefix}icon`)} />,
+      tooltip: t('editOnly'),
     },
 
     emphasis: {
@@ -219,6 +235,11 @@ export const getDefaultToolbarItemMap = (
           </>
         );
       },
+    },
+
+    help: {
+      children: <SvgHelp className={classNames(`${prefix}icon`)} />,
+      tooltip: t('help'),
     },
 
     image: {
@@ -293,6 +314,24 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'math' })),
     },
 
+    mermaid: {
+      children: <SvgMermaid className={classNames(`${prefix}icon`)} />,
+      tooltip: t('mermaid'),
+      onClick: (exec) =>
+        exec(
+          toggleHandler({
+            type: 'code',
+            lang: 'mermaid',
+            value: `flowchart TB
+    A --> C
+    A --> D
+    B --> C
+    B --> D`,
+            showLineNumbers: false,
+          }),
+        ),
+    },
+
     orderedList: {
       children: <SvgOrderedList className={classNames(`${prefix}icon`)} />,
       tooltip: t('orderedList'),
@@ -316,6 +355,11 @@ export const getDefaultToolbarItemMap = (
       tooltip: t('table'),
     },
 
+    taskList: {
+      children: <SvgTaskList className={classNames(`${prefix}icon`)} />,
+      tooltip: t('taskList'),
+    },
+
     thematicBreak: {
       children: <SvgThematicBreak className={classNames(`${prefix}icon`)} />,
       tooltip: t('thematicBreak'),
@@ -329,10 +373,7 @@ export const getDefaultToolbarItemMap = (
         exec(({ sourceCode, selection, dispatch }) =>
           dispatch({
             type: 'set',
-            payload: {
-              sourceCode: toHTML(sourceCode),
-              selection: createSelection(0),
-            },
+            payload: { sourceCode: toHTML(sourceCode), selection },
             selection,
           }),
         ),
@@ -345,10 +386,7 @@ export const getDefaultToolbarItemMap = (
         exec(({ sourceCode, selection, dispatch }) =>
           dispatch({
             type: 'set',
-            payload: {
-              sourceCode: toMarkdown(sourceCode),
-              selection: createSelection(0),
-            },
+            payload: { sourceCode: toMarkdown(sourceCode), selection },
             selection,
           }),
         ),
@@ -365,6 +403,11 @@ export const getDefaultToolbarItemMap = (
       children: <SvgUnorderedList className={classNames(`${prefix}icon`)} />,
       tooltip: t('unorderedList'),
     },
+
+    viewOnly: {
+      children: <SvgViewOnly className={classNames(`${prefix}icon`)} />,
+      tooltip: t('viewOnly'),
+    },
   };
 };
 
@@ -372,20 +415,20 @@ export type ToolbarItems = (string | ToolbarItem)[][];
 
 export const getDefaultToolbarItems = (): ToolbarItems => [
   ['heading', 'strong', 'emphasis', 'delete'],
-  ['thematicBreak', 'blockquote'],
-  // ['table', 'orderedList', 'unorderedList'],
-  ['link', 'image'],
+  ['thematicBreak', 'blockquote' /** 'table' */],
+  ['link', 'image', 'mermaid'],
   ['inlineCode', 'code', 'inlineMath', 'math'],
-  ['toMarkdown', 'toHTML'],
   ['undo', 'redo'],
-  // ['fullscreen'],
+  // ['orderedList', 'unorderedList', 'taskList'],
+  ['toMarkdown', 'toHTML'],
+  // ['help', 'editOnly', 'viewOnly', 'fullscreen'],
 ];
 
 interface ToolbarProps {
   className?: string;
   style?: React.CSSProperties;
-  itemMap: Partial<Record<string, ToolbarItem>>;
-  items: (string | ToolbarItem)[][];
+  itemMap: ToolbarItemMap;
+  items: ToolbarItems;
   exec: Executor;
 }
 
