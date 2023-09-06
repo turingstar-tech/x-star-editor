@@ -193,8 +193,8 @@ export const editorRender = (sourceCode: string) => {
    */
   const getChildren = (nodes: MdastNode[], parentEndOffset: number) => {
     for (const node of nodes) {
-      let startOffset = node.position?.start?.offset;
-      const endOffset = node.position?.end?.offset;
+      let startOffset = node.position?.start.offset;
+      const endOffset = node.position?.end.offset;
       if (startOffset === undefined || endOffset === undefined) {
         continue;
       }
@@ -230,7 +230,7 @@ export const editorRender = (sourceCode: string) => {
         stack[0].element.append('\u200B');
         pushElement(0);
         // 记录行号，用于同步滚动
-        block.dataset.line = `${node.position?.start?.line}`;
+        block.dataset.line = `${node.position?.start.line}`;
         pushBlock();
         scanOffset++;
       }
@@ -391,12 +391,7 @@ const toMarkdownProcessor = unified()
           ? h(node, 'inlineMath', hastToText(node))
           : defaultHandlers.span(h, node),
       custom: (h, node) =>
-        h(
-          node,
-          'math',
-          { meta: node.properties?.meta },
-          node.properties?.value,
-        ),
+        h(node, 'math', { meta: node.properties.meta }, node.properties.value),
     },
   })
   .use(remarkMath)

@@ -1,5 +1,5 @@
 import type { RootContent as HastNode, Root as HastRoot } from 'hast';
-import { SKIP, visit } from 'unist-util-visit';
+import { EXIT, SKIP, visit } from 'unist-util-visit';
 
 /**
  * 判断一个 Hast 节点是否属于行内代码或代码块
@@ -120,29 +120,38 @@ const parseMath = (text: string) => {
  * 解析属于 Raw 节点的文本中的数学公式
  */
 const rehypeMath = () => (root: HastRoot) => {
-  const child = root.children[root.children.length - 1];
-  if (
-    child?.type !== 'element' ||
-    typeof child.properties?.rawPositions !== 'string'
-  ) {
-    return;
-  }
-  root.children.pop();
+  let rawPositions: number[] = [];
+  let i = 0;
 
   // 获取 rehype-raw-positions 记录的 Raw 节点的位置信息
-  const rawPositions = child.properties.rawPositions
-    .split(' ')
-    .map((offset) => parseInt(offset));
-  let i = 0;
+  visit(
+    root,
+    { tagName: 'raw-positions' },
+    (node, index, parent) => {
+      if (typeof node.properties?.value === 'string') {
+        rawPositions = node.properties.value
+          .split(' ')
+          .map((offset) => parseInt(offset));
+      }
+      if (index !== null && parent) {
+        parent.children.splice(index);
+      }
+      return EXIT;
+    },
+    true,
+  );
+
+  if (rawPositions.length < 2) {
+    return;
+  }
 
   visit(root, (node, index, parent) => {
     if (isCodeNode(node) || isMathNode(node)) {
       return SKIP;
     }
     if (node.type === 'text' && index !== null && parent) {
-      const startOffset = node.position?.start?.offset;
-      const endOffset = node.position?.end?.offset;
-      if (startOffset === undefined || endOffset === undefined) {
+      const startOffset = node.position?.start.offset;
+      if (startOffset === undefined) {
         return;
       }
       for (
@@ -150,11 +159,7 @@ const rehypeMath = () => (root: HastRoot) => {
         i < rawPositions.length - 1 && rawPositions[i + 1] <= startOffset;
         i += 2
       );
-      if (
-        i < rawPositions.length - 1 &&
-        rawPositions[i] <= startOffset &&
-        rawPositions[i + 1] >= endOffset
-      ) {
+      if (i < rawPositions.length - 1 && rawPositions[i] <= startOffset) {
         const result = parseMath(node.value);
         parent.children.splice(index, 1, ...result);
         return index + result.length;

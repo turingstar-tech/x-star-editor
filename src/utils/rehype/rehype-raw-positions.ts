@@ -8,8 +8,8 @@ const rehypeRawPositions = () => (root: HastRoot) => {
   const rawPositions: number[] = [];
 
   visit(root, 'raw', (node) => {
-    const startOffset = node.position?.start?.offset;
-    const endOffset = node.position?.end?.offset;
+    const startOffset = node.position?.start.offset;
+    const endOffset = node.position?.end.offset;
     if (startOffset === undefined || endOffset === undefined) {
       return;
     }
@@ -19,8 +19,8 @@ const rehypeRawPositions = () => (root: HastRoot) => {
   // 记录在新的 Hast 节点上，防止被 rehype-raw 删除
   root.children.push({
     type: 'element',
-    tagName: 'div',
-    properties: { rawPositions: rawPositions.join(' ') },
+    tagName: 'raw-positions',
+    properties: { value: rawPositions.join(' ') },
     children: [],
   });
 };

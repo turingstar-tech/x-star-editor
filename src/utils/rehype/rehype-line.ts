@@ -8,7 +8,7 @@ const rehypeLine = () => (root: HastRoot) =>
   visit(root, 'element', (node) => {
     node.properties ??= {};
     // 记录行号，用于同步滚动
-    node.properties['data-line'] = node.position?.start?.line;
+    node.properties['data-line'] = node.position?.start.line;
     return SKIP;
   });
 
