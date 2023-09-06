@@ -1,22 +1,28 @@
+import type { Root as HastRoot } from 'hast';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { unified } from 'unified';
-import type { HastRoot, Schema } from './markdown';
+import type { Schema } from './markdown';
+import rehypeLine from './rehype/rehype-line';
+import rehypeMath from './rehype/rehype-math';
+import rehypeRawPositions from './rehype/rehype-raw-positions';
 
-self.addEventListener(
-  'message',
-  ({ data: [root, schema] }: MessageEvent<[HastRoot, Schema]>) =>
-    self.postMessage(
-      unified()
-        .use(rehypeRaw)
-        .use(rehypeSanitize, schema)
-        .use(() => (root) => {
-          for (const node of root.children) {
-            if ('properties' in node && node.properties) {
-              node.properties['data-line'] = node.position?.start.line;
-            }
-          }
-        })
-        .runSync(root),
-    ),
+/**
+ * 将 Hast 树转成新的 Hast 树
+ *
+ * @param root Hast 树
+ * @param schema 过滤模式
+ * @returns 新的 Hast 树
+ */
+const viewerRender = (root: HastRoot, schema: Schema) =>
+  unified()
+    .use(rehypeRawPositions)
+    .use(rehypeRaw)
+    .use(rehypeMath)
+    .use(rehypeSanitize, schema)
+    .use(rehypeLine)
+    .runSync(root);
+
+self.addEventListener('message', ({ data: [root, schema] }) =>
+  self.postMessage(viewerRender(root, schema)),
 );

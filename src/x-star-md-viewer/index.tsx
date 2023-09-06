@@ -10,7 +10,7 @@ import React, {
 import workerRaw from '../../workers-dist/markdown.worker.js';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
-import type { HastRoot, Schema } from '../utils/markdown';
+import type { Schema } from '../utils/markdown';
 import {
   getDefaultSchema,
   postViewerRender,
@@ -111,10 +111,8 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     useEffect(() => {
       if (enableWebWorker) {
         worker.current = new Worker(workerURL);
-        worker.current.addEventListener(
-          'message',
-          ({ data }: MessageEvent<HastRoot>) =>
-            setChildren(postViewerRender(data, optionsLatest.current)),
+        worker.current.addEventListener('message', ({ data }) =>
+          setChildren(postViewerRender(data, optionsLatest.current)),
         );
         return () => worker.current?.terminate();
       }
@@ -122,14 +120,13 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     useEffect(() => {
       (async () => {
-        const args = [
-          await preViewerRender(value),
-          options.customSchema,
-        ] as const;
+        const root = await preViewerRender(value);
         if (enableWebWorker) {
-          worker.current?.postMessage(args);
+          worker.current?.postMessage([root, options.customSchema]);
         } else {
-          setChildren(postViewerRender(viewerRender(...args), options));
+          setChildren(
+            postViewerRender(viewerRender(root, options.customSchema), options),
+          );
         }
       })();
     }, [value, options]);

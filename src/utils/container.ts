@@ -148,30 +148,30 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
     /**
      * 将一棵 DOM 树更新为另一棵 DOM 树
      *
-     * @param newNode 新节点
      * @param oldNode 旧节点
+     * @param newNode 新节点
      */
-    const diff = (newNode: Node, oldNode: Node) => {
-      let newChild = newNode.firstChild;
+    const diff = (oldNode: Node, newNode: Node) => {
       let oldChild = oldNode.firstChild;
+      let newChild = newNode.firstChild;
 
       // 依次更新子节点
-      for (; newChild && oldChild; ) {
-        const newNext = newChild.nextSibling;
+      for (; oldChild && newChild; ) {
         const oldNext = oldChild.nextSibling;
-        if (newChild.nodeName !== oldChild.nodeName) {
+        const newNext = newChild.nextSibling;
+        if (oldChild.nodeName !== newChild.nodeName) {
           // 节点名称不同，直接替换
           oldChild.replaceWith(newChild);
-        } else if (newChild.nodeType === Node.TEXT_NODE) {
+        } else if (oldChild.nodeType === Node.TEXT_NODE) {
           // 节点均为文本类型，更新文本内容
-          if (newChild.nodeValue !== oldChild.nodeValue) {
+          if (oldChild.nodeValue !== newChild.nodeValue) {
             oldChild.nodeValue = newChild.nodeValue;
           }
         } else {
           // 节点名称相同，更新属性和子节点
           if (
-            newChild instanceof HTMLElement &&
-            oldChild instanceof HTMLElement
+            oldChild instanceof HTMLElement &&
+            newChild instanceof HTMLElement
           ) {
             for (const oldAttrName of oldChild.getAttributeNames()) {
               if (!newChild.hasAttribute(oldAttrName)) {
@@ -180,17 +180,17 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
               }
             }
             for (const newAttrName of newChild.getAttributeNames()) {
-              const newAttrValue = newChild.getAttribute(newAttrName);
               const oldAttrValue = oldChild.getAttribute(newAttrName);
-              if (newAttrValue !== null && newAttrValue !== oldAttrValue) {
+              const newAttrValue = newChild.getAttribute(newAttrName);
+              if (oldAttrValue !== newAttrValue && newAttrValue !== null) {
                 oldChild.setAttribute(newAttrName, newAttrValue);
               }
             }
           }
-          diff(newChild, oldChild);
+          diff(oldChild, newChild);
         }
-        newChild = newNext;
         oldChild = oldNext;
+        newChild = newNext;
       }
 
       // 移除节点
@@ -208,7 +208,7 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
       }
     };
 
-    diff(editorRender(text), ref.current);
+    diff(ref.current, editorRender(text));
   };
 
   /**

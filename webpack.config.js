@@ -10,10 +10,9 @@ module.exports = [
       path: path.resolve(__dirname, 'workers-dist'),
     },
     module: {
-      rules: [
-        { test: /\.worker\.ts$/, use: 'babel-loader', exclude: /node_modules/ },
-      ],
+      rules: [{ test: /\.ts$/, use: 'babel-loader', exclude: /node_modules/ }],
     },
+    resolve: { extensions: ['.ts', '...'] },
     optimization: {
       minimize: true,
       minimizer: [new TerserPlugin({ extractComments: false })],
