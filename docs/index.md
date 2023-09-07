@@ -11,7 +11,7 @@ features:
   - title: 使用方便
     emoji: 💎
     description: 内置代码和公式渲染
-  - title: 拓展性好
+  - title: 扩展性强
     emoji: 🌈
     description: 工具栏、快捷键、HTML 标签均可配置
   - title: React 友好

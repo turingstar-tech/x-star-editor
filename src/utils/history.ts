@@ -39,7 +39,7 @@ export interface ToggleAction {
           | 'strong'
           | 'thematicBreak';
       }
-    | { type: 'code'; language: string }
+    | { type: 'code'; lang: string; value: string; showLineNumbers: boolean }
     | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
     | { type: 'image' | 'link'; url: string; description: string };
   selection: ContainerSelection;
@@ -136,13 +136,14 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
         }
 
         case 'code': {
-          const { language } = action.payload;
+          const { lang, value, showLineNumbers } = action.payload;
+          const startOffset =
+            lineEndOffset + lang.length + (showLineNumbers ? 21 : 5);
           return {
-            sourceCode: `${sourceCode.slice(
-              0,
-              lineEndOffset,
-            )}\n\`\`\`${language} showLineNumbers\n\n\`\`\`\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + language.length + 21),
+            sourceCode: `${sourceCode.slice(0, lineEndOffset)}\n\`\`\`${lang}${
+              showLineNumbers ? ' showLineNumbers' : ''
+            }\n${value}\n\`\`\`\n${lineAfter}`,
+            selection: createSelection(startOffset, startOffset + value.length),
           };
         }
 

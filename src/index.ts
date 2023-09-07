@@ -1,3 +1,4 @@
+export type { ToolbarItem } from './components/Toolbar';
 export { createSelection, getRange } from './utils/container';
 export {
   deleteHandler,
@@ -8,7 +9,7 @@ export {
   toggleHandler,
   undoHandler,
 } from './utils/handler';
-export type { Handler } from './utils/handler';
+export type { Executor, Handler, KeyboardEventHandler } from './utils/handler';
 export { toHTML, toMarkdown, toText } from './utils/markdown';
 export { default as XStarEditor, useEditorRef } from './x-star-editor';
 export type { XStarEditorHandle, XStarEditorProps } from './x-star-editor';

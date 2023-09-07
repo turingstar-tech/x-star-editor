@@ -1,10 +1,13 @@
+import type { Root as HastRoot } from 'hast';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
+import { toText as hastToText } from 'hast-util-to-text';
+import type { Content as MdastNode, Root as MdastRoot } from 'mdast';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
-import rehypeRemark from 'rehype-remark';
+import rehypeRemark, { defaultHandlers } from 'rehype-remark';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
@@ -17,6 +20,9 @@ import strip from 'strip-markdown';
 import { unified } from 'unified';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
+import rehypeLine from './rehype/rehype-line';
+import rehypeMath, { isMathNode } from './rehype/rehype-math';
+import rehypeRawPositions from './rehype/rehype-raw-positions';
 
 /**
  * 将 Markdown 文本解析为 Mdast 树的处理器
@@ -26,11 +32,6 @@ const toMdastProcessor = unified()
   .use(remarkGfm)
   .use(remarkMath)
   .freeze();
-
-/**
- * Mdast 根节点
- */
-type MdastRoot = ReturnType<(typeof toMdastProcessor)['parse']>;
 
 /**
  * 带缓存的解析函数
@@ -44,11 +45,6 @@ const cachedParse = (() => {
     cache[sourceCode] ??
     (cache = { [sourceCode]: toMdastProcessor.parse(sourceCode) })[sourceCode];
 })();
-
-/**
- * Mdast 节点
- */
-type MdastNode = MdastRoot['children'][number];
 
 /**
  * 将 Markdown 文本映射到 DOM 树，第一层为 `<div>` 块元素，第二层为 `<div>` 行元素，之后均为 `<span>` 元素
@@ -197,8 +193,8 @@ export const editorRender = (sourceCode: string) => {
    */
   const getChildren = (nodes: MdastNode[], parentEndOffset: number) => {
     for (const node of nodes) {
-      let startOffset = node.position?.start.offset;
-      const endOffset = node.position?.end.offset;
+      let startOffset = node.position?.start?.offset;
+      const endOffset = node.position?.end?.offset;
       if (startOffset === undefined || endOffset === undefined) {
         continue;
       }
@@ -233,7 +229,8 @@ export const editorRender = (sourceCode: string) => {
         // 如果栈大小为 1，说明为块级元素终点
         stack[0].element.append('\u200B');
         pushElement(0);
-        block.dataset.line = `${node.position?.start.line}`;
+        // 记录行号，用于同步滚动
+        block.dataset.line = `${node.position?.start?.line}`;
         pushBlock();
         scanOffset++;
       }
@@ -275,13 +272,7 @@ const toHastProcessor = unified()
     strategy: 'img-svg',
   })
   .use(rehypePrism, { ignoreMissing: true })
-  .use(rehypeKatex)
   .freeze();
-
-/**
- * Hast 根节点
- */
-export type HastRoot = Awaited<ReturnType<(typeof toHastProcessor)['run']>>;
 
 /**
  * 将 Markdown 文本转成 Hast 树
@@ -330,15 +321,11 @@ export const getDefaultSchema = (): Schema => ({
  */
 export const viewerRender = (root: HastRoot, schema: Schema) =>
   unified()
+    .use(rehypeRawPositions)
     .use(rehypeRaw)
+    .use(rehypeMath)
     .use(rehypeSanitize, schema)
-    .use(() => (root) => {
-      for (const node of root.children) {
-        if ('properties' in node && node.properties) {
-          node.properties['data-line'] = node.position?.start.line;
-        }
-      }
-    })
+    .use(rehypeLine)
     .runSync(root);
 
 /**
@@ -348,23 +335,37 @@ export const viewerRender = (root: HastRoot, schema: Schema) =>
  * @param options 配置项
  * @returns React 虚拟 DOM 树
  */
-export const postViewerRender = (root: HastRoot, options: ViewerOptions) =>
-  toJsxRuntime(root, {
+export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
+  const components = {
+    ...options.customHTMLElements,
+    custom: (props: { meta: string; value: string }) =>
+      jsx(options.customBlocks[props.meta] ?? 'div', { children: props.value }),
+  };
+  return toJsxRuntime(unified().use(rehypeKatex).runSync(root), {
     Fragment,
     jsx,
     jsxs,
-    components: {
-      ...options.customHTMLElements,
-      custom: ({ meta, value }: { meta: string; value: string }) =>
-        jsx(options.customBlocks[meta] ?? 'div', { children: value }),
-    } as never,
+    components,
   });
+};
 
 const toHTMLProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: true })
+  .use(remarkMath)
+  .use(remarkRehype, {
+    allowDangerousHtml: true,
+    handlers: {
+      math: (h, node) =>
+        // 如果 Math 节点的 `meta` 属性不为空，则视为自定义块
+        node.meta
+          ? h(node.position, 'custom', { meta: node.meta, value: node.value })
+          : h(node, 'div'),
+    },
+  })
+  .use(rehypeRawPositions)
   .use(rehypeRaw)
+  .use(rehypeMath)
   .use(rehypeStringify)
   .freeze();
 
@@ -378,7 +379,27 @@ export const toHTML = (sourceCode: string) =>
   toHTMLProcessor.processSync(sourceCode).toString();
 
 const toMarkdownProcessor = unified()
-  .use(rehypeRemark, { newlines: true })
+  .use(rehypeRemark, {
+    newlines: true,
+    handlers: {
+      div: (h, node) =>
+        isMathNode(node)
+          ? h(node, 'math', hastToText(node))
+          : defaultHandlers.div(h, node),
+      span: (h, node) =>
+        isMathNode(node)
+          ? h(node, 'inlineMath', hastToText(node))
+          : defaultHandlers.span(h, node),
+      custom: (h, node) =>
+        h(
+          node,
+          'math',
+          { meta: node.properties?.meta },
+          node.properties?.value,
+        ),
+    },
+  })
+  .use(remarkMath)
   .use(remarkGfm)
   .use(remarkStringify)
   .freeze();
@@ -399,7 +420,13 @@ export const toMarkdown = (sourceCode: string) =>
 const toTextProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
-  .use(strip)
+  .use(remarkMath)
+  .use(strip, {
+    remove: [
+      'math',
+      ['inlineMath', (node) => ({ type: 'text', value: node.value })],
+    ],
+  })
   .use(remarkStringify)
   .freeze();
 

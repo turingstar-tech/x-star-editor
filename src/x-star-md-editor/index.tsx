@@ -334,8 +334,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const options = useMemo(
       () =>
         composeHandlers(plugins)({
-          toolbarItemMap: getDefaultToolbarItemMap(locale, (...args) =>
-            onInsertFileLatest.current?.(...args),
+          toolbarItemMap: getDefaultToolbarItemMap(locale, (file, options) =>
+            onInsertFileLatest.current?.(file, options),
           ),
           toolbarItems: getDefaultToolbarItems(),
           keyboardEventHandlers: getDefaultKeyboardEventHandlers(),
