@@ -63,7 +63,11 @@ const Button = ({
 
   useEffect(() => {
     if (popoverMount) {
-      if (toolbarRef.current && popoverRef.current) {
+      if (
+        toolbarRef.current &&
+        popoverRef.current &&
+        !popoverRef.current.style.left
+      ) {
         const left =
           toolbarRef.current.getBoundingClientRect().right -
           popoverRef.current.getBoundingClientRect().right;
@@ -130,6 +134,177 @@ interface ToolbarItemProps {
 
 export type ToolbarItem = ToolbarItemProps | Handler<ToolbarItemProps>;
 
+const codeOptions = [
+  { label: 'C++', lang: 'cpp' },
+  { label: 'Java', lang: 'java' },
+  { label: 'Python', lang: 'py' },
+  { label: 'Text', lang: 'txt' },
+] as const;
+
+const headingOptions = [
+  { depth: 1, fontSize: '1.6em' },
+  { depth: 2, fontSize: '1.3em' },
+  { depth: 3, fontSize: '1.2em' },
+  { depth: 4, fontSize: '1.1em' },
+  { depth: 5, fontSize: '1em' },
+  { depth: 6, fontSize: '0.9em' },
+] as const;
+
+const mermaidOptions = [
+  {
+    label: 'Flowchart',
+    value: `flowchart TD
+    A[Start] --> B{Is it?}
+    B -- Yes --> C[OK]
+    C --> D[Rethink]
+    D --> B
+    B -- No ----> E[End]`,
+  },
+  {
+    label: 'Sequence Diagram',
+    value: `sequenceDiagram
+    Alice->>John: Hello John, how are you?
+    John-->>Alice: Great!
+    Alice-)John: See you later!`,
+  },
+  {
+    label: 'Class Diagram',
+    value: `classDiagram
+    class BankAccount
+    BankAccount : +String owner
+    BankAccount : +Bigdecimal balance
+    BankAccount : +deposit(amount)
+    BankAccount : +withdrawal(amount)`,
+  },
+  {
+    label: 'State Diagram',
+    value: `stateDiagram-v2
+    [*] --> Still
+    Still --> [*]
+
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]`,
+  },
+  {
+    label: 'Entity Relationship Diagram',
+    value: `erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses`,
+  },
+  {
+    label: 'User Journey',
+    value: `journey
+    title My working day
+    section Go to work
+      Make tea: 5: Me
+      Go upstairs: 3: Me
+      Do work: 1: Me, Cat
+    section Go home
+      Go downstairs: 5: Me
+      Sit down: 5: Me`,
+  },
+  {
+    label: 'Gantt',
+    value: `gantt
+    title A Gantt Diagram
+    dateFormat YYYY-MM-DD
+    section Section
+        A task          :a1, 2014-01-01, 30d
+        Another task    :after a1, 20d
+    section Another
+        Task in Another :2014-01-12, 12d
+        another task    :24d`,
+  },
+  {
+    label: 'Pie Chart',
+    value: `pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15`,
+  },
+  {
+    label: 'Quadrant Chart',
+    value: `quadrantChart
+    title Reach and engagement of campaigns
+    x-axis Low Reach --> High Reach
+    y-axis Low Engagement --> High Engagement
+    quadrant-1 We should expand
+    quadrant-2 Need to promote
+    quadrant-3 Re-evaluate
+    quadrant-4 May be improved
+    Campaign A: [0.3, 0.6]
+    Campaign B: [0.45, 0.23]
+    Campaign C: [0.57, 0.69]
+    Campaign D: [0.78, 0.34]
+    Campaign E: [0.40, 0.34]
+    Campaign F: [0.35, 0.78]`,
+  },
+  {
+    label: 'Requirement Diagram',
+    value: `requirementDiagram
+
+    requirement test_req {
+    id: 1
+    text: the test text.
+    risk: high
+    verifymethod: test
+    }
+
+    element test_entity {
+    type: simulation
+    }
+
+    test_entity - satisfies -> test_req`,
+  },
+  {
+    label: 'Gitgraph (Git) Diagram',
+    value: `gitGraph
+   commit
+   commit
+   branch develop
+   checkout develop
+   commit
+   commit
+   checkout main
+   merge develop
+   commit
+   commit`,
+  },
+  {
+    label: 'Mindmaps',
+    value: `mindmap
+  root((mindmap))
+    Origins
+      Long history
+      ::icon(fa fa-book)
+      Popularisation
+        British popular psychology author Tony Buzan
+    Research
+      On effectiveness<br/>and features
+      On Automatic creation
+        Uses
+            Creative techniques
+            Strategic planning
+            Argument mapping
+    Tools
+      Pen and paper
+      Mermaid`,
+  },
+  {
+    label: 'Timeline',
+    value: `timeline
+    title History of Social Media Platform
+    2002 : LinkedIn
+    2004 : Facebook
+         : Google
+    2005 : Youtube
+    2006 : Twitter`,
+  },
+] as const;
+
 export type ToolbarItemMap = Partial<Record<string, ToolbarItem>>;
 
 export const getDefaultToolbarItemMap = (
@@ -151,9 +326,10 @@ export const getDefaultToolbarItemMap = (
     code: {
       children: <SvgCode className={classNames(`${prefix}icon`)} />,
       tooltip: t('code'),
-      popoverRender: (exec, close) => {
-        const optionRender = (label: string, lang: string) => (
+      popoverRender: (exec, close) =>
+        codeOptions.map(({ label, lang }) => (
           <div
+            key={label}
             className={classNames(`${prefix}option`)}
             onClick={() => {
               exec(
@@ -169,16 +345,7 @@ export const getDefaultToolbarItemMap = (
           >
             {label}
           </div>
-        );
-        return (
-          <>
-            {optionRender('C++', 'cpp')}
-            {optionRender('Java', 'java')}
-            {optionRender('Python', 'py')}
-            {optionRender('Text', 'txt')}
-          </>
-        );
-      },
+        )),
     },
 
     delete: {
@@ -208,12 +375,10 @@ export const getDefaultToolbarItemMap = (
     heading: {
       children: <SvgHeading className={classNames(`${prefix}icon`)} />,
       tooltip: t('heading'),
-      popoverRender: (exec, close) => {
-        const optionRender = (
-          depth: 1 | 2 | 3 | 4 | 5 | 6,
-          fontSize: string,
-        ) => (
+      popoverRender: (exec, close) =>
+        headingOptions.map(({ depth, fontSize }) => (
           <div
+            key={depth}
             className={classNames(`${prefix}option`)}
             style={{ fontSize }}
             onClick={() => {
@@ -223,18 +388,7 @@ export const getDefaultToolbarItemMap = (
           >
             H{depth} {t('heading')} {depth}
           </div>
-        );
-        return (
-          <>
-            {optionRender(1, '1.6em')}
-            {optionRender(2, '1.3em')}
-            {optionRender(3, '1.2em')}
-            {optionRender(4, '1.1em')}
-            {optionRender(5, '1em')}
-            {optionRender(6, '0.9em')}
-          </>
-        );
-      },
+        )),
     },
 
     help: {
@@ -317,19 +471,26 @@ export const getDefaultToolbarItemMap = (
     mermaid: {
       children: <SvgMermaid className={classNames(`${prefix}icon`)} />,
       tooltip: t('mermaid'),
-      onClick: (exec) =>
-        exec(
-          toggleHandler({
-            type: 'code',
-            lang: 'mermaid',
-            value: `flowchart TB
-    A --> C
-    A --> D
-    B --> C
-    B --> D`,
-            showLineNumbers: false,
-          }),
-        ),
+      popoverRender: (exec, close) =>
+        mermaidOptions.map(({ label, value }) => (
+          <div
+            key={label}
+            className={classNames(`${prefix}option`)}
+            onClick={() => {
+              exec(
+                toggleHandler({
+                  type: 'code',
+                  lang: 'mermaid',
+                  value,
+                  showLineNumbers: false,
+                }),
+              );
+              close();
+            }}
+          >
+            {label}
+          </div>
+        )),
     },
 
     orderedList: {
