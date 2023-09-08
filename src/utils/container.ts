@@ -220,22 +220,24 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
    */
   const getSelection = () => {
     const selection = window.getSelection();
-    if (!selection || !selection.anchorNode || !selection.focusNode) {
+    if (
+      !selection ||
+      !selection.anchorNode ||
+      !selection.focusNode ||
+      !ref.current
+    ) {
       return createSelection(-1);
     }
 
     /**
      * 根据节点和节点内偏移量获取容器内偏移量
      *
+     * @param root 容器根节点
      * @param targetNode 节点
      * @param targetOffset 节点内偏移量
      * @returns 容器内偏移量
      */
-    const getOffset = (targetNode: Node, targetOffset: number) => {
-      if (!ref.current) {
-        return -1;
-      }
-
+    const getOffset = (root: Node, targetNode: Node, targetOffset: number) => {
       let offset = 0;
 
       const traverse = (node: Node) => {
@@ -274,12 +276,12 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
         }
       };
 
-      return traverse(ref.current) ? offset : -1;
+      return traverse(root) ? offset : -1;
     };
 
     return createSelection(
-      getOffset(selection.anchorNode, selection.anchorOffset),
-      getOffset(selection.focusNode, selection.focusOffset),
+      getOffset(ref.current, selection.anchorNode, selection.anchorOffset),
+      getOffset(ref.current, selection.focusNode, selection.focusOffset),
     );
   };
 
@@ -292,21 +294,23 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
    */
   const setSelection = ({ anchorOffset, focusOffset }: ContainerSelection) => {
     const selection = window.getSelection();
-    if (!selection || anchorOffset === -1 || focusOffset === -1) {
+    if (
+      !selection ||
+      anchorOffset === -1 ||
+      focusOffset === -1 ||
+      !ref.current
+    ) {
       return;
     }
 
     /**
      * 根据容器内偏移量获取节点和节点内偏移量
      *
+     * @param root 容器根节点
      * @param targetOffset 容器内偏移量
      * @returns 节点和节点内偏移量
      */
-    const getNodeOffset = (targetOffset: number) => {
-      if (!ref.current) {
-        return { node: undefined, offset: 0 };
-      }
-
+    const getNodeOffset = (root: Node, targetOffset: number) => {
       let offset = targetOffset;
 
       const traverse = (node: Node): Node | undefined => {
@@ -334,11 +338,11 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
         }
       };
 
-      return { node: traverse(ref.current), offset };
+      return { node: traverse(root), offset };
     };
 
-    const anchor = getNodeOffset(anchorOffset);
-    const focus = getNodeOffset(focusOffset);
+    const anchor = getNodeOffset(ref.current, anchorOffset);
+    const focus = getNodeOffset(ref.current, focusOffset);
     if (!anchor.node || !focus.node) {
       return;
     }
@@ -350,9 +354,11 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
       focus.offset,
     );
 
-    if (!ref.current) {
-      return;
-    }
+    ref.current.scrollIntoView({
+      behavior: 'instant',
+      block: 'nearest',
+      inline: 'nearest',
+    });
 
     const range = document.createRange();
     range.setStart(focus.node, focus.offset);

@@ -18,10 +18,6 @@ import {
   viewerRender,
 } from '../utils/markdown';
 
-const workerURL = URL.createObjectURL(
-  new Blob([workerRaw], { type: 'text/javascript' }),
-);
-
 export interface ViewerOptions {
   /**
    * 自定义过滤模式
@@ -110,7 +106,11 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     useEffect(() => {
       if (enableWebWorker) {
-        worker.current = new Worker(workerURL);
+        worker.current = new Worker(
+          URL.createObjectURL(
+            new Blob([workerRaw], { type: 'text/javascript' }),
+          ),
+        );
         worker.current.addEventListener('message', ({ data }) =>
           setChildren(postViewerRender(data, optionsLatest.current)),
         );
