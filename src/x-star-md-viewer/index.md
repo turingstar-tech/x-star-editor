@@ -185,6 +185,7 @@ print('Hello, Markdown!')
 效果：
 
 > 这是一段引用`}
+    theme="lark"
   />
 );
 ```
@@ -192,6 +193,12 @@ print('Hello, Markdown!')
 :::warning
 使用 `enableWebWorker` 时，每个查看器会单独启动一个 Web Worker，且渲染会存在短暂延迟。
 :::
+
+如果要使用内置主题，请引入主题样式文件。
+
+```ts | pure
+import 'x-star-editor/dist/themes/lark.css';
+```
 
 ## API
 

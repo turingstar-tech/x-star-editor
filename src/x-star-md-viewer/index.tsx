@@ -62,6 +62,11 @@ export interface XStarMdViewerProps {
   height?: React.CSSProperties['height'];
 
   /**
+   * 内置主题
+   */
+  theme?: string;
+
+  /**
    * 文本
    */
   value?: string;
@@ -78,7 +83,10 @@ export interface XStarMdViewerProps {
 }
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
-  ({ className, style, height, value = '', plugins, enableWebWorker }, ref) => {
+  (
+    { className, style, height, theme, value = '', plugins, enableWebWorker },
+    ref,
+  ) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(
@@ -134,7 +142,11 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     return (
       <div
         ref={containerRef}
-        className={classNames(`${prefix}md-viewer`, className)}
+        className={classNames(
+          `${prefix}md-viewer`,
+          { [`${prefix}theme-${theme}`]: theme },
+          className,
+        )}
         style={{ ...style, height }}
       >
         {children}
