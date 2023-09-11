@@ -1,6 +1,7 @@
 export type { ToolbarItem } from './components/Toolbar';
 export { createSelection, getRange } from './utils/container';
 export {
+  batchHandler,
   insertHandler,
   redoHandler,
   selectHandler,

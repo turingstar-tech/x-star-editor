@@ -179,14 +179,14 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
           const { type, url, description } = action.payload;
           return {
             sourceCode: `${before}${
-              type === 'link' ? '' : '!'
+              type === 'image' ? '!' : ''
             }[${description}](${url})${after}`,
             selection: createSelection(
               startOffset +
                 url.length +
                 description.length +
                 4 +
-                (type === 'link' ? 0 : 1),
+                (type === 'image' ? 1 : 0),
             ),
           };
         }
@@ -234,11 +234,10 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
  * 编辑器历史
  */
 interface History {
-  states: (State & { action: StateAction })[];
+  states: (State & { action: StateAction & { batch?: boolean } })[];
   index: number;
   selection: ContainerSelection;
 }
-
 export interface UndoAction {
   type: 'undo';
 }
@@ -247,16 +246,21 @@ export interface RedoAction {
   type: 'redo';
 }
 
+export interface BatchAction {
+  type: 'batch';
+  selection?: ContainerSelection;
+}
+
 export interface SelectAction {
   type: 'select';
   selection: ContainerSelection;
 }
 
-type HistoryAction = UndoAction | RedoAction | SelectAction;
+type HistoryAction = UndoAction | RedoAction | BatchAction | SelectAction;
 
 const historyReducer = (
   { states, index, selection }: History,
-  action: HistoryAction | StateAction,
+  action: HistoryAction | (StateAction & { batch?: boolean }),
 ): History => {
   switch (action.type) {
     case 'undo': {
@@ -281,6 +285,21 @@ const historyReducer = (
       };
     }
 
+    case 'batch': {
+      return {
+        states: [
+          ...states.slice(0, index),
+          {
+            ...states[index],
+            selection: action.selection ?? states[index].selection,
+            action: { ...states[index].action, batch: false },
+          },
+        ],
+        index,
+        selection: action.selection ?? selection,
+      };
+    }
+
     case 'select': {
       return { states, index, selection: action.selection };
     }
@@ -294,9 +313,20 @@ const historyReducer = (
       ) {
         return { states, index, selection };
       }
+      if (states[index].action.batch && action.batch) {
+        return {
+          states: [...states.slice(0, index), { ...states[index], ...state }],
+          index,
+          selection: state.selection,
+        };
+      }
       return {
         states: [
-          ...states.slice(index < 100 ? 0 : index - 99, index + 1),
+          ...states.slice(index < 100 ? 0 : index - 99, index),
+          {
+            ...states[index],
+            action: { ...states[index].action, batch: false },
+          },
           { ...state, action },
         ],
         index: index < 100 ? index + 1 : 100,

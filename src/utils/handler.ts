@@ -45,6 +45,11 @@ export const redoHandler =
   ({ dispatch }) =>
     dispatch({ type: 'redo' });
 
+export const batchHandler =
+  (): Handler =>
+  ({ dispatch }) =>
+    dispatch({ type: 'batch' });
+
 export const selectHandler =
   (selection: SelectAction['selection']): Handler =>
   ({ dispatch }) =>

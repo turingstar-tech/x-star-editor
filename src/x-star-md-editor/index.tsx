@@ -188,6 +188,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'copy':
         case 'cut': {
+          // 防止传输其他类型数据
           e.preventDefault();
           if (startOffset < endOffset) {
             e.clipboardData.setData(
@@ -206,9 +207,11 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const compositionEventHandler = (e: React.CompositionEvent) => {
       switch (e.type) {
         case 'compositionend': {
+          // 组合时不更新 DOM，组合结束统一更新
           const selection = getSelection();
           container.setText(sourceCodeLatest.current);
           container.setSelection(selection);
+          dispatch({ type: 'batch' });
           break;
         }
       }
@@ -221,6 +224,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'dragstart': {
           if (startOffset < endOffset) {
+            // 防止传输其他类型数据
             e.dataTransfer.clearData();
             e.dataTransfer.setData(
               'text/plain',
@@ -259,6 +263,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const keyboardEventHandler = (e: React.KeyboardEvent) => {
       switch (e.type) {
         case 'keydown': {
+          // 组合时不触发快捷键
           if (!e.nativeEvent.isComposing) {
             composeHandlers(options.keyboardEventHandlers)({
               history,
@@ -275,147 +280,149 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     useEffect(() => {
       const listener = (e: InputEvent) => {
-        switch (e.type) {
-          case 'beforeinput': {
-            const targetRange = e.getTargetRanges()[0];
-            if (containerRef.current && targetRange) {
-              const startOffset = container.getOffset(
-                containerRef.current,
-                targetRange.startContainer,
-                targetRange.startOffset,
-              );
-              const endOffset = container.getOffset(
-                containerRef.current,
-                targetRange.endContainer,
-                targetRange.endOffset,
-              );
-              const selection = createSelection(startOffset, endOffset);
+        const targetRange = e.getTargetRanges()[0];
+        if (!containerRef.current || !targetRange) {
+          return;
+        }
 
-              switch (e.inputType) {
-                case 'insertText': {
-                  e.preventDefault();
-                  if (e.data !== null) {
-                    dispatch({
-                      type: 'insert',
-                      payload: { text: e.data },
-                      selection,
-                    });
-                  }
-                  break;
-                }
+        const startOffset = container.getOffset(
+          containerRef.current,
+          targetRange.startContainer,
+          targetRange.startOffset,
+        );
+        const endOffset = container.getOffset(
+          containerRef.current,
+          targetRange.endContainer,
+          targetRange.endOffset,
+        );
+        const selection = createSelection(startOffset, endOffset);
 
-                case 'insertReplacementText':
-                case 'insertFromDrop':
-                case 'insertFromPaste': {
-                  e.preventDefault();
-                  if (e.dataTransfer?.types.includes('text/plain')) {
-                    dispatch({
-                      type: 'insert',
-                      payload: { text: e.dataTransfer.getData('text/plain') },
-                      selection,
-                    });
-                  } else if (e.dataTransfer?.types.includes('Files')) {
-                    const file = e.dataTransfer.files[0];
-                    onInsertFile?.(file, {
-                      description: file.name,
-                      image: file.type.startsWith('image/'),
-                    });
-                  }
-                  break;
-                }
+        switch (e.inputType) {
+          case 'insertText': {
+            e.preventDefault();
+            if (e.data !== null) {
+              dispatch({
+                type: 'insert',
+                payload: { text: e.data },
+                selection,
+              });
+            }
+            break;
+          }
 
-                case 'insertLineBreak':
-                case 'insertParagraph': {
-                  e.preventDefault();
-                  dispatch({
-                    type: 'insert',
-                    payload: { text: '\n' },
-                    selection,
-                  });
-                  break;
-                }
+          case 'insertReplacementText':
+          case 'insertFromDrop':
+          case 'insertFromPaste': {
+            e.preventDefault();
+            if (e.dataTransfer?.types.includes('text/plain')) {
+              dispatch({
+                type: 'insert',
+                payload: { text: e.dataTransfer.getData('text/plain') },
+                selection,
+                batch: true,
+              });
+              dispatch({ type: 'batch' });
+            } else if (e.dataTransfer?.types.includes('Files')) {
+              const file = e.dataTransfer.files[0];
+              onInsertFile?.(file, {
+                description: file.name,
+                image: file.type.startsWith('image/'),
+              });
+            }
+            break;
+          }
 
-                case 'insertCompositionText':
-                case 'insertFromComposition': {
-                  if (e.data !== null) {
-                    ignoreNext.current = true;
-                    dispatch({
-                      type: 'insert',
-                      payload: { text: e.data },
-                      selection,
-                    });
-                  }
-                  break;
-                }
+          case 'insertLineBreak':
+          case 'insertParagraph': {
+            e.preventDefault();
+            dispatch({
+              type: 'insert',
+              payload: { text: '\n' },
+              selection,
+            });
+            break;
+          }
 
-                case 'deleteWordBackward':
-                case 'deleteWordForward':
-                case 'deleteContentBackward':
-                case 'deleteContentForward': {
-                  e.preventDefault();
-                  if (startOffset < endOffset) {
-                    dispatch({
-                      type: 'insert',
-                      payload: { text: '' },
-                      selection,
-                    });
-                  } else if (e.inputType.endsWith('Backward')) {
-                    if (startOffset) {
-                      dispatch({
-                        type: 'insert',
-                        payload: { text: '' },
-                        selection: createSelection(startOffset - 1, endOffset),
-                      });
-                    }
-                  } else {
-                    if (endOffset < sourceCodeLatest.current.length - 1) {
-                      dispatch({
-                        type: 'insert',
-                        payload: { text: '' },
-                        selection: createSelection(startOffset, endOffset + 1),
-                      });
-                    }
-                  }
-                  break;
-                }
+          case 'insertCompositionText':
+          case 'insertFromComposition': {
+            // 避免 DOM 更新扰乱组合
+            ignoreNext.current = true;
+            if (e.data !== null) {
+              dispatch({
+                type: 'insert',
+                payload: { text: e.data },
+                selection,
+                batch: true,
+              });
+            }
+            break;
+          }
 
-                case 'deleteByDrag':
-                case 'deleteCompositionText': {
-                  ignoreNext.current = true;
-                  dispatch({
-                    type: 'insert',
-                    payload: { text: '' },
-                    selection,
-                  });
-                  break;
-                }
-
-                case 'formatBold': {
-                  e.preventDefault();
-                  dispatch({
-                    type: 'toggle',
-                    payload: { type: 'strong' },
-                    selection,
-                  });
-                  break;
-                }
-
-                case 'formatItalic': {
-                  e.preventDefault();
-                  dispatch({
-                    type: 'toggle',
-                    payload: { type: 'emphasis' },
-                    selection,
-                  });
-                  break;
-                }
-
-                default: {
-                  e.preventDefault();
-                  break;
-                }
+          case 'deleteWordBackward':
+          case 'deleteWordForward':
+          case 'deleteContentBackward':
+          case 'deleteContentForward': {
+            e.preventDefault();
+            if (startOffset < endOffset) {
+              dispatch({
+                type: 'insert',
+                payload: { text: '' },
+                selection,
+              });
+            } else if (e.inputType.endsWith('Backward')) {
+              if (startOffset) {
+                dispatch({
+                  type: 'insert',
+                  payload: { text: '' },
+                  selection: createSelection(startOffset - 1, endOffset),
+                });
+              }
+            } else {
+              if (endOffset < sourceCodeLatest.current.length) {
+                dispatch({
+                  type: 'insert',
+                  payload: { text: '' },
+                  selection: createSelection(startOffset, endOffset + 1),
+                });
               }
             }
+            break;
+          }
+
+          case 'deleteByDrag':
+          case 'deleteCompositionText': {
+            ignoreNext.current = true;
+            dispatch({
+              type: 'insert',
+              payload: { text: '' },
+              selection,
+              batch: true,
+            });
+            break;
+          }
+
+          case 'formatBold': {
+            e.preventDefault();
+            dispatch({
+              type: 'toggle',
+              payload: { type: 'strong' },
+              selection,
+            });
+            break;
+          }
+
+          case 'formatItalic': {
+            e.preventDefault();
+            dispatch({
+              type: 'toggle',
+              payload: { type: 'emphasis' },
+              selection,
+            });
+            break;
+          }
+
+          default: {
+            e.preventDefault();
             break;
           }
         }
