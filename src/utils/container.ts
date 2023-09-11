@@ -59,48 +59,6 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
     node instanceof HTMLElement && node.dataset.ignore !== undefined;
 
   /**
-   * 将 DOM 树规范化
-   *
-   * 检查每个行节点的末尾是否为零宽空格，如果不是，则删除行中的零宽空格并在末尾添加零宽空格
-   */
-  const normalize = () => {
-    if (!ref.current) {
-      return;
-    }
-
-    const traverse = (node: Node, depth: number) => {
-      if (isIgnore(node)) {
-        return;
-      }
-      if (depth === 2) {
-        // 检查行节点的末尾
-        if (node.lastChild?.nodeType === Node.TEXT_NODE) {
-          if (node.lastChild.nodeValue?.endsWith('\u200B')) {
-            return;
-          }
-        }
-      } else if (depth > 2) {
-        // 删除行中的零宽空格
-        if (node.nodeType === Node.TEXT_NODE) {
-          if (node.nodeValue?.includes('\u200B')) {
-            node.nodeValue = node.nodeValue.replace(/\u200B/g, '');
-          }
-          return;
-        }
-      }
-      for (let i = 0; i < node.childNodes.length; i++) {
-        traverse(node.childNodes[i], depth + 1);
-      }
-      if (depth === 2) {
-        // 添加零宽空格
-        node.appendChild(document.createTextNode('\u200B'));
-      }
-    };
-
-    traverse(ref.current, 0);
-  };
-
-  /**
    * 获取容器文本
    *
    * 在 DOM 树上遍历，将文本节点的值连接起来
@@ -159,14 +117,12 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
       for (; oldChild && newChild; ) {
         const oldNext = oldChild.nextSibling;
         const newNext = newChild.nextSibling;
-        if (oldChild.nodeName !== newChild.nodeName) {
-          // 节点名称不同，直接替换
+        if (
+          oldChild.nodeName !== newChild.nodeName ||
+          oldChild.nodeType === Node.TEXT_NODE
+        ) {
+          // 节点名称不同，或节点均为文本类型，直接替换
           oldChild.replaceWith(newChild);
-        } else if (oldChild.nodeType === Node.TEXT_NODE) {
-          // 节点均为文本类型，更新文本内容
-          if (oldChild.nodeValue !== newChild.nodeValue) {
-            oldChild.nodeValue = newChild.nodeValue;
-          }
         } else {
           // 节点名称相同，更新属性和子节点
           if (
@@ -212,6 +168,56 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
   };
 
   /**
+   * 根据节点和节点内偏移量获取容器内偏移量
+   *
+   * @param root 容器根节点
+   * @param targetNode 节点
+   * @param targetOffset 节点内偏移量
+   * @returns 容器内偏移量
+   */
+  const getOffset = (root: Node, targetNode: Node, targetOffset: number) => {
+    let offset = 0;
+
+    const traverse = (node: Node) => {
+      if (isIgnore(node)) {
+        return;
+      }
+      if (node === targetNode) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue) {
+            offset += targetOffset;
+            if (
+              targetOffset === node.nodeValue.length &&
+              node.nodeValue.endsWith('\u200B')
+            ) {
+              offset--;
+            }
+          }
+        } else {
+          for (let i = 0; i < targetOffset; i++) {
+            traverse(node.childNodes[i]);
+          }
+        }
+        return true;
+      }
+
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (node.nodeValue) {
+          offset += node.nodeValue.length;
+        }
+      } else {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          if (traverse(node.childNodes[i])) {
+            return true;
+          }
+        }
+      }
+    };
+
+    return traverse(root) ? offset : -1;
+  };
+
+  /**
    * 获取容器选区
    *
    * 用 Selection API 获取选中的 DOM 节点和节点内偏移量，在 DOM 树上遍历获取对应的容器内偏移量
@@ -228,56 +234,6 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
     ) {
       return createSelection(-1);
     }
-
-    /**
-     * 根据节点和节点内偏移量获取容器内偏移量
-     *
-     * @param root 容器根节点
-     * @param targetNode 节点
-     * @param targetOffset 节点内偏移量
-     * @returns 容器内偏移量
-     */
-    const getOffset = (root: Node, targetNode: Node, targetOffset: number) => {
-      let offset = 0;
-
-      const traverse = (node: Node) => {
-        if (isIgnore(node)) {
-          return;
-        }
-        if (node === targetNode) {
-          if (node.nodeType === Node.TEXT_NODE) {
-            if (node.nodeValue) {
-              offset += targetOffset;
-              if (
-                targetOffset === node.nodeValue.length &&
-                node.nodeValue.endsWith('\u200B')
-              ) {
-                offset--;
-              }
-            }
-          } else {
-            for (let i = 0; i < targetOffset; i++) {
-              traverse(node.childNodes[i]);
-            }
-          }
-          return true;
-        }
-
-        if (node.nodeType === Node.TEXT_NODE) {
-          if (node.nodeValue) {
-            offset += node.nodeValue.length;
-          }
-        } else {
-          for (let i = 0; i < node.childNodes.length; i++) {
-            if (traverse(node.childNodes[i])) {
-              return true;
-            }
-          }
-        }
-      };
-
-      return traverse(root) ? offset : -1;
-    };
 
     return createSelection(
       getOffset(ref.current, selection.anchorNode, selection.anchorOffset),
@@ -378,9 +334,9 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
   };
 
   return useRef({
-    normalize,
     getText,
     setText,
+    getOffset,
     getSelection,
     setSelection,
   }).current;

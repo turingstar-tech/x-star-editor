@@ -16,15 +16,6 @@ export interface InsertAction {
   selection: ContainerSelection;
 }
 
-export interface DeleteAction {
-  type: 'delete';
-  payload?: {
-    direction: 'backward' | 'forward';
-    boundary: 'char' | 'line';
-  };
-  selection: ContainerSelection;
-}
-
 export interface ToggleAction {
   type: 'toggle';
   payload:
@@ -51,7 +42,7 @@ export interface SetAction {
   selection: ContainerSelection;
 }
 
-type StateAction = InsertAction | DeleteAction | ToggleAction | SetAction;
+type StateAction = InsertAction | ToggleAction | SetAction;
 
 const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
   const { anchorOffset, focusOffset } = action.selection;
@@ -66,44 +57,6 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
         sourceCode: `${before}${text}${after}`,
         selection: createSelection(startOffset + text.length),
       };
-    }
-
-    case 'delete': {
-      // 选区不为空
-      if (startOffset < endOffset) {
-        return {
-          sourceCode: `${before}${after}`,
-          selection: createSelection(startOffset),
-        };
-      }
-
-      // 选区为空，根据删除方向和边界生成新状态
-      if (action.payload) {
-        const { direction, boundary } = action.payload;
-
-        if (direction === 'backward' && startOffset) {
-          const index = before.lastIndexOf('\n');
-          const length =
-            boundary === 'char' || index === before.length - 1
-              ? 1
-              : before.length - 1 - index;
-          return {
-            sourceCode: `${before.slice(0, before.length - length)}${after}`,
-            selection: createSelection(startOffset - length),
-          };
-        }
-
-        if (direction === 'forward' && startOffset < sourceCode.length) {
-          const index = `${after}\n`.indexOf('\n');
-          const length = boundary === 'char' || !index ? 1 : index;
-          return {
-            sourceCode: `${before}${after.slice(length)}`,
-            selection: createSelection(startOffset),
-          };
-        }
-      }
-
-      return { sourceCode, selection: action.selection };
     }
 
     case 'toggle': {
