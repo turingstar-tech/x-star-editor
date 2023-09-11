@@ -1,7 +1,7 @@
 import type { Root as HastRoot } from 'hast';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
-import type { Content as MdastNode, Root as MdastRoot } from 'mdast';
+import type { Content as MdastNode } from 'mdast';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
@@ -32,19 +32,6 @@ const toMdastProcessor = unified()
   .use(remarkGfm)
   .use(remarkMath)
   .freeze();
-
-/**
- * 带缓存的解析函数
- *
- * @param sourceCode Markdown 文本
- * @returns Mdast 树
- */
-const cachedParse = (() => {
-  let cache: Record<string, MdastRoot> = {};
-  return (sourceCode: string) =>
-    cache[sourceCode] ??
-    (cache = { [sourceCode]: toMdastProcessor.parse(sourceCode) })[sourceCode];
-})();
 
 /**
  * 将 Markdown 文本映射到 DOM 树，第一层为 `<div>` 块元素，第二层为 `<div>` 行元素，之后均为 `<span>` 元素
@@ -241,7 +228,7 @@ export const editorRender = (sourceCode: string) => {
     addText(sourceCode.slice(scanOffset, parentEndOffset), true);
   };
 
-  getChildren(cachedParse(sourceCode).children, sourceCode.length);
+  getChildren(toMdastProcessor.parse(sourceCode).children, sourceCode.length);
 
   if (scanOffset <= sourceCode.length) {
     // 添加最后一行文本
@@ -281,7 +268,7 @@ const toHastProcessor = unified()
  * @returns Hast 树
  */
 export const preViewerRender = async (sourceCode: string) =>
-  await toHastProcessor.run(cachedParse(sourceCode));
+  await toHastProcessor.run(toMdastProcessor.parse(sourceCode));
 
 /**
  * 过滤模式
