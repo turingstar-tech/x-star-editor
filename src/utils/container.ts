@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { editorRender } from './markdown';
 
 /**
@@ -332,6 +332,55 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
       ref.current.scrollTop += bottomOffset;
     }
   };
+
+  // 确保光标不在零宽空格后
+  useEffect(() => {
+    const listener = () => {
+      const selection = window.getSelection();
+      if (
+        !selection ||
+        !selection.anchorNode ||
+        !selection.focusNode ||
+        !ref.current?.contains(selection.anchorNode)
+      ) {
+        return;
+      }
+
+      let update = false;
+      let { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+      if (
+        anchorNode.nodeType === Node.TEXT_NODE &&
+        anchorNode.nodeValue?.[anchorOffset - 1] === '\u200B'
+      ) {
+        update = true;
+        anchorOffset--;
+      }
+      if (
+        focusNode.nodeType === Node.TEXT_NODE &&
+        focusNode.nodeValue?.[focusOffset - 1] === '\u200B'
+      ) {
+        update = true;
+        focusOffset--;
+      }
+      if (update) {
+        selection.setBaseAndExtent(
+          anchorNode,
+          anchorOffset,
+          focusNode,
+          focusOffset,
+        );
+      }
+    };
+
+    document.addEventListener('selectionchange', listener, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      document.removeEventListener('selectionchange', listener, {
+        capture: true,
+      });
+  }, []);
 
   return useRef({
     getText,
