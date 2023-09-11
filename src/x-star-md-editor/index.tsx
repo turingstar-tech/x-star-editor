@@ -6,8 +6,7 @@ import Toolbar, {
   getDefaultToolbarItems,
 } from '../components/Toolbar';
 import { LocaleProvider } from '../locales';
-import type { ContainerSelection } from '../utils/container';
-import { getRange, useContainer } from '../utils/container';
+import { createSelection, getRange, useContainer } from '../utils/container';
 import { prefix } from '../utils/global';
 import type { Executor, KeyboardEventHandler } from '../utils/handler';
 import {
@@ -119,11 +118,14 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const { history, sourceCode, selection, dispatch } =
       useHistory(initialValue);
 
+    const ignoreNext = useRef(false);
     const initialized = useRef(false);
 
     // 将文本同步到容器
     useEffect(() => {
-      container.setText(sourceCode);
+      if (!ignoreNext.current) {
+        container.setText(sourceCode);
+      }
       if (initialized.current) {
         onChange?.(sourceCode);
       }
@@ -131,17 +133,15 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     // 将选区同步到容器
     useEffect(() => {
-      if (initialized.current) {
+      if (!ignoreNext.current && initialized.current) {
         container.setSelection(selection);
       }
     }, [selection]);
 
     useEffect(() => {
+      ignoreNext.current = false;
       initialized.current = true;
-      return () => {
-        initialized.current = false;
-      };
-    }, []);
+    }, [sourceCode, selection]);
 
     const historyLatest = useRef(history);
     historyLatest.current = history;
@@ -195,108 +195,38 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
               sourceCode.slice(startOffset, endOffset),
             );
             if (e.type === 'cut') {
-              dispatch({ type: 'delete', selection });
+              dispatch({ type: 'insert', payload: { text: '' }, selection });
             }
-          }
-          break;
-        }
-
-        case 'paste': {
-          e.preventDefault();
-          if (e.clipboardData.types.includes('text/plain')) {
-            dispatch({
-              type: 'insert',
-              payload: { text: e.clipboardData.getData('text/plain') },
-              selection,
-            });
-          } else if (e.clipboardData.types.includes('Files')) {
-            const file = e.clipboardData.files[0];
-            onInsertFile?.(file, {
-              description: file.name,
-              image: file.type.startsWith('image/'),
-            });
           }
           break;
         }
       }
     };
 
-    /**
-     * 开始组合时的选区
-     */
-    const compositionStartSelection = useRef<ContainerSelection>();
-
-    /**
-     * 容器同步控制器
-     */
-    const syncController = useMemo(() => {
-      let timer = 0;
-
-      /**
-       * 将最新的文本和选区同步到容器
-       */
-      const sync = () => {
-        if (compositionStartSelection.current) {
-          const selection = getSelection();
-          container.setText(sourceCodeLatest.current);
-          container.setSelection(selection);
-          compositionStartSelection.current = undefined;
-        }
-        timer = 0;
-      };
-
-      return {
-        /**
-         * 在下个事件循环中同步
-         */
-        start: () => {
-          if (!timer) {
-            timer = window.setTimeout(sync);
-          }
-        },
-
-        /**
-         * 立即执行下个事件循环中的同步
-         */
-        flush: () => {
-          if (timer) {
-            window.clearTimeout(timer);
-            sync();
-          }
-        },
-      };
-    }, []);
-
     const compositionEventHandler = (e: React.CompositionEvent) => {
       switch (e.type) {
         case 'compositionend': {
-          syncController.start();
-          break;
-        }
-
-        case 'compositionstart': {
-          syncController.flush();
-          compositionStartSelection.current = getSelection();
+          const selection = getSelection();
+          container.setText(sourceCodeLatest.current);
+          container.setSelection(selection);
           break;
         }
       }
     };
 
     const dragEventHandler = (e: React.DragEvent) => {
+      const selection = getSelection();
+      const { startOffset, endOffset } = getRange(selection);
+
       switch (e.type) {
-        case 'drop': {
-          const selection = getSelection();
-          window.setTimeout(() => {
-            container.normalize();
-            dispatch({
-              type: 'set',
-              payload: {
-                sourceCode: container.getText(),
-                selection: getSelection(),
-              },
-              selection,
-            });
-          });
+        case 'dragstart': {
+          if (startOffset < endOffset) {
+            e.dataTransfer.clearData();
+            e.dataTransfer.setData(
+              'text/plain',
+              sourceCode.slice(startOffset, endOffset),
+            );
+          }
           break;
         }
       }
@@ -306,23 +236,6 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       switch (e.type) {
         case 'blur': {
           blurSelection.current = getSelection();
-          break;
-        }
-      }
-    };
-
-    const formEventHandler = (e: React.FormEvent) => {
-      switch (e.type) {
-        case 'beforeinput': {
-          e.preventDefault();
-          if ('data' in e && typeof e.data === 'string') {
-            dispatch({
-              type: 'insert',
-              payload: { text: e.data },
-              selection: compositionStartSelection.current ?? getSelection(),
-            });
-            compositionStartSelection.current = undefined;
-          }
           break;
         }
       }
@@ -346,9 +259,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const keyboardEventHandler = (e: React.KeyboardEvent) => {
       switch (e.type) {
         case 'keydown': {
-          if (compositionStartSelection.current) {
-            e.preventDefault();
-          } else {
+          if (!e.nativeEvent.isComposing) {
             composeHandlers(options.keyboardEventHandlers)({
               history,
               sourceCode,
@@ -361,6 +272,159 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         }
       }
     };
+
+    useEffect(() => {
+      const listener = (e: InputEvent) => {
+        switch (e.type) {
+          case 'beforeinput': {
+            const targetRange = e.getTargetRanges()[0];
+            if (containerRef.current && targetRange) {
+              const startOffset = container.getOffset(
+                containerRef.current,
+                targetRange.startContainer,
+                targetRange.startOffset,
+              );
+              const endOffset = container.getOffset(
+                containerRef.current,
+                targetRange.endContainer,
+                targetRange.endOffset,
+              );
+              const selection = createSelection(startOffset, endOffset);
+
+              switch (e.inputType) {
+                case 'insertText': {
+                  e.preventDefault();
+                  if (e.data !== null) {
+                    dispatch({
+                      type: 'insert',
+                      payload: { text: e.data },
+                      selection,
+                    });
+                  }
+                  break;
+                }
+
+                case 'insertReplacementText':
+                case 'insertFromDrop':
+                case 'insertFromPaste': {
+                  e.preventDefault();
+                  if (e.dataTransfer?.types.includes('text/plain')) {
+                    dispatch({
+                      type: 'insert',
+                      payload: { text: e.dataTransfer.getData('text/plain') },
+                      selection,
+                    });
+                  } else if (e.dataTransfer?.types.includes('Files')) {
+                    const file = e.dataTransfer.files[0];
+                    onInsertFile?.(file, {
+                      description: file.name,
+                      image: file.type.startsWith('image/'),
+                    });
+                  }
+                  break;
+                }
+
+                case 'insertLineBreak':
+                case 'insertParagraph': {
+                  e.preventDefault();
+                  dispatch({
+                    type: 'insert',
+                    payload: { text: '\n' },
+                    selection,
+                  });
+                  break;
+                }
+
+                case 'insertCompositionText':
+                case 'insertFromComposition': {
+                  if (e.data !== null) {
+                    ignoreNext.current = true;
+                    dispatch({
+                      type: 'insert',
+                      payload: { text: e.data },
+                      selection,
+                    });
+                  }
+                  break;
+                }
+
+                case 'deleteWordBackward':
+                case 'deleteWordForward':
+                case 'deleteContentBackward':
+                case 'deleteContentForward': {
+                  e.preventDefault();
+                  if (startOffset < endOffset) {
+                    dispatch({
+                      type: 'insert',
+                      payload: { text: '' },
+                      selection,
+                    });
+                  } else if (e.inputType.endsWith('Backward')) {
+                    if (startOffset) {
+                      dispatch({
+                        type: 'insert',
+                        payload: { text: '' },
+                        selection: createSelection(startOffset - 1, endOffset),
+                      });
+                    }
+                  } else {
+                    if (endOffset < sourceCodeLatest.current.length - 1) {
+                      dispatch({
+                        type: 'insert',
+                        payload: { text: '' },
+                        selection: createSelection(startOffset, endOffset + 1),
+                      });
+                    }
+                  }
+                  break;
+                }
+
+                case 'deleteByDrag':
+                case 'deleteCompositionText': {
+                  ignoreNext.current = true;
+                  dispatch({
+                    type: 'insert',
+                    payload: { text: '' },
+                    selection,
+                  });
+                  break;
+                }
+
+                case 'formatBold': {
+                  e.preventDefault();
+                  dispatch({
+                    type: 'toggle',
+                    payload: { type: 'strong' },
+                    selection,
+                  });
+                  break;
+                }
+
+                case 'formatItalic': {
+                  e.preventDefault();
+                  dispatch({
+                    type: 'toggle',
+                    payload: { type: 'emphasis' },
+                    selection,
+                  });
+                  break;
+                }
+
+                default: {
+                  e.preventDefault();
+                  break;
+                }
+              }
+            }
+            break;
+          }
+        }
+      };
+
+      containerRef.current?.addEventListener('beforeinput', listener);
+      return () =>
+        containerRef.current?.removeEventListener('beforeinput', listener);
+    }, []);
 
     return (
       <LocaleProvider locale={locale}>
@@ -376,15 +440,12 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           className={classNames(`${prefix}md-editor`, className)}
           style={{ ...style, height }}
           contentEditable
-          onBeforeInput={formEventHandler}
           onBlur={focusEventHandler}
           onCompositionEnd={compositionEventHandler}
-          onCompositionStart={compositionEventHandler}
           onCopy={clipboardEventHandler}
           onCut={clipboardEventHandler}
-          onDrop={dragEventHandler}
+          onDragStart={dragEventHandler}
           onKeyDown={keyboardEventHandler}
-          onPaste={clipboardEventHandler}
         />
       </LocaleProvider>
     );
