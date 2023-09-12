@@ -372,14 +372,8 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
       }
     };
 
-    document.addEventListener('selectionchange', listener, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      document.removeEventListener('selectionchange', listener, {
-        capture: true,
-      });
+    document.addEventListener('selectionchange', listener);
+    return () => document.removeEventListener('selectionchange', listener);
   }, []);
 
   return useRef({

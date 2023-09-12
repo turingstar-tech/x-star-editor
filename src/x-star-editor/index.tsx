@@ -248,17 +248,11 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         }
       };
 
-      editor?.addEventListener('scroll', listener, {
-        capture: true,
-        passive: true,
-      });
-      viewer?.addEventListener('scroll', listener, {
-        capture: true,
-        passive: true,
-      });
+      editor?.addEventListener('scroll', listener);
+      viewer?.addEventListener('scroll', listener);
       return () => {
-        editor?.removeEventListener('scroll', listener, { capture: true });
-        viewer?.removeEventListener('scroll', listener, { capture: true });
+        editor?.removeEventListener('scroll', listener);
+        viewer?.removeEventListener('scroll', listener);
       };
     }, []);
 

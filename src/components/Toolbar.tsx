@@ -83,10 +83,7 @@ const Item = ({
         }
       };
 
-      document.addEventListener('click', listener, {
-        capture: true,
-        passive: true,
-      });
+      document.addEventListener('click', listener, { capture: true });
       return () =>
         document.removeEventListener('click', listener, { capture: true });
     }
