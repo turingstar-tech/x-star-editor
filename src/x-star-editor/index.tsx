@@ -12,6 +12,34 @@ import type {
 } from '../x-star-md-viewer';
 import XStarMdViewer, { useMdViewerRef } from '../x-star-md-viewer';
 
+const ViewerRenderWrapper = React.forwardRef<
+  XStarMdViewerHandle,
+  {
+    children: React.ReactNode;
+    className?: string;
+    style?: React.CSSProperties;
+    height?: React.CSSProperties['height'];
+  }
+>(({ children, className, style, height }, ref) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({ getViewerContainer: () => containerRef.current! }),
+    [],
+  );
+
+  return (
+    <div
+      ref={containerRef}
+      className={classNames(`${prefix}md-viewer`, className)}
+      style={{ ...style, height }}
+    >
+      {children}
+    </div>
+  );
+});
+
 export interface XStarEditorHandle
   extends XStarMdEditorHandle,
     XStarMdViewerHandle {
@@ -66,6 +94,11 @@ export interface XStarEditorProps {
   >;
 
   /**
+   * 自定义查看器渲染函数
+   */
+  viewerRender?: (value: string) => React.ReactNode;
+
+  /**
    * 文本变化回调函数
    */
   onChange?: XStarMdEditorProps['onChange'];
@@ -83,10 +116,11 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       style,
       height,
       locale,
-      initialValue,
+      initialValue = '',
       enableWebWorker,
       editorProps,
       viewerProps,
+      viewerRender,
       onChange,
       onInsertFile,
     },
@@ -248,13 +282,24 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           }}
           onInsertFile={onInsertFile}
         />
-        <XStarMdViewer
-          ref={viewerRef}
-          {...viewerProps}
-          height={height}
-          value={value}
-          enableWebWorker={enableWebWorker}
-        />
+        {viewerRender ? (
+          <ViewerRenderWrapper
+            ref={viewerRef}
+            className={viewerProps?.className}
+            style={viewerProps?.style}
+            height={height}
+          >
+            {viewerRender(value)}
+          </ViewerRenderWrapper>
+        ) : (
+          <XStarMdViewer
+            ref={viewerRef}
+            {...viewerProps}
+            height={height}
+            value={value}
+            enableWebWorker={enableWebWorker}
+          />
+        )}
       </div>
     );
   },
