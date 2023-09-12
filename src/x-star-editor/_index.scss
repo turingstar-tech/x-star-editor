@@ -2,17 +2,17 @@
   display: flex;
   flex-wrap: wrap;
 
-  .#{$prefix}toolbar {
+  > .#{$prefix}toolbar {
     width: 100%;
   }
 
-  .#{$prefix}md-editor {
+  > .#{$prefix}md-editor {
     flex: 1;
     border-right: none;
     border-bottom-right-radius: 0;
   }
 
-  .#{$prefix}md-viewer {
+  > .#{$prefix}md-viewer {
     padding: 0 1em;
     flex: 1;
     background-color: $color-bg-container;

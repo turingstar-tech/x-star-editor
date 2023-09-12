@@ -34,7 +34,7 @@ import { toHTML, toMarkdown } from '../utils/markdown';
 import Fade from './Fade';
 import FileInput from './FileInput';
 
-interface ButtonProps {
+interface ItemProps {
   children: React.ReactNode;
   toolbarRef: React.RefObject<HTMLDivElement>;
   disabled?: boolean;
@@ -43,14 +43,14 @@ interface ButtonProps {
   onClick?: () => void;
 }
 
-const Button = ({
+const Item = ({
   children,
   toolbarRef,
   disabled,
   tooltip,
   popoverRender,
   onClick,
-}: ButtonProps) => {
+}: ItemProps) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -93,9 +93,9 @@ const Button = ({
   }, [popoverMount]);
 
   return (
-    <div className={classNames(`${prefix}button-container`)}>
+    <div className={classNames(`${prefix}item-container`)}>
       <div
-        className={classNames(`${prefix}button`, {
+        className={classNames(`${prefix}item`, {
           [`${prefix}disabled`]: disabled,
           [`${prefix}active`]: tooltipOpen || popoverMount,
         })}
@@ -617,7 +617,7 @@ const Toolbar = ({ className, style, itemMap, items, exec }: ToolbarProps) => {
                 ? toolbarItem(ctx)
                 : toolbarItem;
             return (
-              <Button
+              <Item
                 key={index}
                 toolbarRef={toolbarRef}
                 disabled={disabled}
@@ -626,7 +626,7 @@ const Toolbar = ({ className, style, itemMap, items, exec }: ToolbarProps) => {
                 onClick={() => onClick?.(exec)}
               >
                 {children}
-              </Button>
+              </Item>
             );
           })}
         </React.Fragment>

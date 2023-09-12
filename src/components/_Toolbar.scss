@@ -10,10 +10,10 @@
   border-top-left-radius: $border-radius;
   border-top-right-radius: $border-radius;
 
-  .#{$prefix}button-container {
+  .#{$prefix}item-container {
     position: relative;
 
-    > .#{$prefix}button {
+    .#{$prefix}item {
       width: 2em;
       height: 2em;
       display: flex;
