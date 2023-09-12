@@ -1,5 +1,5 @@
 import { createKeybindingsHandler } from 'tinykeys';
-import { createSelection, getRange } from './container';
+import { createSelection } from './container';
 import type {
   InsertAction,
   SelectAction,
@@ -89,47 +89,21 @@ export const getDefaultKeyboardEventHandlers = (): KeyboardEventHandler[] => [
         dispatch({ type: 'redo' });
       },
 
-      ArrowLeft: (e) => {
-        e.preventDefault();
-        const { startOffset, endOffset } = getRange(selection);
-        if (startOffset < endOffset) {
-          dispatch({ type: 'select', selection: createSelection(startOffset) });
-        } else if (startOffset) {
-          dispatch({
-            type: 'select',
-            selection: createSelection(startOffset - 1),
-          });
-        }
-      },
-
-      'Shift+ArrowLeft': (e) => {
-        e.preventDefault();
-        const { anchorOffset, focusOffset } = selection;
-        if (focusOffset) {
-          dispatch({
-            type: 'select',
-            selection: createSelection(anchorOffset, focusOffset - 1),
-          });
-        }
-      },
-
       ArrowRight: (e) => {
-        e.preventDefault();
-        const { startOffset, endOffset } = getRange(selection);
-        if (startOffset < endOffset) {
-          dispatch({ type: 'select', selection: createSelection(endOffset) });
-        } else if (startOffset < sourceCode.length) {
+        const { anchorOffset, focusOffset } = selection;
+        if (anchorOffset === focusOffset && sourceCode[focusOffset] === '\n') {
+          e.preventDefault();
           dispatch({
             type: 'select',
-            selection: createSelection(startOffset + 1),
+            selection: createSelection(focusOffset + 1),
           });
         }
       },
 
       'Shift+ArrowRight': (e) => {
-        e.preventDefault();
         const { anchorOffset, focusOffset } = selection;
-        if (focusOffset < sourceCode.length) {
+        if (sourceCode[focusOffset] === '\n') {
+          e.preventDefault();
           dispatch({
             type: 'select',
             selection: createSelection(anchorOffset, focusOffset + 1),

@@ -1,4 +1,5 @@
 import type { Root as HastRoot } from 'hast';
+import type { Props } from 'hast-util-to-jsx-runtime';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
 import type { Content as MdastNode } from 'mdast';
@@ -325,6 +326,7 @@ export const viewerRender = (root: HastRoot, schema: Schema) =>
 export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
   const components = {
     ...options.customHTMLElements,
+    input: (props: unknown) => jsx('input', props as Props),
     custom: (props: { meta: string; value: string }) =>
       jsx(options.customBlocks[props.meta] ?? 'div', { children: props.value }),
   };
