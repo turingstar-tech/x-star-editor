@@ -2,6 +2,17 @@
   display: flex;
   flex-wrap: wrap;
 
+  &.#{$prefix}fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    > .#{$prefix}md-editor,
+    > .#{$prefix}md-viewer {
+      height: calc(100% - 3em) !important;
+    }
+  }
+
   > .#{$prefix}toolbar {
     width: 100%;
   }
@@ -13,12 +24,20 @@
   }
 
   > .#{$prefix}md-viewer {
+    @include border-right-bottom-left;
+
     padding: 0 1em;
     flex: 1;
     background-color: $color-bg-container;
-    border: 1px solid $color-border;
-    border-top: none;
-    border-bottom-right-radius: $border-radius;
+    border-bottom-left-radius: 0;
     overflow: auto;
+  }
+
+  > .#{$prefix}active {
+    @include border-right-bottom-left;
+  }
+
+  > .#{$prefix}hidden {
+    display: none;
   }
 }

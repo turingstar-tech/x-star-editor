@@ -1,12 +1,11 @@
 .#{$prefix}md-editor {
+  @include common;
+  @include border-right-bottom-left;
+
   padding: 0 1em;
   line-height: 1.6em;
   white-space: break-spaces;
   background-color: $color-bg-container;
-  border: 1px solid $color-border;
-  border-top: none;
-  border-bottom-right-radius: $border-radius;
-  border-bottom-left-radius: $border-radius;
   outline: none;
   overflow: auto;
 
@@ -17,6 +16,4 @@
   > :last-child {
     margin-bottom: 1em;
   }
-
-  @include common;
 }

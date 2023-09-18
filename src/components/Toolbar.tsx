@@ -3,10 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import SvgBlockquote from '../icons/Blockquote';
 import SvgCode from '../icons/Code';
 import SvgDelete from '../icons/Delete';
-import SvgEditOnly from '../icons/EditOnly';
 import SvgEmphasis from '../icons/Emphasis';
-import SvgEnterFullscreen from '../icons/EnterFullscreen';
-import SvgExitFullscreen from '../icons/ExitFullscreen';
 import SvgHeading from '../icons/Heading';
 import SvgHelp from '../icons/Help';
 import SvgImage from '../icons/Image';
@@ -25,7 +22,6 @@ import SvgToHTML from '../icons/ToHtml';
 import SvgToMarkdown from '../icons/ToMarkdown';
 import SvgUndo from '../icons/Undo';
 import SvgUnorderedList from '../icons/UnorderedList';
-import SvgViewOnly from '../icons/ViewOnly';
 import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
 import type { Executor, Handler } from '../utils/handler';
@@ -83,10 +79,7 @@ const Item = ({
         }
       };
 
-      document.addEventListener('click', listener, {
-        capture: true,
-        passive: true,
-      });
+      document.addEventListener('click', listener, { capture: true });
       return () =>
         document.removeEventListener('click', listener, { capture: true });
     }
@@ -101,6 +94,7 @@ const Item = ({
         })}
         onClick={() => {
           if (!disabled) {
+            setTooltipOpen(false);
             setPopoverOpen(true);
             onClick?.();
           }
@@ -151,15 +145,15 @@ const headingOptions = [
 ] as const;
 
 const mermaidOptions = [
-  {
-    label: 'Flowchart',
-    value: `flowchart TD
-    A[Start] --> B{Is it?}
-    B -- Yes --> C[OK]
-    C --> D[Rethink]
-    D --> B
-    B -- No ----> E[End]`,
-  },
+  // {
+  //   label: 'Flowchart',
+  //   value: `flowchart TD
+  //   A[Start] --> B{Is it?}
+  //   B -- Yes --> C[OK]
+  //   C --> D[Rethink]
+  //   D --> B
+  //   B -- No ----> E[End]`,
+  // },
   {
     label: 'Sequence Diagram',
     value: `sequenceDiagram
@@ -176,24 +170,24 @@ const mermaidOptions = [
     BankAccount : +deposit(amount)
     BankAccount : +withdrawal(amount)`,
   },
-  {
-    label: 'State Diagram',
-    value: `stateDiagram-v2
-    [*] --> Still
-    Still --> [*]
+  // {
+  //   label: 'State Diagram',
+  //   value: `stateDiagram-v2
+  //   [*] --> Still
+  //   Still --> [*]
 
-    Still --> Moving
-    Moving --> Still
-    Moving --> Crash
-    Crash --> [*]`,
-  },
-  {
-    label: 'Entity Relationship Diagram',
-    value: `erDiagram
-    CUSTOMER ||--o{ ORDER : places
-    ORDER ||--|{ LINE-ITEM : contains
-    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses`,
-  },
+  //   Still --> Moving
+  //   Moving --> Still
+  //   Moving --> Crash
+  //   Crash --> [*]`,
+  // },
+  // {
+  //   label: 'Entity Relationship Diagram',
+  //   value: `erDiagram
+  //   CUSTOMER ||--o{ ORDER : places
+  //   ORDER ||--|{ LINE-ITEM : contains
+  //   CUSTOMER }|..|{ DELIVERY-ADDRESS : uses`,
+  // },
   {
     label: 'User Journey',
     value: `journey
@@ -242,23 +236,23 @@ const mermaidOptions = [
     Campaign E: [0.40, 0.34]
     Campaign F: [0.35, 0.78]`,
   },
-  {
-    label: 'Requirement Diagram',
-    value: `requirementDiagram
+  // {
+  //   label: 'Requirement Diagram',
+  //   value: `requirementDiagram
 
-    requirement test_req {
-    id: 1
-    text: the test text.
-    risk: high
-    verifymethod: test
-    }
+  //   requirement test_req {
+  //   id: 1
+  //   text: the test text.
+  //   risk: high
+  //   verifymethod: test
+  //   }
 
-    element test_entity {
-    type: simulation
-    }
+  //   element test_entity {
+  //   type: simulation
+  //   }
 
-    test_entity - satisfies -> test_req`,
-  },
+  //   test_entity - satisfies -> test_req`,
+  // },
   {
     label: 'Gitgraph (Git) Diagram',
     value: `gitGraph
@@ -308,7 +302,7 @@ const mermaidOptions = [
 export type ToolbarItemMap = Partial<Record<string, ToolbarItem>>;
 
 export const getDefaultToolbarItemMap = (
-  locale = '',
+  locale?: string,
   onInsertFile?: (
     file: File,
     options: { description: string; image: boolean },
@@ -354,22 +348,10 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
     },
 
-    editOnly: {
-      children: <SvgEditOnly className={classNames(`${prefix}icon`)} />,
-      tooltip: t('editOnly'),
-    },
-
     emphasis: {
       children: <SvgEmphasis className={classNames(`${prefix}icon`)} />,
       tooltip: t('emphasis'),
       onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
-    },
-
-    fullscreen: {
-      children: (
-        <SvgEnterFullscreen className={classNames(`${prefix}icon`)} />
-      ) ?? <SvgExitFullscreen className={classNames(`${prefix}icon`)} />,
-      tooltip: t('enterFullscreen') ?? t('exitFullscreen'),
     },
 
     heading: {
@@ -564,11 +546,6 @@ export const getDefaultToolbarItemMap = (
       children: <SvgUnorderedList className={classNames(`${prefix}icon`)} />,
       tooltip: t('unorderedList'),
     },
-
-    viewOnly: {
-      children: <SvgViewOnly className={classNames(`${prefix}icon`)} />,
-      tooltip: t('viewOnly'),
-    },
   };
 };
 
@@ -582,7 +559,7 @@ export const getDefaultToolbarItems = (): ToolbarItems => [
   ['undo', 'redo'],
   // ['orderedList', 'unorderedList', 'taskList'],
   ['toMarkdown', 'toHTML'],
-  // ['help', 'editOnly', 'viewOnly', 'fullscreen'],
+  // ['help'],
 ];
 
 interface ToolbarProps {
