@@ -1,8 +1,20 @@
 import classNames from 'classnames';
-import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import SvgEditOnly from '../icons/EditOnly';
+import SvgEnterFullscreen from '../icons/EnterFullscreen';
+import SvgExitFullscreen from '../icons/ExitFullscreen';
+import SvgViewOnly from '../icons/ViewOnly';
+import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
 import type {
   XStarMdEditorHandle,
+  XStarMdEditorPlugin,
   XStarMdEditorProps,
 } from '../x-star-md-editor';
 import XStarMdEditor, { useMdEditorRef } from '../x-star-md-editor';
@@ -258,18 +270,95 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
 
     const [value, setValue] = useState(initialValue);
 
+    const [layout, setLayout] = useState<('editor' | 'viewer')[]>([
+      'editor',
+      'viewer',
+    ]);
+    const editOnly = layout.includes('editor') && !layout.includes('viewer');
+    const viewOnly = !layout.includes('editor') && layout.includes('viewer');
+
+    const [fullscreen, setFullscreen] = useState(false);
+
+    const editorPlugins = useMemo<XStarMdEditorPlugin[]>(
+      () => [
+        (ctx) => {
+          const t = getFormat(locale, 'toolbarItem');
+
+          ctx.toolbarItemMap.editOnly = {
+            children: (
+              <SvgEditOnly
+                className={classNames(`${prefix}icon`, {
+                  [`${prefix}active`]: editOnly,
+                })}
+              />
+            ),
+            tooltip: t('editOnly'),
+            onClick: () =>
+              setLayout(editOnly ? ['editor', 'viewer'] : ['editor']),
+          };
+
+          ctx.toolbarItemMap.viewOnly = {
+            children: (
+              <SvgViewOnly
+                className={classNames(`${prefix}icon`, {
+                  [`${prefix}active`]: viewOnly,
+                })}
+              />
+            ),
+            tooltip: t('viewOnly'),
+            onClick: () =>
+              setLayout(viewOnly ? ['editor', 'viewer'] : ['viewer']),
+          };
+
+          ctx.toolbarItemMap.fullscreen = {
+            children: fullscreen ? (
+              <SvgExitFullscreen className={classNames(`${prefix}icon`)} />
+            ) : (
+              <SvgEnterFullscreen className={classNames(`${prefix}icon`)} />
+            ),
+            tooltip: fullscreen ? t('exitFullscreen') : t('enterFullscreen'),
+            onClick: () => setFullscreen(!fullscreen),
+          };
+
+          ctx.toolbarItems.push(['editOnly', 'viewOnly', 'fullscreen']);
+        },
+        ...(editorProps?.plugins ?? []),
+      ],
+      [locale, editOnly, viewOnly, fullscreen, editorProps?.plugins],
+    );
+
+    // 防止出现两个滚动条
+    useEffect(() => {
+      if (fullscreen) {
+        const { overflow } = document.body.style;
+        document.body.style.overflow = 'hidden';
+        return () => {
+          document.body.style.overflow = overflow;
+        };
+      }
+    }, [fullscreen]);
+
     return (
       <div
         ref={containerRef}
-        className={classNames(`${prefix}editor`, className)}
+        className={classNames(
+          `${prefix}editor`,
+          { [`${prefix}fullscreen`]: fullscreen },
+          className,
+        )}
         style={style}
       >
         <XStarMdEditor
           ref={editorRef}
           {...editorProps}
+          className={classNames(
+            { [`${prefix}active`]: editOnly, [`${prefix}hidden`]: viewOnly },
+            editorProps?.className,
+          )}
           height={height}
           locale={locale}
           initialValue={initialValue}
+          plugins={editorPlugins}
           onChange={(value) => {
             setValue(value);
             onChange?.(value);
@@ -279,7 +368,10 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         {viewerRender ? (
           <ViewerRenderWrapper
             ref={viewerRef}
-            className={viewerProps?.className}
+            className={classNames(
+              { [`${prefix}active`]: viewOnly, [`${prefix}hidden`]: editOnly },
+              viewerProps?.className,
+            )}
             style={viewerProps?.style}
             height={height}
           >
@@ -289,6 +381,10 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           <XStarMdViewer
             ref={viewerRef}
             {...viewerProps}
+            className={classNames(
+              { [`${prefix}active`]: viewOnly, [`${prefix}hidden`]: editOnly },
+              viewerProps?.className,
+            )}
             height={height}
             value={value}
             enableWebWorker={enableWebWorker}

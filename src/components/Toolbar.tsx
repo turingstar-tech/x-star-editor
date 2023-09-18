@@ -3,10 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import SvgBlockquote from '../icons/Blockquote';
 import SvgCode from '../icons/Code';
 import SvgDelete from '../icons/Delete';
-import SvgEditOnly from '../icons/EditOnly';
 import SvgEmphasis from '../icons/Emphasis';
-import SvgEnterFullscreen from '../icons/EnterFullscreen';
-import SvgExitFullscreen from '../icons/ExitFullscreen';
 import SvgHeading from '../icons/Heading';
 import SvgHelp from '../icons/Help';
 import SvgImage from '../icons/Image';
@@ -25,7 +22,6 @@ import SvgToHTML from '../icons/ToHtml';
 import SvgToMarkdown from '../icons/ToMarkdown';
 import SvgUndo from '../icons/Undo';
 import SvgUnorderedList from '../icons/UnorderedList';
-import SvgViewOnly from '../icons/ViewOnly';
 import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
 import type { Executor, Handler } from '../utils/handler';
@@ -98,6 +94,7 @@ const Item = ({
         })}
         onClick={() => {
           if (!disabled) {
+            setTooltipOpen(false);
             setPopoverOpen(true);
             onClick?.();
           }
@@ -305,7 +302,7 @@ const mermaidOptions = [
 export type ToolbarItemMap = Partial<Record<string, ToolbarItem>>;
 
 export const getDefaultToolbarItemMap = (
-  locale = '',
+  locale?: string,
   onInsertFile?: (
     file: File,
     options: { description: string; image: boolean },
@@ -351,22 +348,10 @@ export const getDefaultToolbarItemMap = (
       onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
     },
 
-    editOnly: {
-      children: <SvgEditOnly className={classNames(`${prefix}icon`)} />,
-      tooltip: t('editOnly'),
-    },
-
     emphasis: {
       children: <SvgEmphasis className={classNames(`${prefix}icon`)} />,
       tooltip: t('emphasis'),
       onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
-    },
-
-    fullscreen: {
-      children: (
-        <SvgEnterFullscreen className={classNames(`${prefix}icon`)} />
-      ) ?? <SvgExitFullscreen className={classNames(`${prefix}icon`)} />,
-      tooltip: t('enterFullscreen') ?? t('exitFullscreen'),
     },
 
     heading: {
@@ -561,11 +546,6 @@ export const getDefaultToolbarItemMap = (
       children: <SvgUnorderedList className={classNames(`${prefix}icon`)} />,
       tooltip: t('unorderedList'),
     },
-
-    viewOnly: {
-      children: <SvgViewOnly className={classNames(`${prefix}icon`)} />,
-      tooltip: t('viewOnly'),
-    },
   };
 };
 
@@ -579,7 +559,7 @@ export const getDefaultToolbarItems = (): ToolbarItems => [
   ['undo', 'redo'],
   // ['orderedList', 'unorderedList', 'taskList'],
   ['toMarkdown', 'toHTML'],
-  // ['help', 'editOnly', 'viewOnly', 'fullscreen'],
+  // ['help'],
 ];
 
 interface ToolbarProps {

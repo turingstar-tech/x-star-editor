@@ -281,7 +281,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     useEffect(() => {
       const listener = (e: InputEvent) => {
         const targetRange = e.getTargetRanges()[0];
-        if (!containerRef.current || !targetRange) {
+        if (!targetRange || !containerRef.current) {
           return;
         }
 
