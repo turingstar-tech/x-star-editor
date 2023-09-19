@@ -326,10 +326,10 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
     const bottomOffset = rangeRect.bottom - containerRect.bottom;
 
     // 将光标滚动到视口内
-    if (topOffset < 0) {
-      ref.current.scrollTop += topOffset;
-    } else if (bottomOffset > 0) {
-      ref.current.scrollTop += bottomOffset;
+    if (topOffset < 1) {
+      ref.current.scrollTop += topOffset - 1;
+    } else if (bottomOffset > -1) {
+      ref.current.scrollTop += bottomOffset + 1;
     }
   };
 

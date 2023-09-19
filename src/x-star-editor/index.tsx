@@ -168,6 +168,9 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
     useEffect(() => {
       const editor = editorRef.current?.getEditorContainer();
       const viewer = viewerRef.current?.getViewerContainer();
+      if (!editor || !viewer) {
+        return;
+      }
 
       /**
        * 获取两个父元素的子元素到各自父元素顶部的距离
@@ -239,10 +242,10 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
        */
       let ignoreNext = false;
 
-      const listener = (e: Event) => {
+      const listener = (e: { currentTarget: EventTarget | null }) => {
         const ignore = ignoreNext;
         ignoreNext = false;
-        if (ignore || !editor || !viewer) {
+        if (ignore) {
           return;
         }
 
@@ -272,11 +275,17 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         }
       };
 
-      editor?.addEventListener('scroll', listener);
-      viewer?.addEventListener('scroll', listener);
+      const observer = new MutationObserver(() =>
+        listener({ currentTarget: editor }),
+      );
+
+      editor.addEventListener('scroll', listener);
+      viewer.addEventListener('scroll', listener);
+      observer.observe(viewer, { subtree: true, childList: true });
       return () => {
-        editor?.removeEventListener('scroll', listener);
-        viewer?.removeEventListener('scroll', listener);
+        editor.removeEventListener('scroll', listener);
+        viewer.removeEventListener('scroll', listener);
+        observer.disconnect();
       };
     }, []);
 
