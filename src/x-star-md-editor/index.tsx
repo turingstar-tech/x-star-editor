@@ -222,6 +222,11 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           dispatch({ type: 'batch' });
           break;
         }
+
+        case 'compositionstart': {
+          container.normalizeSelection();
+          break;
+        }
       }
     };
 
@@ -457,6 +462,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           contentEditable
           onBlur={focusEventHandler}
           onCompositionEnd={compositionEventHandler}
+          onCompositionStart={compositionEventHandler}
           onCopy={clipboardEventHandler}
           onCut={clipboardEventHandler}
           onDragStart={dragEventHandler}
