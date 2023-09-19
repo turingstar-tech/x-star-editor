@@ -383,6 +383,7 @@ export const getDefaultToolbarItemMap = (
       tooltip: t('image'),
       popoverRender: (exec, close) => (
         <FileInput
+          image
           onCancel={close}
           onOk={(data) => {
             if (data.type === 'file') {

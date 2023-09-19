@@ -4,6 +4,7 @@ import { useLocale } from '../locales';
 import { prefix } from '../utils/global';
 
 interface FileInputProps {
+  image?: boolean;
   onCancel: () => void;
   onOk: (
     data: ({ type: 'file'; file: File } | { type: 'url'; url: string }) & {
@@ -12,7 +13,7 @@ interface FileInputProps {
   ) => void;
 }
 
-const FileInput = ({ onCancel, onOk }: FileInputProps) => {
+const FileInput = ({ image, onCancel, onOk }: FileInputProps) => {
   const [type, setType] = useState<'file' | 'url'>('file');
   const [file, setFile] = useState<File>();
   const [url, setURL] = useState('');
@@ -47,6 +48,7 @@ const FileInput = ({ onCancel, onOk }: FileInputProps) => {
             <input
               className={classNames(`${prefix}hidden`)}
               type="file"
+              accept={image ? 'image/*' : undefined}
               onChange={(e) => setFile(e.target.files?.[0])}
             />
             <input
