@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { createKeybindingsHandler } from 'tinykeys';
 import SvgEditOnly from '../icons/EditOnly';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgExitFullscreen from '../icons/ExitFullscreen';
@@ -85,6 +86,11 @@ export interface XStarEditorProps {
   initialValue?: string;
 
   /**
+   * 是否只读
+   */
+  readOnly?: XStarMdEditorProps['readOnly'];
+
+  /**
    * 是否启用 Web Worker
    */
   enableWebWorker?: XStarMdViewerProps['enableWebWorker'];
@@ -94,7 +100,12 @@ export interface XStarEditorProps {
    */
   editorProps?: Omit<
     XStarMdEditorProps,
-    'height' | 'locale' | 'initialValue' | 'onChange' | 'onInsertFile'
+    | 'height'
+    | 'locale'
+    | 'initialValue'
+    | 'readOnly'
+    | 'onChange'
+    | 'onInsertFile'
   >;
 
   /**
@@ -129,6 +140,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       height,
       locale,
       initialValue = '',
+      readOnly,
       enableWebWorker,
       editorProps,
       viewerProps,
@@ -156,6 +168,9 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
     useEffect(() => {
       const editor = editorRef.current?.getEditorContainer();
       const viewer = viewerRef.current?.getViewerContainer();
+      if (!editor || !viewer) {
+        return;
+      }
 
       /**
        * 获取两个父元素的子元素到各自父元素顶部的距离
@@ -227,10 +242,10 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
        */
       let ignoreNext = false;
 
-      const listener = (e: Event) => {
+      const listener = (e: { currentTarget: EventTarget | null }) => {
         const ignore = ignoreNext;
         ignoreNext = false;
-        if (ignore || !editor || !viewer) {
+        if (ignore) {
           return;
         }
 
@@ -260,11 +275,17 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         }
       };
 
-      editor?.addEventListener('scroll', listener);
-      viewer?.addEventListener('scroll', listener);
+      const observer = new MutationObserver(() =>
+        listener({ currentTarget: editor }),
+      );
+
+      editor.addEventListener('scroll', listener);
+      viewer.addEventListener('scroll', listener);
+      observer.observe(viewer, { subtree: true, childList: true });
       return () => {
-        editor?.removeEventListener('scroll', listener);
-        viewer?.removeEventListener('scroll', listener);
+        editor.removeEventListener('scroll', listener);
+        viewer.removeEventListener('scroll', listener);
+        observer.disconnect();
       };
     }, []);
 
@@ -327,13 +348,22 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       [locale, editOnly, viewOnly, fullscreen, editorProps?.plugins],
     );
 
-    // 防止出现两个滚动条
+    // 防止出现两个滚动条，按下 Esc 退出全屏
     useEffect(() => {
       if (fullscreen) {
         const { overflow } = document.body.style;
+        const listener = createKeybindingsHandler({
+          Escape: (e) => {
+            e.stopPropagation();
+            setFullscreen(false);
+          },
+        });
+
         document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', listener);
         return () => {
           document.body.style.overflow = overflow;
+          document.removeEventListener('keydown', listener);
         };
       }
     }, [fullscreen]);
@@ -358,6 +388,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           height={height}
           locale={locale}
           initialValue={initialValue}
+          readOnly={viewOnly || readOnly}
           plugins={editorPlugins}
           onChange={(value) => {
             setValue(value);

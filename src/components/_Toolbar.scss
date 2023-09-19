@@ -33,6 +33,7 @@
         cursor: not-allowed;
       }
 
+      &:hover,
       &.#{$prefix}active {
         background-color: $color-primary-bg-hover;
       }

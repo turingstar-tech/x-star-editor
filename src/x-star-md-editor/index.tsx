@@ -78,6 +78,11 @@ export interface XStarMdEditorProps {
   initialValue?: string;
 
   /**
+   * 是否只读
+   */
+  readOnly?: boolean;
+
+  /**
    * 插件
    */
   plugins?: XStarMdEditorPlugin[];
@@ -106,6 +111,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       toolbarStyle,
       locale,
       initialValue = '',
+      readOnly,
       plugins,
       onChange,
       onInsertFile,
@@ -115,8 +121,10 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const container = useContainer(containerRef);
 
-    const { history, sourceCode, selection, dispatch } =
-      useHistory(initialValue);
+    const { history, sourceCode, selection, dispatch } = useHistory(
+      initialValue,
+      readOnly,
+    );
 
     const ignoreNext = useRef(false);
     const initialized = useRef(false);
@@ -212,6 +220,11 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           container.setText(sourceCodeLatest.current);
           container.setSelection(selection);
           dispatch({ type: 'batch' });
+          break;
+        }
+
+        case 'compositionstart': {
+          container.normalizeSelection();
           break;
         }
       }
@@ -449,6 +462,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           contentEditable
           onBlur={focusEventHandler}
           onCompositionEnd={compositionEventHandler}
+          onCompositionStart={compositionEventHandler}
           onCopy={clipboardEventHandler}
           onCut={clipboardEventHandler}
           onDragStart={dragEventHandler}

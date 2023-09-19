@@ -5,7 +5,7 @@
   &.#{$prefix}fullscreen {
     position: fixed;
     inset: 0;
-    z-index: 1000;
+    z-index: 9999;
 
     > .#{$prefix}md-editor,
     > .#{$prefix}md-viewer {

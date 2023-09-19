@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { editorRender } from './markdown';
 
 /**
@@ -326,55 +326,52 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
     const bottomOffset = rangeRect.bottom - containerRect.bottom;
 
     // 将光标滚动到视口内
-    if (topOffset < 0) {
-      ref.current.scrollTop += topOffset;
-    } else if (bottomOffset > 0) {
-      ref.current.scrollTop += bottomOffset;
+    if (topOffset < 1) {
+      ref.current.scrollTop += topOffset - 1;
+    } else if (bottomOffset > -1) {
+      ref.current.scrollTop += bottomOffset + 1;
     }
   };
 
-  // 确保光标不在零宽空格后
-  useEffect(() => {
-    const listener = () => {
-      const selection = window.getSelection();
-      if (
-        !selection ||
-        !selection.anchorNode ||
-        !selection.focusNode ||
-        !ref.current?.contains(selection.anchorNode)
-      ) {
-        return;
-      }
+  /**
+   * 标准化容器选区，确保光标不在零宽空格后
+   */
+  const normalizeSelection = () => {
+    const selection = window.getSelection();
+    if (
+      !selection ||
+      !selection.anchorNode ||
+      !selection.focusNode ||
+      !ref.current
+    ) {
+      return;
+    }
 
-      let update = false;
-      let { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
-      if (
-        anchorNode.nodeType === Node.TEXT_NODE &&
-        anchorNode.nodeValue?.[anchorOffset - 1] === '\u200B'
-      ) {
-        update = true;
-        anchorOffset--;
-      }
-      if (
-        focusNode.nodeType === Node.TEXT_NODE &&
-        focusNode.nodeValue?.[focusOffset - 1] === '\u200B'
-      ) {
-        update = true;
-        focusOffset--;
-      }
-      if (update) {
-        selection.setBaseAndExtent(
-          anchorNode,
-          anchorOffset,
-          focusNode,
-          focusOffset,
-        );
-      }
-    };
-
-    document.addEventListener('selectionchange', listener);
-    return () => document.removeEventListener('selectionchange', listener);
-  }, []);
+    let update = false;
+    let { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+    if (
+      anchorNode.nodeType === Node.TEXT_NODE &&
+      anchorNode.nodeValue?.[anchorOffset - 1] === '\u200B'
+    ) {
+      update = true;
+      anchorOffset--;
+    }
+    if (
+      focusNode.nodeType === Node.TEXT_NODE &&
+      focusNode.nodeValue?.[focusOffset - 1] === '\u200B'
+    ) {
+      update = true;
+      focusOffset--;
+    }
+    if (update) {
+      selection.setBaseAndExtent(
+        anchorNode,
+        anchorOffset,
+        focusNode,
+        focusOffset,
+      );
+    }
+  };
 
   return useRef({
     getText,
@@ -382,5 +379,6 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
     getOffset,
     getSelection,
     setSelection,
+    normalizeSelection,
   }).current;
 };
