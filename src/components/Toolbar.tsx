@@ -90,7 +90,7 @@ const Item = ({
       <div
         className={classNames(`${prefix}item`, {
           [`${prefix}disabled`]: disabled,
-          [`${prefix}active`]: tooltipOpen || popoverMount,
+          [`${prefix}active`]: popoverMount,
         })}
         onClick={() => {
           if (!disabled) {

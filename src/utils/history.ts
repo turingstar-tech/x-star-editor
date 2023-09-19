@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useReducer, useRef } from 'react';
 import type { ContainerSelection } from './container';
 import { createSelection, getRange } from './container';
 
@@ -336,7 +336,7 @@ const historyReducer = (
   }
 };
 
-export const useHistory = (initialSourceCode: string) => {
+export const useHistory = (initialSourceCode: string, readOnly?: boolean) => {
   const [history, dispatch] = useReducer<typeof historyReducer, string>(
     historyReducer,
     initialSourceCode,
@@ -358,10 +358,17 @@ export const useHistory = (initialSourceCode: string) => {
     },
   );
 
+  const readOnlyLatest = useRef(readOnly);
+  readOnlyLatest.current = readOnly;
+
   return {
     history,
     sourceCode: history.states[history.index].sourceCode,
     selection: history.selection,
-    dispatch,
+    dispatch: useRef<typeof dispatch>((action) => {
+      if (!readOnlyLatest.current) {
+        dispatch(action);
+      }
+    }).current,
   };
 };

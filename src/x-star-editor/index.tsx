@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { createKeybindingsHandler } from 'tinykeys';
 import SvgEditOnly from '../icons/EditOnly';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgExitFullscreen from '../icons/ExitFullscreen';
@@ -85,6 +86,11 @@ export interface XStarEditorProps {
   initialValue?: string;
 
   /**
+   * 是否只读
+   */
+  readOnly?: XStarMdEditorProps['readOnly'];
+
+  /**
    * 是否启用 Web Worker
    */
   enableWebWorker?: XStarMdViewerProps['enableWebWorker'];
@@ -94,7 +100,12 @@ export interface XStarEditorProps {
    */
   editorProps?: Omit<
     XStarMdEditorProps,
-    'height' | 'locale' | 'initialValue' | 'onChange' | 'onInsertFile'
+    | 'height'
+    | 'locale'
+    | 'initialValue'
+    | 'readOnly'
+    | 'onChange'
+    | 'onInsertFile'
   >;
 
   /**
@@ -129,6 +140,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       height,
       locale,
       initialValue = '',
+      readOnly,
       enableWebWorker,
       editorProps,
       viewerProps,
@@ -327,13 +339,22 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       [locale, editOnly, viewOnly, fullscreen, editorProps?.plugins],
     );
 
-    // 防止出现两个滚动条
+    // 防止出现两个滚动条，按下 Esc 退出全屏
     useEffect(() => {
       if (fullscreen) {
         const { overflow } = document.body.style;
+        const listener = createKeybindingsHandler({
+          Escape: (e) => {
+            e.stopPropagation();
+            setFullscreen(false);
+          },
+        });
+
         document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', listener);
         return () => {
           document.body.style.overflow = overflow;
+          document.removeEventListener('keydown', listener);
         };
       }
     }, [fullscreen]);
@@ -358,6 +379,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           height={height}
           locale={locale}
           initialValue={initialValue}
+          readOnly={viewOnly || readOnly}
           plugins={editorPlugins}
           onChange={(value) => {
             setValue(value);
