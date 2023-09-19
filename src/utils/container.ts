@@ -322,8 +322,8 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
 
     const rangeRect = range.getBoundingClientRect();
     const containerRect = ref.current.getBoundingClientRect();
-    const topOffset = rangeRect.top - containerRect.top;
-    const bottomOffset = rangeRect.bottom - containerRect.bottom;
+    const topOffset = Math.round(rangeRect.top - containerRect.top);
+    const bottomOffset = Math.round(rangeRect.bottom - containerRect.bottom);
 
     // 将光标滚动到视口内
     if (topOffset < 1) {

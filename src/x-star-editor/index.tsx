@@ -261,11 +261,12 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             fromOffsetTops[i] <= fromElement.scrollTop &&
             fromElement.scrollTop < fromOffsetTops[i + 1]
           ) {
-            const scrollTop =
+            const scrollTop = Math.round(
               ((fromElement.scrollTop - fromOffsetTops[i]) /
                 (fromOffsetTops[i + 1] - fromOffsetTops[i])) *
                 (toOffsetTops[i + 1] - toOffsetTops[i]) +
-              toOffsetTops[i];
+                toOffsetTops[i],
+            );
             if (toElement.scrollTop !== scrollTop) {
               ignoreNext = true;
               toElement.scrollTop = scrollTop;
