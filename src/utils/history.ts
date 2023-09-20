@@ -27,8 +27,11 @@ export interface ToggleAction {
           | 'inlineCode'
           | 'inlineMath'
           | 'math'
+          | 'orderedList'
           | 'strong'
-          | 'thematicBreak';
+          | 'taskList'
+          | 'thematicBreak'
+          | 'unorderedList';
       }
     | { type: 'code'; lang: string; value: string; showLineNumbers: boolean }
     | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
@@ -66,19 +69,36 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
       const lineAfter = sourceCode.slice(lineEndOffset);
 
       switch (action.payload.type) {
-        case 'blockquote': {
+        case 'blockquote':
+        case 'orderedList':
+        case 'taskList':
+        case 'unorderedList': {
+          const { type } = action.payload;
+          const prefixes =
+            type === 'blockquote'
+              ? ['>', '>']
+              : type === 'orderedList'
+              ? ['\\d+\\.', '1.']
+              : type === 'taskList'
+              ? ['[*+-] \\[[ x]]', '* [ ]']
+              : ['[*+-]', '*'];
           const lines = sourceCode
             .slice(lineStartOffset, lineEndOffset)
             .split('\n');
-          const values = lines.map((line) => /^ {0,3}> */.test(line));
+          const values = lines.map((line) =>
+            new RegExp(`^ {0,3}${prefixes[0]} +`).test(line),
+          );
           for (let i = 0; i < values.length; i++) {
             if (values[i]) {
-              lines[i] = lines[i].replace(/^ {0,3}> */, '');
+              lines[i] = lines[i].replace(
+                new RegExp(`^ {0,3}${prefixes[0]} +`),
+                '',
+              );
             }
           }
           if (values.some((value) => !value)) {
             for (let i = 0; i < lines.length; i++) {
-              lines[i] = `> ${lines[i]}`;
+              lines[i] = `${prefixes[1]} ${lines[i]}`;
             }
           }
           const text = lines.join('\n');
