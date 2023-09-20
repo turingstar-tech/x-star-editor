@@ -276,17 +276,11 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         }
       };
 
-      const observer = new MutationObserver(() =>
-        listener({ currentTarget: editor }),
-      );
-
       editor.addEventListener('scroll', listener);
       viewer.addEventListener('scroll', listener);
-      observer.observe(viewer, { subtree: true, childList: true });
       return () => {
         editor.removeEventListener('scroll', listener);
         viewer.removeEventListener('scroll', listener);
-        observer.disconnect();
       };
     }, []);
 
@@ -355,16 +349,16 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         const { overflow } = document.body.style;
         const listener = createKeybindingsHandler({
           Escape: (e) => {
-            e.stopPropagation();
+            e.stopImmediatePropagation();
             setFullscreen(false);
           },
         });
 
         document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', listener);
+        document.addEventListener('keydown', listener, { capture: true });
         return () => {
           document.body.style.overflow = overflow;
-          document.removeEventListener('keydown', listener);
+          document.removeEventListener('keydown', listener, { capture: true });
         };
       }
     }, [fullscreen]);

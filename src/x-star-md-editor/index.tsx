@@ -292,19 +292,24 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     };
 
     useEffect(() => {
+      const editor = containerRef.current;
+      if (!editor) {
+        return;
+      }
+
       const listener = (e: InputEvent) => {
         const targetRange = e.getTargetRanges()[0];
-        if (!targetRange || !containerRef.current) {
+        if (!targetRange) {
           return;
         }
 
         const startOffset = container.getOffset(
-          containerRef.current,
+          editor,
           targetRange.startContainer,
           targetRange.startOffset,
         );
         const endOffset = container.getOffset(
-          containerRef.current,
+          editor,
           targetRange.endContainer,
           targetRange.endOffset,
         );
@@ -441,9 +446,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         }
       };
 
-      containerRef.current?.addEventListener('beforeinput', listener);
-      return () =>
-        containerRef.current?.removeEventListener('beforeinput', listener);
+      editor.addEventListener('beforeinput', listener);
+      return () => editor.removeEventListener('beforeinput', listener);
     }, []);
 
     return (
