@@ -479,6 +479,7 @@ export const getDefaultToolbarItemMap = (
     orderedList: {
       children: <SvgOrderedList className={classNames(`${prefix}icon`)} />,
       tooltip: t('orderedList'),
+      onClick: (exec) => exec(toggleHandler({ type: 'orderedList' })),
     },
 
     redo: ({ history }) => ({
@@ -502,6 +503,7 @@ export const getDefaultToolbarItemMap = (
     taskList: {
       children: <SvgTaskList className={classNames(`${prefix}icon`)} />,
       tooltip: t('taskList'),
+      onClick: (exec) => exec(toggleHandler({ type: 'taskList' })),
     },
 
     thematicBreak: {
@@ -546,6 +548,7 @@ export const getDefaultToolbarItemMap = (
     unorderedList: {
       children: <SvgUnorderedList className={classNames(`${prefix}icon`)} />,
       tooltip: t('unorderedList'),
+      onClick: (exec) => exec(toggleHandler({ type: 'unorderedList' })),
     },
   };
 };
@@ -557,9 +560,9 @@ export const getDefaultToolbarItems = (): ToolbarItems => [
   ['thematicBreak', 'blockquote' /** 'table' */],
   ['link', 'image', 'mermaid'],
   ['inlineCode', 'code', 'inlineMath', 'math'],
-  ['undo', 'redo'],
-  // ['orderedList', 'unorderedList', 'taskList'],
+  ['orderedList', 'unorderedList', 'taskList'],
   ['toMarkdown', 'toHTML'],
+  ['undo', 'redo'],
   // ['help'],
 ];
 
