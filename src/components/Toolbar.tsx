@@ -498,6 +498,7 @@ export const getDefaultToolbarItemMap = (
     table: {
       children: <SvgTable className={classNames(`${prefix}icon`)} />,
       tooltip: t('table'),
+      onClick: (exec) => exec(toggleHandler({ type: 'table' })),
     },
 
     taskList: {
@@ -557,7 +558,7 @@ export type ToolbarItems = (string | ToolbarItem)[][];
 
 export const getDefaultToolbarItems = (): ToolbarItems => [
   ['heading', 'strong', 'emphasis', 'delete'],
-  ['thematicBreak', 'blockquote' /** 'table' */],
+  ['thematicBreak', 'blockquote', 'table'],
   ['link', 'image', 'mermaid'],
   ['inlineCode', 'code', 'inlineMath', 'math'],
   ['orderedList', 'unorderedList', 'taskList'],

@@ -139,6 +139,11 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       })();
     }, [value, options]);
 
+    // 确保在末尾输入时能同步滚动
+    useEffect(() => {
+      containerRef.current?.dispatchEvent(new Event('render'));
+    }, [children]);
+
     return (
       <div
         ref={containerRef}

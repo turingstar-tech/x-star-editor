@@ -276,11 +276,16 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         }
       };
 
+      const render = () => listener({ currentTarget: editor });
+
       editor.addEventListener('scroll', listener);
       viewer.addEventListener('scroll', listener);
+      // 查看器子节点更新时会手动触发该事件
+      viewer.addEventListener('render', render);
       return () => {
         editor.removeEventListener('scroll', listener);
         viewer.removeEventListener('scroll', listener);
+        viewer.removeEventListener('render', render);
       };
     }, []);
 

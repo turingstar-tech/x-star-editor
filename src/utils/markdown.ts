@@ -295,24 +295,15 @@ export const getDefaultSchema = (): Schema => ({
   ...defaultSchema,
   attributes: {
     ...defaultSchema.attributes,
-    pre: [...(defaultSchema.attributes?.pre ?? []), 'className', 'style'],
-    code: [...(defaultSchema.attributes?.code ?? []), 'className', 'style'],
-    div: [...(defaultSchema.attributes?.div ?? []), 'className', 'style'],
-    span: [
-      ...(defaultSchema.attributes?.span ?? []),
-      'className',
-      'style',
-      'line',
-    ],
-    svg: ['xmlns', 'viewBox', 'preserveAspectRatio'],
-    path: ['d'],
     custom: ['meta', 'value'],
+    span: ['line'],
+    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className', 'style'],
   },
   protocols: {
     ...defaultSchema.protocols,
     src: [...(defaultSchema.protocols?.src ?? []), 'data'],
   },
-  tagNames: [...(defaultSchema.tagNames ?? []), 'svg', 'path', 'custom'],
+  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
 });
 
 /**
