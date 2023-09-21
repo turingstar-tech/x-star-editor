@@ -29,6 +29,7 @@ export interface ToggleAction {
           | 'math'
           | 'orderedList'
           | 'strong'
+          | 'table'
           | 'taskList'
           | 'thematicBreak'
           | 'unorderedList';
@@ -218,6 +219,16 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
               lineEndOffset,
             )}\n$$\n\n$$\n${lineAfter}`,
             selection: createSelection(lineEndOffset + 4),
+          };
+        }
+
+        case 'table': {
+          return {
+            sourceCode: `${sourceCode.slice(
+              0,
+              lineEndOffset,
+            )}\n|  |  |\n| - | - |\n|  |  |\n|  |  |\n${lineAfter}`,
+            selection: createSelection(lineEndOffset + 3),
           };
         }
 
