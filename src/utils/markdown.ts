@@ -330,18 +330,27 @@ export const viewerRender = (root: HastRoot, schema: Schema) =>
  * @returns React 虚拟 DOM 树
  */
 export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
-  const components = {
-    ...options.customHTMLElements,
-    input: (props: unknown) => jsx('input', props as Props),
-    custom: (props: { meta: string; value: string }) =>
-      jsx(options.customBlocks[props.meta] ?? 'div', { children: props.value }),
-  };
-  return toJsxRuntime(unified().use(rehypeKatex).runSync(root), {
-    Fragment,
-    jsx,
-    jsxs,
-    components,
-  });
+  try {
+    const components = {
+      ...options.customHTMLElements,
+      input: (props: unknown) => jsx('input', props as Props),
+      custom: (props: { meta: string; value: string }) =>
+        jsx(options.customBlocks[props.meta] ?? 'div', {
+          children: props.value,
+        }),
+    };
+    return toJsxRuntime(unified().use(rehypeKatex).runSync(root), {
+      Fragment,
+      jsx,
+      jsxs,
+      components,
+    });
+  } catch {
+    return jsx('div', {
+      style: { fontStyle: 'italic', color: 'red' },
+      children: 'Parse error!',
+    });
+  }
 };
 
 const toHTMLProcessor = unified()

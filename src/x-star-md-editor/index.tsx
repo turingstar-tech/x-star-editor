@@ -222,11 +222,6 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           dispatch({ type: 'batch' });
           break;
         }
-
-        case 'compositionstart': {
-          container.normalizeSelection();
-          break;
-        }
       }
     };
 
@@ -278,6 +273,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         case 'keydown': {
           // 组合时不触发快捷键
           if (!e.nativeEvent.isComposing) {
+            container.normalizeSelection();
             composeHandlers(options.keyboardEventHandlers)({
               history,
               sourceCode,
@@ -466,7 +462,6 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           contentEditable
           onBlur={focusEventHandler}
           onCompositionEnd={compositionEventHandler}
-          onCompositionStart={compositionEventHandler}
           onCopy={clipboardEventHandler}
           onCut={clipboardEventHandler}
           onDragStart={dragEventHandler}

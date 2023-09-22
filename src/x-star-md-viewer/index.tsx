@@ -127,7 +127,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     }, [enableWebWorker]);
 
     useEffect(() => {
-      (async () => {
+      const timer = window.setTimeout(async () => {
         const root = await preViewerRender(value);
         if (enableWebWorker) {
           worker.current?.postMessage([root, options.customSchema]);
@@ -136,12 +136,17 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
             postViewerRender(viewerRender(root, options.customSchema), options),
           );
         }
-      })();
+      }, 100);
+      return () => window.clearTimeout(timer);
     }, [value, options]);
 
     // 确保在末尾输入时能同步滚动
     useEffect(() => {
-      containerRef.current?.dispatchEvent(new Event('render'));
+      const timer = window.setTimeout(
+        () => containerRef.current?.dispatchEvent(new Event('render')),
+        100,
+      );
+      return () => window.clearTimeout(timer);
     }, [children]);
 
     return (
