@@ -150,7 +150,7 @@ const rehypeMath = () => (root: HastRoot) => {
       return SKIP;
     }
     if (node.type === 'text' && index !== null && parent) {
-      const startOffset = node.position?.start.offset;
+      const startOffset = node.position?.start?.offset;
       if (startOffset === undefined) {
         return;
       }
