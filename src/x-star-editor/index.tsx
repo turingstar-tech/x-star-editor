@@ -222,8 +222,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
 
           for (
             ;
-            fromOffsetTops[fromOffsetTops.length - 1] >= fromLimit ||
-            toOffsetTops[toOffsetTops.length - 1] >= toLimit;
+            fromOffsetTops.at(-1)! >= fromLimit ||
+            toOffsetTops.at(-1)! >= toLimit;
 
           ) {
             fromOffsetTops.pop();
