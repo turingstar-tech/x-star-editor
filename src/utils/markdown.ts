@@ -159,9 +159,9 @@ export const editorRender = (sourceCode: string) => {
     if (stack.length) {
       // 如果栈不为空，说明为块级元素内的文本，每一行都应推到块级元素中
       if (lines[0]) {
-        stack[stack.length - 1].element.append(
-          delimiter ? createDelimiter(lines[0]) : lines[0],
-        );
+        stack
+          .at(-1)!
+          .element.append(delimiter ? createDelimiter(lines[0]) : lines[0]);
       }
       for (let i = 1; i < lines.length; i++) {
         for (let j = stack.length - 1; j; j--) {
@@ -170,9 +170,9 @@ export const editorRender = (sourceCode: string) => {
         stack[0].element.append('\u200B');
         pushElement(0);
         if (lines[i]) {
-          stack[stack.length - 1].element.append(
-            delimiter ? createDelimiter(lines[i]) : lines[i],
-          );
+          stack
+            .at(-1)!
+            .element.append(delimiter ? createDelimiter(lines[i]) : lines[i]);
         }
       }
       scanOffset += text.length;

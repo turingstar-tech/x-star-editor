@@ -294,7 +294,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       }
 
       const listener = (e: InputEvent) => {
-        const targetRange = e.getTargetRanges()[0];
+        const targetRange =
+          e.getTargetRanges()[0] ?? window.getSelection()?.getRangeAt(0);
         if (!targetRange) {
           return;
         }
