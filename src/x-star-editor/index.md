@@ -412,9 +412,11 @@ $$
 
 #### Methods
 
-| 属性名             | 类型                   | 描述                  |
-| ------------------ | ---------------------- | --------------------- |
-| exec               | `Executor`             | 执行函数              |
-| getEditorContainer | `() => HTMLDivElement` | 获取编辑器 `div` 元素 |
-| getViewerContainer | `() => HTMLDivElement` | 获取查看器 `div` 元素 |
-| getContainer       | `() => HTMLDivElement` | 获取外层 `div` 元素   |
+| 属性名             | 类型                      | 描述                  |
+| ------------------ | ------------------------- | --------------------- |
+| exec               | `Executor`                | 执行函数              |
+| getEditorContainer | `() => HTMLDivElement`    | 获取编辑器 `div` 元素 |
+| getValue           | `() => string`            | 获取编辑器的值        |
+| setValue           | `(value: string) => void` | 设置编辑器的值        |
+| getViewerContainer | `() => HTMLDivElement`    | 获取查看器 `div` 元素 |
+| getContainer       | `() => HTMLDivElement`    | 获取外层 `div` 元素   |

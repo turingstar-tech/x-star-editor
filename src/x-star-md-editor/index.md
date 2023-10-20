@@ -198,10 +198,12 @@ print('Hello, Markdown!')
 
 #### Methods
 
-| 属性名             | 类型                   | 描述                  |
-| ------------------ | ---------------------- | --------------------- |
-| exec               | `Executor`             | 执行函数              |
-| getEditorContainer | `() => HTMLDivElement` | 获取编辑器 `div` 元素 |
+| 属性名             | 类型                      | 描述                  |
+| ------------------ | ------------------------- | --------------------- |
+| exec               | `Executor`                | 执行函数              |
+| getEditorContainer | `() => HTMLDivElement`    | 获取编辑器 `div` 元素 |
+| getValue           | `() => string`            | 获取编辑器的值        |
+| setValue           | `(value: string) => void` | 设置编辑器的值        |
 
 ### XStarMdEditorPlugin
 
@@ -238,9 +240,11 @@ type ToolbarItems = (string | ToolbarItem)[][];
 
 const getDefaultToolbarItems = (): ToolbarItems => [
   ['heading', 'strong', 'emphasis', 'delete'],
-  ['thematicBreak', 'blockquote'],
-  ['link', 'image'],
+  ['thematicBreak', 'blockquote', 'table'],
+  ['link', 'image', 'mermaid'],
   ['inlineCode', 'code', 'inlineMath', 'math'],
+  ['orderedList', 'unorderedList', 'taskList'],
+  ['toMarkdown', 'toHTML'],
   ['undo', 'redo'],
 ];
 ```
