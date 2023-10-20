@@ -39,6 +39,8 @@ export interface XStarMdEditorPlugin {
 export interface XStarMdEditorHandle {
   exec: Executor;
   getEditorContainer: () => HTMLDivElement;
+  getValue: () => string;
+  setValue: (value: string) => void;
 }
 
 export interface XStarMdEditorProps {
@@ -185,7 +187,19 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     useImperativeHandle(
       ref,
-      () => ({ exec, getEditorContainer: () => containerRef.current! }),
+      () => ({
+        exec,
+        getEditorContainer: () => containerRef.current!,
+        getValue: () => exec(({ sourceCode }) => sourceCode),
+        setValue: (value: string) =>
+          exec(({ selection, dispatch }) =>
+            dispatch({
+              type: 'set',
+              payload: { sourceCode: value, selection },
+              selection,
+            }),
+          ),
+      }),
       [],
     );
 
