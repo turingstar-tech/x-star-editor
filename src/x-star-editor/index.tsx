@@ -91,6 +91,11 @@ export interface XStarEditorProps {
   initialValue?: string;
 
   /**
+   * 文本
+   */
+  value?: string;
+
+  /**
    * 是否只读
    */
   readOnly?: XStarMdEditorProps['readOnly'];
@@ -109,6 +114,7 @@ export interface XStarEditorProps {
     | 'locale'
     | 'placeholder'
     | 'initialValue'
+    | 'value'
     | 'readOnly'
     | 'onChange'
     | 'onInsertFile'
@@ -147,6 +153,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       locale,
       placeholder,
       initialValue = '',
+      value,
       readOnly,
       enableWebWorker,
       editorProps,
@@ -296,8 +303,6 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       };
     }, []);
 
-    const [value, setValue] = useState(initialValue);
-
     const [layout, setLayout] = useState<('editor' | 'viewer')[]>([
       'editor',
       'viewer',
@@ -375,6 +380,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       }
     }, [fullscreen]);
 
+    const [sourceCode, setSourceCode] = useState(initialValue);
+
     return (
       <div
         ref={containerRef}
@@ -395,11 +402,11 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           height={height}
           locale={locale}
           placeholder={placeholder}
-          initialValue={initialValue}
+          value={value ?? sourceCode}
           readOnly={viewOnly || readOnly}
           plugins={editorPlugins}
           onChange={(value) => {
-            setValue(value);
+            setSourceCode(value);
             onChange?.(value);
           }}
           onInsertFile={onInsertFile}
@@ -414,7 +421,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             style={viewerProps?.style}
             height={height}
           >
-            {viewerRender(value)}
+            {viewerRender(value ?? sourceCode)}
           </ViewerRenderWrapper>
         ) : (
           <XStarMdViewer
@@ -425,7 +432,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
               viewerProps?.className,
             )}
             height={height}
-            value={value}
+            value={value ?? sourceCode}
             enableWebWorker={enableWebWorker}
           />
         )}

@@ -3,6 +3,7 @@ export { createSelection, getRange } from './utils/container';
 export {
   batchHandler,
   insertHandler,
+  mutateHandler,
   redoHandler,
   selectHandler,
   setHandler,

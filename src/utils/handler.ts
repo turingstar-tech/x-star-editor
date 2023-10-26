@@ -1,7 +1,9 @@
 import { createKeybindingsHandler } from 'tinykeys';
 import { createSelection } from './container';
 import type {
+  BatchAction,
   InsertAction,
+  MutateAction,
   SelectAction,
   SetAction,
   ToggleAction,
@@ -46,14 +48,19 @@ export const redoHandler =
     dispatch({ type: 'redo' });
 
 export const batchHandler =
-  (): Handler =>
+  (payload?: BatchAction['payload']): Handler =>
   ({ dispatch }) =>
-    dispatch({ type: 'batch' });
+    dispatch({ type: 'batch', payload });
+
+export const mutateHandler =
+  (payload: MutateAction['payload']): Handler =>
+  ({ dispatch }) =>
+    dispatch({ type: 'mutate', payload });
 
 export const selectHandler =
-  (selection: SelectAction['selection']): Handler =>
+  (payload: SelectAction['payload']): Handler =>
   ({ dispatch }) =>
-    dispatch({ type: 'select', selection });
+    dispatch({ type: 'select', payload });
 
 /**
  * 执行函数
@@ -95,7 +102,7 @@ export const getDefaultKeyboardEventHandlers = (): KeyboardEventHandler[] => [
           e.preventDefault();
           dispatch({
             type: 'select',
-            selection: createSelection(focusOffset + 1),
+            payload: { selection: createSelection(focusOffset + 1) },
           });
         }
       },
@@ -106,7 +113,9 @@ export const getDefaultKeyboardEventHandlers = (): KeyboardEventHandler[] => [
           e.preventDefault();
           dispatch({
             type: 'select',
-            selection: createSelection(anchorOffset, focusOffset + 1),
+            payload: {
+              selection: createSelection(anchorOffset, focusOffset + 1),
+            },
           });
         }
       },

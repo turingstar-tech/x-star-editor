@@ -85,6 +85,11 @@ export interface XStarMdEditorProps {
   initialValue?: string;
 
   /**
+   * 文本
+   */
+  value?: string;
+
+  /**
    * 是否只读
    */
   readOnly?: boolean;
@@ -119,6 +124,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       locale,
       placeholder,
       initialValue = '',
+      value,
       readOnly,
       plugins,
       onChange,
@@ -159,6 +165,15 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       initialized.current = true;
     }, [sourceCode, selection]);
 
+    // 受控时将内部文本与外部文本同步
+    useEffect(() => {
+      if (value !== undefined && sourceCode !== value) {
+        // 不触发 onChange 事件
+        initialized.current = false;
+        dispatch({ type: 'mutate', payload: { sourceCode: value } });
+      }
+    }, [value]);
+
     const historyLatest = useRef(history);
     historyLatest.current = history;
 
@@ -196,7 +211,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       () => ({
         exec,
         getEditorContainer: () => containerRef.current!,
-        getValue: () => exec(({ sourceCode }) => sourceCode),
+        getValue: () => sourceCodeLatest.current,
         setValue: (value: string) =>
           exec(({ selection, dispatch }) =>
             dispatch({
