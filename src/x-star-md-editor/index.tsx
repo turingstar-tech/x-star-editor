@@ -101,6 +101,11 @@ export interface XStarMdEditorProps {
     file: File,
     options: { description: string; image: boolean },
   ) => void;
+
+  /**
+   * 配置未输入时的提示语
+   */
+  placeholder?: string;
 }
 
 const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
@@ -117,6 +122,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       plugins,
       onChange,
       onInsertFile,
+      placeholder,
     },
     ref,
   ) => {
@@ -472,7 +478,13 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         />
         <div
           ref={containerRef}
-          className={classNames(`${prefix}md-editor`, className)}
+          className={classNames(
+            `${prefix}md-editor`,
+            {
+              [`${prefix}empty`]: !sourceCode,
+            },
+            className,
+          )}
           style={{ ...style, height }}
           contentEditable
           onBlur={focusEventHandler}
@@ -481,6 +493,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           onCut={clipboardEventHandler}
           onDragStart={dragEventHandler}
           onKeyDown={keyboardEventHandler}
+          placeholder={placeholder}
         />
       </LocaleProvider>
     );

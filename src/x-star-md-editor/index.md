@@ -15,6 +15,7 @@ import { XStarMdEditor } from 'x-star-editor';
 export default () => (
   <XStarMdEditor
     height="50vh"
+    placeholder={'请输入文本\n快快输入文本'}
     initialValue={`# Markdown 语法示例
 
 ## 标题
