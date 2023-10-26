@@ -75,6 +75,11 @@ export interface XStarMdEditorProps {
   locale?: string;
 
   /**
+   * 配置未输入时的提示语
+   */
+  placeholder?: string;
+
+  /**
    * 初始文本
    */
   initialValue?: string;
@@ -101,11 +106,6 @@ export interface XStarMdEditorProps {
     file: File,
     options: { description: string; image: boolean },
   ) => void;
-
-  /**
-   * 配置未输入时的提示语
-   */
-  placeholder?: string;
 }
 
 const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
@@ -117,12 +117,12 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       toolbarClassName,
       toolbarStyle,
       locale,
+      placeholder,
       initialValue = '',
       readOnly,
       plugins,
       onChange,
       onInsertFile,
-      placeholder,
     },
     ref,
   ) => {
@@ -480,12 +480,11 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           ref={containerRef}
           className={classNames(
             `${prefix}md-editor`,
-            {
-              [`${prefix}empty`]: !sourceCode,
-            },
+            { [`${prefix}empty`]: !sourceCode },
             className,
           )}
           style={{ ...style, height }}
+          placeholder={placeholder}
           contentEditable
           onBlur={focusEventHandler}
           onCompositionEnd={compositionEventHandler}
@@ -493,7 +492,6 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
           onCut={clipboardEventHandler}
           onDragStart={dragEventHandler}
           onKeyDown={keyboardEventHandler}
-          placeholder={placeholder}
         />
       </LocaleProvider>
     );

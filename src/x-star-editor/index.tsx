@@ -81,6 +81,11 @@ export interface XStarEditorProps {
   locale?: XStarMdEditorProps['locale'];
 
   /**
+   * 配置未输入时的提示语
+   */
+  placeholder?: string;
+
+  /**
    * 初始文本
    */
   initialValue?: string;
@@ -102,11 +107,11 @@ export interface XStarEditorProps {
     XStarMdEditorProps,
     | 'height'
     | 'locale'
+    | 'placeholder'
     | 'initialValue'
     | 'readOnly'
     | 'onChange'
     | 'onInsertFile'
-    | 'placeholder'
   >;
 
   /**
@@ -131,11 +136,6 @@ export interface XStarEditorProps {
    * 文件插入回调函数
    */
   onInsertFile?: XStarMdEditorProps['onInsertFile'];
-
-  /**
-   * 配置未输入时的提示语
-   */
-  placeholder?: string;
 }
 
 const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
@@ -145,6 +145,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       style,
       height,
       locale,
+      placeholder,
       initialValue = '',
       readOnly,
       enableWebWorker,
@@ -153,7 +154,6 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       viewerRender,
       onChange,
       onInsertFile,
-      placeholder,
     },
     ref,
   ) => {
@@ -394,6 +394,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           )}
           height={height}
           locale={locale}
+          placeholder={placeholder}
           initialValue={initialValue}
           readOnly={viewOnly || readOnly}
           plugins={editorPlugins}
@@ -402,7 +403,6 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             onChange?.(value);
           }}
           onInsertFile={onInsertFile}
-          placeholder={placeholder}
         />
         {viewerRender ? (
           <ViewerRenderWrapper

@@ -1,5 +1,4 @@
 import type { Root as HastRoot } from 'hast';
-import type { Props } from 'hast-util-to-jsx-runtime';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
 import type { Content as MdastNode, Root as MdastRoot } from 'mdast';
@@ -21,6 +20,7 @@ import strip from 'strip-markdown';
 import { unified } from 'unified';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
+import rehypeCustom from './rehype/rehype-custom';
 import rehypeLine from './rehype/rehype-line';
 import rehypeMath, { isMathNode } from './rehype/rehype-math';
 import rehypeRawPositions from './rehype/rehype-raw-positions';
@@ -322,6 +322,12 @@ export const viewerRender = (root: HastRoot, schema: Schema) =>
     .use(rehypeLine)
     .runSync(root);
 
+const Input = ({ checked, ...props }: any) =>
+  jsx('input', { checked: !!checked, ...props });
+
+const Custom = ({ component, value }: any) =>
+  jsx(component, { children: value });
+
 /**
  * 将 Hast 树映射到 React 虚拟 DOM 树
  *
@@ -333,18 +339,22 @@ export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
   try {
     const components = {
       ...options.customHTMLElements,
-      input: (props: unknown) => jsx('input', props as Props),
-      custom: (props: { meta: string; value: string }) =>
-        jsx(options.customBlocks[props.meta] ?? 'div', {
-          children: props.value,
-        }),
+      // 直接在这里写函数会有重复渲染问题，因此用全局组件
+      input: Input,
+      custom: Custom,
     };
-    return toJsxRuntime(unified().use(rehypeKatex).runSync(root), {
-      Fragment,
-      jsx,
-      jsxs,
-      components,
-    });
+    return toJsxRuntime(
+      unified()
+        .use(rehypeKatex)
+        .use(rehypeCustom, options.customBlocks)
+        .runSync(root),
+      {
+        Fragment,
+        jsx,
+        jsxs,
+        components,
+      },
+    );
   } catch {
     return jsx('div', {
       style: { fontStyle: 'italic', color: 'red' },
