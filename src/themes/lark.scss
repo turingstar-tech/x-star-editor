@@ -400,7 +400,7 @@
     border-color: #3370ff;
   }
 
-  .task-list-item > input[checked]::before {
+  .task-list-item > input:checked::before {
     content: '';
     position: absolute;
     top: 20%;
@@ -411,7 +411,7 @@
     background: #3370ff;
   }
 
-  .task-list-item > input[checked]::after {
+  .task-list-item > input:checked::after {
     content: '';
     position: absolute;
     top: 46%;
