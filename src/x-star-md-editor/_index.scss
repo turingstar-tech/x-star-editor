@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 .#{$prefix}md-editor {
   @include common;
   @include border-right-bottom-left;
@@ -23,7 +25,7 @@
       content: attr(placeholder);
       position: absolute;
       margin-top: 0.5em;
-      color: $color-border;
+      color: color.adjust($color-text, $alpha: -0.6);
     }
   }
 }

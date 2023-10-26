@@ -279,15 +279,25 @@ export interface RedoAction {
 
 export interface BatchAction {
   type: 'batch';
-  selection?: ContainerSelection;
+  payload?: { selection: ContainerSelection };
+}
+
+export interface MutateAction {
+  type: 'mutate';
+  payload: { sourceCode: string };
 }
 
 export interface SelectAction {
   type: 'select';
-  selection: ContainerSelection;
+  payload: { selection: ContainerSelection };
 }
 
-type HistoryAction = UndoAction | RedoAction | BatchAction | SelectAction;
+type HistoryAction =
+  | UndoAction
+  | RedoAction
+  | BatchAction
+  | MutateAction
+  | SelectAction;
 
 const historyReducer = (
   { states, index, selection }: History,
@@ -322,17 +332,29 @@ const historyReducer = (
           ...states.slice(0, index),
           {
             ...states[index],
-            selection: action.selection ?? states[index].selection,
+            selection: action.payload?.selection ?? states[index].selection,
             action: { ...states[index].action, batch: false },
           },
         ],
         index,
-        selection: action.selection ?? selection,
+        selection: action.payload?.selection ?? selection,
+      };
+    }
+
+    case 'mutate': {
+      return {
+        states: [
+          ...states.slice(0, index),
+          { ...states[index], sourceCode: action.payload.sourceCode },
+          ...states.slice(index + 1),
+        ],
+        index,
+        selection,
       };
     }
 
     case 'select': {
-      return { states, index, selection: action.selection };
+      return { states, index, selection: action.payload.selection };
     }
 
     default: {

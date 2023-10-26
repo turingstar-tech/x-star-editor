@@ -222,6 +222,27 @@ import 'x-star-editor/dist/themes/lark.css';
 
 ```tsx
 /**
+ * title: 作为受控组件
+ * description: 使用 `value` 属性控制编辑器文本。
+ */
+
+import { useState } from 'react';
+import { XStarEditor } from 'x-star-editor';
+
+export default () => {
+  const [value, setValue] = useState('Hello **x-star-editor**!');
+
+  return (
+    <>
+      <XStarEditor height="25vh" value={value} onChange={setValue} />
+      <div>value: {value}</div>
+    </>
+  );
+};
+```
+
+```tsx
+/**
  * title: 操作编辑器
  * description: 使用 `useEditorRef()` 或 `useRef<XStarEditorHandle>(null)` 创建 ref，方法详见 [Methods](#methods)。
  */
@@ -267,7 +288,7 @@ export default () => {
           获取容器盒子
         </button>
       </div>
-      <XStarEditor ref={ref} height="50vh" initialValue={'Hello **XYD**!\n'} />
+      <XStarEditor ref={ref} height="25vh" initialValue={'Hello **XYD**!\n'} />
     </>
   );
 };
@@ -291,7 +312,7 @@ export default () => {
   return (
     <XStarEditor
       ref={ref}
-      height="50vh"
+      height="25vh"
       initialValue={
         '将文件**粘贴**进编辑器\n或点击工具栏的**链接**或**图片**\n'
       }

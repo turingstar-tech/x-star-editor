@@ -191,6 +191,27 @@ print('Hello, Markdown!')
 );
 ```
 
+```tsx
+/**
+ * title: 作为受控组件
+ * description: 使用 `value` 属性控制编辑器文本。
+ */
+
+import { useState } from 'react';
+import { XStarMdEditor } from 'x-star-editor';
+
+export default () => {
+  const [value, setValue] = useState('Hello **x-star-editor**!');
+
+  return (
+    <>
+      <XStarMdEditor height="25vh" value={value} onChange={setValue} />
+      <div>value: {value}</div>
+    </>
+  );
+};
+```
+
 ## API
 
 ### XStarMdEditor
