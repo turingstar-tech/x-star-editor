@@ -17,3 +17,13 @@
     margin-bottom: 0.5em;
   }
 }
+
+.#{$prefix}empty {
+  /* 输入框为空时显示 placeholder */
+  &::before {
+    position: absolute;
+    content: attr(placeholder);
+    color: lightgray;
+    margin-top: 0.5em;
+  }
+}

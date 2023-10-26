@@ -106,6 +106,7 @@ export interface XStarEditorProps {
     | 'readOnly'
     | 'onChange'
     | 'onInsertFile'
+    | 'placeholder'
   >;
 
   /**
@@ -130,6 +131,11 @@ export interface XStarEditorProps {
    * 文件插入回调函数
    */
   onInsertFile?: XStarMdEditorProps['onInsertFile'];
+
+  /**
+   * 配置未输入时的提示语
+   */
+  placeholder?: string;
 }
 
 const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
@@ -147,6 +153,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       viewerRender,
       onChange,
       onInsertFile,
+      placeholder,
     },
     ref,
   ) => {
@@ -395,6 +402,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             onChange?.(value);
           }}
           onInsertFile={onInsertFile}
+          placeholder={placeholder}
         />
         {viewerRender ? (
           <ViewerRenderWrapper
