@@ -380,7 +380,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       }
     }, [fullscreen]);
 
-    const [sourceCode, setSourceCode] = useState(initialValue);
+    const [sourceCode, setSourceCode] = useState(value ?? initialValue);
 
     return (
       <div

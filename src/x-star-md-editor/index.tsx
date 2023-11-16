@@ -136,7 +136,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
     const container = useContainer(containerRef);
 
     const { history, sourceCode, selection, dispatch } = useHistory(
-      initialValue,
+      value ?? initialValue,
       readOnly,
     );
 
