@@ -7,6 +7,6 @@ export default defineConfig({
       ['babel-plugin-inline-import', { extensions: ['.worker.js'] }],
     ],
     output: 'dist',
-    ignores: ['{src,test}/**/*.{scss,worker.ts}'],
+    ignores: ['src/**/*.{scss,worker.ts}'],
   },
 });

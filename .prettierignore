@@ -1,2 +1,3 @@
 /dist
+/workers-dist
 *.yaml
