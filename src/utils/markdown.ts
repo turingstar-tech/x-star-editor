@@ -2,6 +2,7 @@ import type { Root as HastRoot } from 'hast';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
 import type { Content as MdastNode, Root as MdastRoot } from 'mdast';
+import { toString } from 'mdast-util-to-string';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
@@ -16,7 +17,6 @@ import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
-import strip from 'strip-markdown';
 import { unified } from 'unified';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
@@ -426,19 +426,6 @@ export const toMarkdown = (sourceCode: string) =>
     ),
   );
 
-const toTextProcessor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkMath)
-  .use(strip, {
-    remove: [
-      'math',
-      ['inlineMath', (node) => ({ type: 'text', value: node.value })],
-    ],
-  })
-  .use(remarkStringify)
-  .freeze();
-
 /**
  * 将 Markdown 文本转成纯文本
  *
@@ -446,4 +433,4 @@ const toTextProcessor = unified()
  * @returns 纯文本
  */
 export const toText = (sourceCode: string) =>
-  toTextProcessor.processSync(sourceCode).toString();
+  toString(toMdastProcessor.parse(sourceCode));
