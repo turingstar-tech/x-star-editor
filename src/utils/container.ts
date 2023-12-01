@@ -117,12 +117,14 @@ export const useContainer = (ref: React.RefObject<HTMLDivElement>) => {
       for (; oldChild && newChild; ) {
         const oldNext = oldChild.nextSibling;
         const newNext = newChild.nextSibling;
-        if (
-          oldChild.nodeName !== newChild.nodeName ||
-          oldChild.nodeType === Node.TEXT_NODE
-        ) {
-          // 节点名称不同，或节点均为文本类型，直接替换
+        if (oldChild.nodeName !== newChild.nodeName) {
+          // 节点名称不同，直接替换
           oldChild.replaceWith(newChild);
+        } else if (oldChild.nodeType === Node.TEXT_NODE) {
+          // 节点均为文本类型，更新文本内容
+          if (oldChild.nodeValue !== newChild.nodeValue) {
+            oldChild.nodeValue = newChild.nodeValue;
+          }
         } else {
           // 节点名称相同，更新属性和子节点
           if (
