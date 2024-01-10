@@ -57,7 +57,7 @@ export const editorRender = (sourceCode: string) => {
   /**
    * CSS 类名前缀
    */
-  const mdPrefix = `${prefix}md-`;
+  const mdPrefix = `${prefix}-md`;
 
   /**
    * 扫描偏移量，表示已经添加到 DOM 树的文本
@@ -102,9 +102,9 @@ export const editorRender = (sourceCode: string) => {
     // 如果节点为流内容，则将样式添加到该行的 `<div>` 元素上，否则添加到该节点的元素上
     const styleElement =
       stack[index && !isFlowContent(stack[index - 1].node) ? index : 0].element;
-    styleElement.classList.add(`${mdPrefix}${node.type}`);
+    styleElement.classList.add(`${mdPrefix}-${node.type}`);
     if (node.type === 'heading') {
-      styleElement.classList.add(`${mdPrefix}heading-${node.depth}`);
+      styleElement.classList.add(`${mdPrefix}-heading-${node.depth}`);
     }
 
     // 如果索引为 0，则父节点为块级元素，否则为前一个索引的 DOM 元素
@@ -131,7 +131,7 @@ export const editorRender = (sourceCode: string) => {
   const createDelimiter = (text: string) => {
     const temp = document.createElement('span');
     temp.append(text);
-    temp.classList.add(`${mdPrefix}delimiter`);
+    temp.classList.add(`${mdPrefix}-delimiter`);
     return temp;
   };
 

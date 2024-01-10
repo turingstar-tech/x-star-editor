@@ -1,1 +1,1 @@
-export const prefix = 'x-star-editor-';
+export const prefix = 'x-star-editor';

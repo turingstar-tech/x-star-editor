@@ -494,8 +494,8 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         <div
           ref={containerRef}
           className={classNames(
-            `${prefix}md-editor`,
-            { [`${prefix}empty`]: !sourceCode },
+            `${prefix}-md-editor`,
+            { [`${prefix}-empty`]: !sourceCode },
             className,
           )}
           style={{ ...style, height }}
