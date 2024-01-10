@@ -1,6 +1,6 @@
 @use 'sass:color';
 
-.#{$prefix}md-editor {
+.#{$prefix}-md-editor {
   @include common;
   @include border-right-bottom-left;
 
@@ -19,8 +19,8 @@
     margin-bottom: 0.5em;
   }
 
-  &.#{$prefix}empty {
-    // 文本为空时显示 placeholder
+  &.#{$prefix}-empty {
+    // 文本为空时显示提示
     &::before {
       content: attr(placeholder);
       position: absolute;

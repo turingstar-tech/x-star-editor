@@ -1,11 +1,11 @@
-.#{$prefix}file-input {
+.#{$prefix}-file-input {
   margin: 0.5em 1em 1em;
   font-size: 0.9em;
 
-  .#{$prefix}tabs {
+  .#{$prefix}-tabs {
     display: flex;
 
-    .#{$prefix}tab {
+    .#{$prefix}-tab {
       padding: 0.4em 1em;
       border-bottom: 1px solid $color-border;
       cursor: pointer;
@@ -15,20 +15,20 @@
         border-bottom: 1px solid $color-primary-hover;
       }
 
-      &.#{$prefix}active {
+      &.#{$prefix}-active {
         color: $color-primary;
         border-bottom: 2px solid $color-primary;
       }
     }
   }
 
-  .#{$prefix}buttons {
+  .#{$prefix}-buttons {
     display: flex;
     flex-direction: row-reverse;
     gap: 0.4em;
   }
 
-  .#{$prefix}button {
+  .#{$prefix}-button {
     padding: 0.4em 1em;
     background-color: $color-bg-container;
     border: 1px solid $color-border;
@@ -36,7 +36,7 @@
     cursor: pointer;
     user-select: none;
 
-    &.#{$prefix}primary {
+    &.#{$prefix}-primary {
       color: $color-text-light-solid;
       background-color: $color-primary;
       border: none;
@@ -47,14 +47,14 @@
     }
   }
 
-  .#{$prefix}field {
+  .#{$prefix}-field {
     margin: 0.8em;
     display: flex;
     flex-direction: column;
     gap: 0.2em;
     font-size: 0.9em;
 
-    .#{$prefix}input {
+    .#{$prefix}-input {
       width: 20em;
       padding: 0.4em;
       border: 1px solid $color-border;
@@ -66,23 +66,23 @@
       }
     }
 
-    .#{$prefix}file-container {
+    .#{$prefix}-file-container {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
 
-      .#{$prefix}hidden {
+      .#{$prefix}-hidden {
         position: absolute;
         inset: 0;
         opacity: 0;
       }
 
-      .#{$prefix}input {
+      .#{$prefix}-input {
         width: 11.5em;
       }
 
-      .#{$prefix}button {
+      .#{$prefix}-button {
         width: 8em;
       }
     }

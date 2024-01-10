@@ -86,11 +86,11 @@ const Item = ({
   }, [popoverMount]);
 
   return (
-    <div className={classNames(`${prefix}item-container`)}>
+    <div className={classNames(`${prefix}-item-container`)}>
       <div
-        className={classNames(`${prefix}item`, {
-          [`${prefix}disabled`]: disabled,
-          [`${prefix}active`]: popoverMount,
+        className={classNames(`${prefix}-item`, {
+          [`${prefix}-disabled`]: disabled,
+          [`${prefix}-active`]: popoverMount,
         })}
         onClick={() => {
           if (!disabled) {
@@ -105,12 +105,12 @@ const Item = ({
         {children}
       </div>
       <Fade nodeRef={tooltipRef} appear={tooltipMount} timeout={300}>
-        <div ref={tooltipRef} className={classNames(`${prefix}tooltip`)}>
+        <div ref={tooltipRef} className={classNames(`${prefix}-tooltip`)}>
           {tooltip}
         </div>
       </Fade>
       <Fade nodeRef={popoverRef} appear={popoverMount} timeout={300}>
-        <div ref={popoverRef} className={classNames(`${prefix}popover`)}>
+        <div ref={popoverRef} className={classNames(`${prefix}-popover`)}>
           {popover}
         </div>
       </Fade>
@@ -312,19 +312,19 @@ export const getDefaultToolbarItemMap = (
 
   return {
     blockquote: {
-      children: <SvgBlockquote className={classNames(`${prefix}icon`)} />,
+      children: <SvgBlockquote className={classNames(`${prefix}-icon`)} />,
       tooltip: t('blockquote'),
       onClick: (exec) => exec(toggleHandler({ type: 'blockquote' })),
     },
 
     code: {
-      children: <SvgCode className={classNames(`${prefix}icon`)} />,
+      children: <SvgCode className={classNames(`${prefix}-icon`)} />,
       tooltip: t('code'),
       popoverRender: (exec, close) =>
         codeOptions.map(({ label, lang }) => (
           <div
             key={label}
-            className={classNames(`${prefix}option`)}
+            className={classNames(`${prefix}-option`)}
             onClick={() => {
               exec(
                 toggleHandler({
@@ -343,25 +343,25 @@ export const getDefaultToolbarItemMap = (
     },
 
     delete: {
-      children: <SvgDelete className={classNames(`${prefix}icon`)} />,
+      children: <SvgDelete className={classNames(`${prefix}-icon`)} />,
       tooltip: t('delete'),
       onClick: (exec) => exec(toggleHandler({ type: 'delete' })),
     },
 
     emphasis: {
-      children: <SvgEmphasis className={classNames(`${prefix}icon`)} />,
+      children: <SvgEmphasis className={classNames(`${prefix}-icon`)} />,
       tooltip: t('emphasis'),
       onClick: (exec) => exec(toggleHandler({ type: 'emphasis' })),
     },
 
     heading: {
-      children: <SvgHeading className={classNames(`${prefix}icon`)} />,
+      children: <SvgHeading className={classNames(`${prefix}-icon`)} />,
       tooltip: t('heading'),
       popoverRender: (exec, close) =>
         headingOptions.map(({ depth, fontSize }) => (
           <div
             key={depth}
-            className={classNames(`${prefix}option`)}
+            className={classNames(`${prefix}-option`)}
             style={{ fontSize }}
             onClick={() => {
               exec(toggleHandler({ type: 'heading', depth }));
@@ -374,12 +374,12 @@ export const getDefaultToolbarItemMap = (
     },
 
     help: {
-      children: <SvgHelp className={classNames(`${prefix}icon`)} />,
+      children: <SvgHelp className={classNames(`${prefix}-icon`)} />,
       tooltip: t('help'),
     },
 
     image: {
-      children: <SvgImage className={classNames(`${prefix}icon`)} />,
+      children: <SvgImage className={classNames(`${prefix}-icon`)} />,
       tooltip: t('image'),
       popoverRender: (exec, close) => (
         <FileInput
@@ -407,19 +407,19 @@ export const getDefaultToolbarItemMap = (
     },
 
     inlineCode: {
-      children: <SvgInlineCode className={classNames(`${prefix}icon`)} />,
+      children: <SvgInlineCode className={classNames(`${prefix}-icon`)} />,
       tooltip: t('inlineCode'),
       onClick: (exec) => exec(toggleHandler({ type: 'inlineCode' })),
     },
 
     inlineMath: {
-      children: <SvgInlineMath className={classNames(`${prefix}icon`)} />,
+      children: <SvgInlineMath className={classNames(`${prefix}-icon`)} />,
       tooltip: t('inlineMath'),
       onClick: (exec) => exec(toggleHandler({ type: 'inlineMath' })),
     },
 
     link: {
-      children: <SvgLink className={classNames(`${prefix}icon`)} />,
+      children: <SvgLink className={classNames(`${prefix}-icon`)} />,
       tooltip: t('link'),
       popoverRender: (exec, close) => (
         <FileInput
@@ -446,19 +446,19 @@ export const getDefaultToolbarItemMap = (
     },
 
     math: {
-      children: <SvgMath className={classNames(`${prefix}icon`)} />,
+      children: <SvgMath className={classNames(`${prefix}-icon`)} />,
       tooltip: t('math'),
       onClick: (exec) => exec(toggleHandler({ type: 'math' })),
     },
 
     mermaid: {
-      children: <SvgMermaid className={classNames(`${prefix}icon`)} />,
+      children: <SvgMermaid className={classNames(`${prefix}-icon`)} />,
       tooltip: t('mermaid'),
       popoverRender: (exec, close) =>
         mermaidOptions.map(({ label, value }) => (
           <div
             key={label}
-            className={classNames(`${prefix}option`)}
+            className={classNames(`${prefix}-option`)}
             onClick={() => {
               exec(
                 toggleHandler({
@@ -477,44 +477,44 @@ export const getDefaultToolbarItemMap = (
     },
 
     orderedList: {
-      children: <SvgOrderedList className={classNames(`${prefix}icon`)} />,
+      children: <SvgOrderedList className={classNames(`${prefix}-icon`)} />,
       tooltip: t('orderedList'),
       onClick: (exec) => exec(toggleHandler({ type: 'orderedList' })),
     },
 
     redo: ({ history }) => ({
-      children: <SvgRedo className={classNames(`${prefix}icon`)} />,
+      children: <SvgRedo className={classNames(`${prefix}-icon`)} />,
       disabled: history.index === history.states.length - 1,
       tooltip: t('redo'),
       onClick: (exec) => exec(redoHandler()),
     }),
 
     strong: {
-      children: <SvgStrong className={classNames(`${prefix}icon`)} />,
+      children: <SvgStrong className={classNames(`${prefix}-icon`)} />,
       tooltip: t('strong'),
       onClick: (exec) => exec(toggleHandler({ type: 'strong' })),
     },
 
     table: {
-      children: <SvgTable className={classNames(`${prefix}icon`)} />,
+      children: <SvgTable className={classNames(`${prefix}-icon`)} />,
       tooltip: t('table'),
       onClick: (exec) => exec(toggleHandler({ type: 'table' })),
     },
 
     taskList: {
-      children: <SvgTaskList className={classNames(`${prefix}icon`)} />,
+      children: <SvgTaskList className={classNames(`${prefix}-icon`)} />,
       tooltip: t('taskList'),
       onClick: (exec) => exec(toggleHandler({ type: 'taskList' })),
     },
 
     thematicBreak: {
-      children: <SvgThematicBreak className={classNames(`${prefix}icon`)} />,
+      children: <SvgThematicBreak className={classNames(`${prefix}-icon`)} />,
       tooltip: t('thematicBreak'),
       onClick: (exec) => exec(toggleHandler({ type: 'thematicBreak' })),
     },
 
     toHTML: {
-      children: <SvgToHTML className={classNames(`${prefix}icon`)} />,
+      children: <SvgToHTML className={classNames(`${prefix}-icon`)} />,
       tooltip: t('toHTML'),
       onClick: (exec) =>
         exec(({ sourceCode, selection, dispatch }) =>
@@ -527,7 +527,7 @@ export const getDefaultToolbarItemMap = (
     },
 
     toMarkdown: {
-      children: <SvgToMarkdown className={classNames(`${prefix}icon`)} />,
+      children: <SvgToMarkdown className={classNames(`${prefix}-icon`)} />,
       tooltip: t('toMarkdown'),
       onClick: (exec) =>
         exec(({ sourceCode, selection, dispatch }) =>
@@ -540,14 +540,14 @@ export const getDefaultToolbarItemMap = (
     },
 
     undo: ({ history }) => ({
-      children: <SvgUndo className={classNames(`${prefix}icon`)} />,
+      children: <SvgUndo className={classNames(`${prefix}-icon`)} />,
       disabled: !history.index,
       tooltip: t('undo'),
       onClick: (exec) => exec(undoHandler()),
     }),
 
     unorderedList: {
-      children: <SvgUnorderedList className={classNames(`${prefix}icon`)} />,
+      children: <SvgUnorderedList className={classNames(`${prefix}-icon`)} />,
       tooltip: t('unorderedList'),
       onClick: (exec) => exec(toggleHandler({ type: 'unorderedList' })),
     },
@@ -583,12 +583,12 @@ const Toolbar = ({ className, style, itemMap, items, exec }: ToolbarProps) => {
   return (
     <div
       ref={toolbarRef}
-      className={classNames(`${prefix}toolbar`, className)}
+      className={classNames(`${prefix}-toolbar`, className)}
       style={style}
     >
       {items.map((group, index) => (
         <React.Fragment key={index}>
-          {!!index && <div className={classNames(`${prefix}divider`)} />}
+          {!!index && <div className={classNames(`${prefix}-divider`)} />}
           {group.map((item, index) => {
             const toolbarItem = typeof item === 'string' ? itemMap[item] : item;
             if (!toolbarItem) {

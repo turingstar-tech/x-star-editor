@@ -1,55 +1,55 @@
 @use 'sass:color';
 
-$md-prefix: #{$prefix}md-;
+$md-prefix: #{$prefix}-md;
 
-.#{$md-prefix}editor {
-  .#{$md-prefix}break,
-  .#{$md-prefix}delimiter {
+.#{$md-prefix}-editor {
+  .#{$md-prefix}-break,
+  .#{$md-prefix}-delimiter {
     color: color.adjust($color-text, $alpha: -0.6);
   }
 
-  .#{$md-prefix}code,
-  .#{$md-prefix}html,
-  .#{$md-prefix}inlineCode {
+  .#{$md-prefix}-code,
+  .#{$md-prefix}-html,
+  .#{$md-prefix}-inlineCode {
     tab-size: 4;
     font-family: Consolas, 'Bitstream Vera Sans Mono', 'Courier New', Courier,
       monospace;
   }
 
-  .#{$md-prefix}code,
-  .#{$md-prefix}html,
-  .#{$md-prefix}inlineCode,
-  .#{$md-prefix}inlineMath,
-  .#{$md-prefix}math {
+  .#{$md-prefix}-code,
+  .#{$md-prefix}-html,
+  .#{$md-prefix}-inlineCode,
+  .#{$md-prefix}-inlineMath,
+  .#{$md-prefix}-math {
     color: $color-primary-active;
   }
 
-  .#{$md-prefix}definition,
-  .#{$md-prefix}footnoteDefinition,
-  .#{$md-prefix}footnoteReference,
-  .#{$md-prefix}image,
-  .#{$md-prefix}imageReference,
-  .#{$md-prefix}link,
-  .#{$md-prefix}linkReference,
-  .#{$md-prefix}listItem > .#{$md-prefix}delimiter,
-  .#{$md-prefix}thematicBreak {
+  .#{$md-prefix}-definition,
+  .#{$md-prefix}-footnoteDefinition,
+  .#{$md-prefix}-footnoteReference,
+  .#{$md-prefix}-image,
+  .#{$md-prefix}-imageReference,
+  .#{$md-prefix}-link,
+  .#{$md-prefix}-linkReference,
+  .#{$md-prefix}-listItem > .#{$md-prefix}-delimiter,
+  .#{$md-prefix}-thematicBreak {
     color: $color-primary;
   }
 
-  .#{$md-prefix}delete > :not(.#{$md-prefix}delimiter) {
+  .#{$md-prefix}-delete > :not(.#{$md-prefix}-delimiter) {
     text-decoration: line-through;
   }
 
-  .#{$md-prefix}emphasis {
+  .#{$md-prefix}-emphasis {
     font-style: italic;
   }
 
-  .#{$md-prefix}heading {
+  .#{$md-prefix}-heading {
     line-height: 1.6em;
     font-weight: bold;
 
     @mixin heading-size($level, $size) {
-      &.#{$md-prefix}heading-#{$level} {
+      &.#{$md-prefix}-heading-#{$level} {
         font-size: $size;
       }
     }
@@ -62,7 +62,7 @@ $md-prefix: #{$prefix}md-;
     @include heading-size(6, 0.9em);
   }
 
-  .#{$md-prefix}strong {
+  .#{$md-prefix}-strong {
     font-weight: bold;
   }
 }

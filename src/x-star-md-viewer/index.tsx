@@ -153,8 +153,8 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       <div
         ref={containerRef}
         className={classNames(
-          `${prefix}md-viewer`,
-          { [`${prefix}theme-${theme}`]: theme },
+          `${prefix}-md-viewer`,
+          { [`${prefix}-theme-${theme}`]: theme },
           className,
         )}
         style={{ ...style, height }}

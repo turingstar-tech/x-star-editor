@@ -1,29 +1,29 @@
-.#{$prefix}editor {
+.#{$prefix}-editor {
   display: flex;
   flex-wrap: wrap;
 
-  &.#{$prefix}fullscreen {
+  &.#{$prefix}-fullscreen {
     position: fixed;
     inset: 0;
     z-index: 9999;
 
-    > .#{$prefix}md-editor,
-    > .#{$prefix}md-viewer {
+    > .#{$prefix}-md-editor,
+    > .#{$prefix}-md-viewer {
       height: calc(100% - 3em) !important;
     }
   }
 
-  > .#{$prefix}toolbar {
+  > .#{$prefix}-toolbar {
     width: 100%;
   }
 
-  > .#{$prefix}md-editor {
+  > .#{$prefix}-md-editor {
     flex: 1;
     border-right: none;
     border-bottom-right-radius: 0;
   }
 
-  > .#{$prefix}md-viewer {
+  > .#{$prefix}-md-viewer {
     @include border-right-bottom-left;
 
     padding: 0 1em;
@@ -33,11 +33,11 @@
     overflow: auto;
   }
 
-  > .#{$prefix}active {
+  > .#{$prefix}-active {
     @include border-right-bottom-left;
   }
 
-  > .#{$prefix}hidden {
+  > .#{$prefix}-hidden {
     display: none;
   }
 }

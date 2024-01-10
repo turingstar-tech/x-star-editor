@@ -45,7 +45,7 @@ const ViewerRenderWrapper = React.forwardRef<
   return (
     <div
       ref={containerRef}
-      className={classNames(`${prefix}md-viewer`, className)}
+      className={classNames(`${prefix}-md-viewer`, className)}
       style={{ ...style, height }}
     >
       {children}
@@ -81,7 +81,7 @@ export interface XStarEditorProps {
   locale?: XStarMdEditorProps['locale'];
 
   /**
-   * 配置未输入时的提示语
+   * 文本为空时显示的提示
    */
   placeholder?: string;
 
@@ -320,8 +320,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           ctx.toolbarItemMap.editOnly = {
             children: (
               <SvgEditOnly
-                className={classNames(`${prefix}icon`, {
-                  [`${prefix}active`]: editOnly,
+                className={classNames(`${prefix}-icon`, {
+                  [`${prefix}-active`]: editOnly,
                 })}
               />
             ),
@@ -333,8 +333,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           ctx.toolbarItemMap.viewOnly = {
             children: (
               <SvgViewOnly
-                className={classNames(`${prefix}icon`, {
-                  [`${prefix}active`]: viewOnly,
+                className={classNames(`${prefix}-icon`, {
+                  [`${prefix}-active`]: viewOnly,
                 })}
               />
             ),
@@ -345,9 +345,9 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
 
           ctx.toolbarItemMap.fullscreen = {
             children: fullscreen ? (
-              <SvgExitFullscreen className={classNames(`${prefix}icon`)} />
+              <SvgExitFullscreen className={classNames(`${prefix}-icon`)} />
             ) : (
-              <SvgEnterFullscreen className={classNames(`${prefix}icon`)} />
+              <SvgEnterFullscreen className={classNames(`${prefix}-icon`)} />
             ),
             tooltip: fullscreen ? t('exitFullscreen') : t('enterFullscreen'),
             onClick: () => setFullscreen(!fullscreen),
@@ -386,8 +386,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       <div
         ref={containerRef}
         className={classNames(
-          `${prefix}editor`,
-          { [`${prefix}fullscreen`]: fullscreen },
+          `${prefix}-editor`,
+          { [`${prefix}-fullscreen`]: fullscreen },
           className,
         )}
         style={style}
@@ -396,7 +396,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           ref={editorRef}
           {...editorProps}
           className={classNames(
-            { [`${prefix}active`]: editOnly, [`${prefix}hidden`]: viewOnly },
+            { [`${prefix}-active`]: editOnly, [`${prefix}-hidden`]: viewOnly },
             editorProps?.className,
           )}
           height={height}
@@ -415,7 +415,10 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           <ViewerRenderWrapper
             ref={viewerRef}
             className={classNames(
-              { [`${prefix}active`]: viewOnly, [`${prefix}hidden`]: editOnly },
+              {
+                [`${prefix}-active`]: viewOnly,
+                [`${prefix}-hidden`]: editOnly,
+              },
               viewerProps?.className,
             )}
             style={viewerProps?.style}
@@ -428,7 +431,10 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             ref={viewerRef}
             {...viewerProps}
             className={classNames(
-              { [`${prefix}active`]: viewOnly, [`${prefix}hidden`]: editOnly },
+              {
+                [`${prefix}-active`]: viewOnly,
+                [`${prefix}-hidden`]: editOnly,
+              },
               viewerProps?.className,
             )}
             height={height}
