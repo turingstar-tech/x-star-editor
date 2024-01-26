@@ -1,6 +1,7 @@
 import type { Root as HastRoot } from 'hast';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
+import rehypeSlug from 'rehype-slug';
 import { unified } from 'unified';
 import type { Schema } from './markdown';
 import rehypeLine from './rehype/rehype-line';
@@ -20,6 +21,7 @@ const viewerRender = (root: HastRoot, schema: Schema) =>
     .use(rehypeRaw)
     .use(rehypeMath)
     .use(rehypeSanitize, schema)
+    .use(rehypeSlug)
     .use(rehypeLine)
     .runSync(root);
 
