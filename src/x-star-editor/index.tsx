@@ -101,11 +101,6 @@ export interface XStarEditorProps {
   readOnly?: XStarMdEditorProps['readOnly'];
 
   /**
-   * 是否启用 Web Worker
-   */
-  enableWebWorker?: XStarMdViewerProps['enableWebWorker'];
-
-  /**
    * 编辑器属性
    */
   editorProps?: Omit<
@@ -123,10 +118,7 @@ export interface XStarEditorProps {
   /**
    * 查看器属性
    */
-  viewerProps?: Omit<
-    XStarMdViewerProps,
-    'height' | 'value' | 'enableWebWorker'
-  >;
+  viewerProps?: Omit<XStarMdViewerProps, 'height' | 'value'>;
 
   /**
    * 自定义查看器渲染函数
@@ -155,7 +147,6 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       initialValue = '',
       value,
       readOnly,
-      enableWebWorker,
       editorProps,
       viewerProps,
       viewerRender,
@@ -439,7 +430,6 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             )}
             height={height}
             value={value ?? sourceCode}
-            enableWebWorker={enableWebWorker}
           />
         )}
       </div>

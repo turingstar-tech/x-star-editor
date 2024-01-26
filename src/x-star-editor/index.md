@@ -7,7 +7,7 @@
 ```tsx
 /**
  * title: 基本使用
- * description: 使用 `locale` 属性切换语言，目前仅支持 `zh_CN` 和 `en_US`。使用 `enableWebWorker` 属性启用 Web Worker 渲染。
+ * description: 使用 `locale` 属性切换语言，目前仅支持 `zh_CN` 和 `en_US`。
  */
 
 import { useState } from 'react';
@@ -199,7 +199,6 @@ print('Hello, Markdown!')
 效果：
 
 > 这是一段引用`}
-        enableWebWorker
         viewerProps={{ theme: 'lark' }}
       />
     </>
@@ -214,10 +213,6 @@ print('Hello, Markdown!')
 import 'x-star-editor/dist/themes/lark.css';
 ```
 
-:::
-
-:::warning
-使用 `enableWebWorker` 时，每个查看器会单独启动一个 Web Worker，且渲染会存在短暂延迟。
 :::
 
 ```tsx

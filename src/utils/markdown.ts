@@ -9,7 +9,7 @@ import rehypeMermaid from 'rehype-mermaidjs';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
 import rehypeRemark, { defaultHandlers } from 'rehype-remark';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import { defaultSchema } from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -21,7 +21,6 @@ import { unified } from 'unified';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
-import rehypeLine from './rehype/rehype-line';
 import rehypeMath, { isMathNode } from './rehype/rehype-math';
 import rehypeRawPositions from './rehype/rehype-raw-positions';
 
@@ -305,22 +304,6 @@ export const getDefaultSchema = (): Schema => ({
   },
   tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
 });
-
-/**
- * 将 Hast 树转成新的 Hast 树
- *
- * @param root Hast 树
- * @param schema 过滤模式
- * @returns 新的 Hast 树
- */
-export const viewerRender = (root: HastRoot, schema: Schema) =>
-  unified()
-    .use(rehypeRawPositions)
-    .use(rehypeRaw)
-    .use(rehypeMath)
-    .use(rehypeSanitize, schema)
-    .use(rehypeLine)
-    .runSync(root);
 
 const Input = ({ checked, ...props }: any) =>
   jsx('input', { checked: !!checked, ...props });

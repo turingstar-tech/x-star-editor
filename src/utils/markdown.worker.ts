@@ -23,6 +23,6 @@ const viewerRender = (root: HastRoot, schema: Schema) =>
     .use(rehypeLine)
     .runSync(root);
 
-self.addEventListener('message', ({ data: [root, schema] }) =>
-  self.postMessage(viewerRender(root, schema)),
+self.addEventListener('message', ({ data }) =>
+  self.postMessage({ id: data.id, root: viewerRender(data.root, data.schema) }),
 );
