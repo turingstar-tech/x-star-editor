@@ -15,8 +15,9 @@ import {
   getDefaultSchema,
   postViewerRender,
   preViewerRender,
-  viewerRender,
 } from '../utils/markdown';
+
+let worker: Worker;
 
 export interface ViewerOptions {
   /**
@@ -75,18 +76,10 @@ export interface XStarMdViewerProps {
    * 插件
    */
   plugins?: XStarMdViewerPlugin[];
-
-  /**
-   * 是否启用 Web Worker
-   */
-  enableWebWorker?: boolean;
 }
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
-  (
-    { className, style, height, theme, value = '', plugins, enableWebWorker },
-    ref,
-  ) => {
+  ({ className, style, height, theme, value = '', plugins }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(
@@ -110,33 +103,40 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     const [children, setChildren] = useState<React.JSX.Element>();
 
-    const worker = useRef<Worker>();
+    const id = useMemo(
+      () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      [],
+    );
 
     useEffect(() => {
-      if (enableWebWorker) {
-        worker.current = new Worker(
+      if (!worker) {
+        worker = new Worker(
           URL.createObjectURL(
             new Blob([workerRaw], { type: 'text/javascript' }),
           ),
         );
-        worker.current.addEventListener('message', ({ data }) =>
-          setChildren(postViewerRender(data, optionsLatest.current)),
-        );
-        return () => worker.current?.terminate();
       }
-    }, [enableWebWorker]);
+
+      const listener = ({ data }: MessageEvent) => {
+        if (data.id === id) {
+          setChildren(postViewerRender(data.root, optionsLatest.current));
+        }
+      };
+
+      worker.addEventListener('message', listener);
+      return () => worker.removeEventListener('message', listener);
+    }, []);
 
     useEffect(() => {
-      const timer = window.setTimeout(async () => {
-        const root = await preViewerRender(value);
-        if (enableWebWorker) {
-          worker.current?.postMessage([root, options.customSchema]);
-        } else {
-          setChildren(
-            postViewerRender(viewerRender(root, options.customSchema), options),
-          );
-        }
-      }, 100);
+      const timer = window.setTimeout(
+        async () =>
+          worker.postMessage({
+            id,
+            root: await preViewerRender(value),
+            schema: options.customSchema,
+          }),
+        100,
+      );
       return () => window.clearTimeout(timer);
     }, [value, options]);
 
