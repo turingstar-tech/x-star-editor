@@ -6,6 +6,7 @@ import { SKIP, visit } from 'unist-util-visit';
  */
 const rehypeCustom = (customBlocks: any) => (root: HastRoot) =>
   visit(root, { tagName: 'custom' }, (node) => {
+    console.log('node', node);
     if (typeof node.properties?.meta === 'string') {
       node.properties.component = customBlocks[node.properties.meta] ?? 'div';
     }

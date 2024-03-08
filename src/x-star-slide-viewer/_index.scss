@@ -1,0 +1,72 @@
+.#{$prefix}-slide-viewer {
+  @include common;
+
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  transform: scale(1);
+
+  .child {
+    width: 100%; /* 子元素占满父容器 */
+    height: 100%; /* 子元素占满父容器 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left; /* 设置缩放的原点为左上角 */
+  }
+
+  // font-size: 1em !important;
+
+  // h1{
+  //   font-size: 2em !important;
+  // }
+
+  // h2{
+  //   font-size: 1.5em !important;
+  // }
+
+  // h3{
+  //   font-size: 1.17em !important;
+  // }
+
+  // h4{
+  //   font-size: 1em !important;
+  // }
+
+  // h5{
+  //   font-size: 0.83em !important;
+  // }
+
+  // h6{
+  //   font-size: 0.67em !important;
+  // }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: bold;
+  }
+
+  table {
+    margin: 1em 0;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 0.5em;
+    border: 1px solid $color-border;
+  }
+
+  th {
+    font-weight: bold;
+    background-color: $color-fill-secondary;
+  }
+
+  tr:nth-child(even) td {
+    background-color: $color-fill-tertiary;
+  }
+}

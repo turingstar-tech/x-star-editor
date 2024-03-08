@@ -319,6 +319,7 @@ const Custom = ({ component, value }: any) =>
  * @returns React 虚拟 DOM 树
  */
 export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
+  console.log('root', root);
   try {
     const components = {
       ...options.customHTMLElements,

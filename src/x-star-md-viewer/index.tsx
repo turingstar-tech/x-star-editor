@@ -91,12 +91,14 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     const options = useMemo(
       () =>
         composeHandlers(plugins)({
+          // 这里的 plugins 是一个数组，里面是一些函数
           customSchema: getDefaultSchema(),
           customHTMLElements: {},
           customBlocks: {},
         }),
       [plugins],
     );
+    console.log('options', options);
 
     const optionsLatest = useRef(options);
     optionsLatest.current = options;
@@ -118,6 +120,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       }
 
       const listener = ({ data }: MessageEvent) => {
+        console.log('data', data);
         if (data.id === id) {
           setChildren(postViewerRender(data.root, optionsLatest.current));
         }
