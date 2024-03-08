@@ -133,15 +133,22 @@ const XStarSlideViewer = React.forwardRef<
   const childRef = useRef<HTMLDivElement>(null);
 
   const scaleChild = (entries: any) => {
-    if (!childRef.current) return;
-    const parentWidth = entries[0]!?.offsetWidth; // 获取父容器的宽度
-    const scaleX = parentWidth / 900; // 计算宽度缩放比例
-    childRef.current!.style.transform = `scale(${scaleX})`; // 应用缩放
+    if (!containerRef.current) return;
+    const parentWidth = entries[0]!?.contentRect.width; // 获取父容器的宽度
+    console.log('parentWidth', parentWidth);
+    containerRef.current!.style.fontSize = `${parentWidth / 70}px`;
   };
 
   const resizeObserver = new ResizeObserver(scaleChild);
-  resizeObserver.observe(containerRef.current!); // 监听父容器的大小变化
-  scaleChild([{ contentRect: parent.getBoundingClientRect() }]); // 初始化一次缩放
+
+  useEffect(() => {
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [containerRef.current]);
 
   return (
     <div
@@ -150,6 +157,7 @@ const XStarSlideViewer = React.forwardRef<
         `${prefix}-slide-viewer`,
         { [`${prefix}-theme-${theme}`]: theme },
         className,
+        'container',
       )}
       style={{ ...style, height }}
     >
