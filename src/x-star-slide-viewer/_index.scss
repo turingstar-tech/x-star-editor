@@ -4,7 +4,19 @@
   overflow: hidden;
   aspect-ratio: 16 / 9;
 
-  .child {
+  .slide {
+    & :first-child {
+      margin-top: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+    }
+
+    & :last-child {
+      margin-bottom: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+    }
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 1em;
     width: 100%; /* 子元素占满父容器 */
     height: 100%; /* 子元素占满父容器 */
     overflow: hidden;

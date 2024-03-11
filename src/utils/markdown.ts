@@ -18,6 +18,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
+//import { u } from 'unist-builder';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
@@ -265,6 +266,30 @@ const toHastProcessor = unified()
         node.meta
           ? h(node.position, 'custom', { meta: node.meta, value: node.value })
           : h(node, 'div'),
+      image: (h, node) => {
+        const styles = node?.alt?.split(' ');
+        return h(node, 'img', {
+          src: node.url,
+          style: styles?.filter((i: string) => /:/.test(i))?.join(';'),
+          alt: styles?.filter((i: string) => !/:/.test(i))?.join(''),
+        });
+      },
+      // code: (h, node) => {
+      //   console.log(node);
+      //   const meta = node.meta ? node.meta + '\n' : '';
+      //   const value = node.value ? node.value + '\n' : '';
+      //   const lang = node.lang && node.lang.match(/^[^ \t]+(?=[ \t]|$)/);
+      //   const props: any = {};
+      //   if (lang) {
+      //     props.className = ['language-' + lang];
+      //   }
+      //   if (meta) {
+      //     props.meta = meta;
+      //   }
+      //   return h(node.position, 'pre', [
+      //     h(node, 'code', props, [u('text', value)]),
+      //   ]);
+      // },
     },
   })
   .use(rehypeMermaid, {
@@ -319,7 +344,6 @@ const Custom = ({ component, value }: any) =>
  * @returns React 虚拟 DOM 树
  */
 export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
-  console.log('root', root);
   try {
     const components = {
       ...options.customHTMLElements,

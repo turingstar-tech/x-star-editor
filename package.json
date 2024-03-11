@@ -65,6 +65,7 @@
     "remark-stringify": "^10.0.3",
     "tinykeys": "^2.1.0",
     "unified": "^10.1.2",
+    "unist-builder": "^4.0.0",
     "unist-util-visit": "^4.1.2"
   },
   "devDependencies": {

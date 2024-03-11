@@ -98,7 +98,6 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
         }),
       [plugins],
     );
-    console.log('options', options);
 
     const optionsLatest = useRef(options);
     optionsLatest.current = options;
@@ -120,7 +119,6 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       }
 
       const listener = ({ data }: MessageEvent) => {
-        console.log('data', data);
         if (data.id === id) {
           setChildren(postViewerRender(data.root, optionsLatest.current));
         }
