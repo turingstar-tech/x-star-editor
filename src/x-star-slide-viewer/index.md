@@ -11,39 +11,19 @@ Markdown 幻灯片渲染器。
  */
 
 import { XStarSlideViewer } from 'x-star-editor';
-import styles from './test.module.scss';
-
-const blockPlugin = (): XStarMdViewerPlugin => (ctx) => {
-  // 自定义块
-  ctx.customBlocks.test = ({ children }) => (
-    <strong>test block: {children}</strong>
-  );
-};
+import styles from './_test.module.scss';
 
 export default () => (
   <XStarSlideViewer
     value={`
-# Consider the contribution
+###### BUBBLE SORT AND SELECTION SORT
 
-For one plan, just need to count the number of i such that $ [i- 1,i] $ is not covered but
-$[i, i + 1]$ is covered.
+# 冒泡排序与选择排序
 
-For the answer, using linearity of expectation, we only need to find the number of plans
-that cover $[i,i+1]$ but not not cover $[i - 1,i]$ for all i.
-
-Count the number of intervals that cover $[i - 1, i]$ (call it $x$), then the contribution of
-is $2^{n-x-1}$.
-
-| 姓名 | 年龄 |
-| - | - |
-| 张三 | 18 |
-| 李四 | 21 |
-
+信友队C++课程
 
 `}
-    theme="lark"
-    slideClassName={styles}
-    plugins={[blockPlugin()]}
+    slideClassName={styles.slide}
   />
 );
 ```
