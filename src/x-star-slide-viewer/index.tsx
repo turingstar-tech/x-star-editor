@@ -91,7 +91,7 @@ const XStarSlideViewer = React.forwardRef<
     const signaturePadRef = useRef<SignaturePad | null>(null);
     const containerWidth = useRef(0);
     const [operationType, setOperationType] = useState(OperationType.NONE);
-    const pathBeginWidth = useRef(0);
+    const pathBeginScale = useRef(1);
     const [strokeColor, setStrokeColor] = useState('#4285f4');
     const [strokeWidth, setStrokeWidth] = useState(5);
     const [eraseWidth, setEraseWidth] = useState(5);
@@ -104,8 +104,11 @@ const XStarSlideViewer = React.forwardRef<
           penColor: '#4285f4',
         });
         signaturePadRef.current.addEventListener('beginStroke', () => {
-          pathBeginWidth.current = Number(
-            canvasRef.current!.style.width.replace('px', ''),
+          console.log(childRef.current!.style.transform);
+          pathBeginScale.current = Number(
+            childRef
+              .current!.style.transform.replace('scale(', '')
+              .replace(')', ''),
           );
         });
       }
@@ -196,20 +199,22 @@ const XStarSlideViewer = React.forwardRef<
         containerWidth.current = parentWidth;
         childRef.current!.style.transform = `scale(${parentWidth / 960})`;
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvasRef.current!.style.width = `${parentWidth * ratio}px`;
-        canvasRef.current!.style.height = `${parentWidth * (9 / 16) * ratio}px`;
+        // canvasRef.current!.style.width = `${parentWidth * ratio}px`;
+        // canvasRef.current!.style.height = `${parentWidth * (9 / 16) * ratio}px`;
         canvasRef.current!.width = parentWidth * ratio;
         canvasRef.current!.height = parentWidth * (9 / 16) * ratio;
         const data = signaturePadRef.current!.toData();
         data.forEach(({ points }) =>
           points.forEach((point) => {
-            point.x = (point.x * parentWidth) / pathBeginWidth.current;
-            point.y = (point.y * parentWidth) / pathBeginWidth.current;
+            point.x = (point.x / pathBeginScale.current) * (parentWidth / 960);
+            point.y = (point.y / pathBeginScale.current) * (parentWidth / 960);
           }),
         );
         signaturePadRef.current!.fromData(data);
-        pathBeginWidth.current = Number(
-          canvasRef.current!.style.width.replace('px', ''),
+        pathBeginScale.current = Number(
+          childRef
+            .current!.style.transform.replace('scale(', '')
+            .replace(')', ''),
         );
       });
 
@@ -247,8 +252,14 @@ const XStarSlideViewer = React.forwardRef<
       >
         <div className={classNames('slide', slideClassName)} ref={childRef}>
           {children}
+          <canvas
+            ref={canvasRef}
+            className={classNames('pad')}
+            width={960}
+            height={540}
+          />
         </div>
-        <canvas ref={canvasRef} className={classNames('pad')} />
+
         <div className={classNames('btn-container')}>
           <span className={classNames('common-btn')} onClick={toggleFullscreen}>
             <SvgEnterFullscreen />
@@ -256,7 +267,7 @@ const XStarSlideViewer = React.forwardRef<
           <span
             className={classNames('common-btn', 'shot')}
             onClick={async () => {
-              const canvas = await html2canvas(containerRef.current!, {
+              const canvas = await html2canvas(childRef.current!, {
                 ignoreElements: (e) => e.classList.contains('btn-container'),
               });
               const a = document.createElement('a');
