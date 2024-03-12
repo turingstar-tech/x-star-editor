@@ -1,3 +1,4 @@
+import { useFullscreen } from 'ahooks';
 import classNames from 'classnames';
 import React, {
   useEffect,
@@ -8,6 +9,7 @@ import React, {
 } from 'react';
 import { ViewerOptions } from 'x-star-editor/x-star-md-viewer/index.js';
 import workerRaw from '../../workers-dist/markdown.worker.js';
+import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import {
@@ -74,6 +76,7 @@ const XStarSlideViewer = React.forwardRef<
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const childRef = useRef<HTMLDivElement>(null);
+    const [, { toggleFullscreen }] = useFullscreen(containerRef);
 
     useImperativeHandle(
       ref,
@@ -169,13 +172,18 @@ const XStarSlideViewer = React.forwardRef<
           `${prefix}-slide-viewer`,
           { [`${prefix}-theme-${theme}`]: theme },
           className,
-          'container',
         )}
         style={{ ...style, height }}
       >
         <div className={classNames('slide', slideClassName)} ref={childRef}>
           {children}
         </div>
+        <span
+          className={classNames('full-screen-btn')}
+          onClick={toggleFullscreen}
+        >
+          <SvgEnterFullscreen />
+        </span>
       </div>
     );
   },

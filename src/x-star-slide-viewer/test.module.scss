@@ -1,5 +1,10 @@
-.slide {
-  h1 {
-    color: rgb(34 68 107);
-  }
+h1 {
+  position: relative;
+  color: rgb(34 68 107);
+  left: 0;
+  transition: left 0.3s ease-in-out;
+}
+
+h1:hover {
+  left: 10px;
 }

@@ -18,7 +18,6 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
-//import { u } from 'unist-builder';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
@@ -264,7 +263,10 @@ const toHastProcessor = unified()
       math: (h, node) =>
         // 如果 Math 节点的 `meta` 属性不为空，则视为自定义块
         node.meta
-          ? h(node.position, 'custom', { meta: node.meta, value: node.value })
+          ? h(node.position, 'custom', {
+              meta: node.meta,
+              value: node.value,
+            })
           : h(node, 'div'),
       image: (h, node) => {
         const styles = node?.alt?.split(' ');
@@ -274,22 +276,6 @@ const toHastProcessor = unified()
           alt: styles?.filter((i: string) => !/:/.test(i))?.join(''),
         });
       },
-      // code: (h, node) => {
-      //   console.log(node);
-      //   const meta = node.meta ? node.meta + '\n' : '';
-      //   const value = node.value ? node.value + '\n' : '';
-      //   const lang = node.lang && node.lang.match(/^[^ \t]+(?=[ \t]|$)/);
-      //   const props: any = {};
-      //   if (lang) {
-      //     props.className = ['language-' + lang];
-      //   }
-      //   if (meta) {
-      //     props.meta = meta;
-      //   }
-      //   return h(node.position, 'pre', [
-      //     h(node, 'code', props, [u('text', value)]),
-      //   ]);
-      // },
     },
   })
   .use(rehypeMermaid, {

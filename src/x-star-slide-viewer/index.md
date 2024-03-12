@@ -34,29 +34,15 @@ that cover $[i,i+1]$ but not not cover $[i - 1,i]$ for all i.
 Count the number of intervals that cover $[i - 1, i]$ (call it $x$), then the contribution of
 is $2^{n-x-1}$.
 
-\`\`\`cpp showLineNumbers
-151515456151651564651
-\`\`\`
+| 姓名 | 年龄 |
+| - | - |
+| 张三 | 18 |
+| 李四 | 21 |
 
-\`\`\`mermaid
-gantt
-    title A Gantt Diagram
-    dateFormat YYYY-MM-DD
-    section Section
-        A task          :a1, 2014-01-01, 30d
-        Another task    :after a1, 20d
-    section Another
-        Task in Another :2014-01-12, 12d
-        another task    :24d
-\`\`\`
-
-$$test
-fdsafsa
-$$
 
 `}
     theme="lark"
-    slideClassName={styles.slide}
+    slideClassName={styles}
     plugins={[blockPlugin()]}
   />
 );
