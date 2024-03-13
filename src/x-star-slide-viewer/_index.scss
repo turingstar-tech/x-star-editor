@@ -1,6 +1,8 @@
 .#{$prefix}-slide-viewer {
   @include common;
 
+  --cursor-url: '';
+
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
@@ -61,6 +63,14 @@
     }
   }
 
+  .custom-cursor-pencil {
+    cursor: url('./cursor/pencil.png'), auto;
+  }
+
+  .custom-cursor-eraser {
+    cursor: url('./cursor/editor-eraser.png'), auto;
+  }
+
   .btn-container {
     position: absolute;
     z-index: 10000;
@@ -115,12 +125,12 @@
     }
 
     .draw-pop-over {
-      left: -8px;
+      left: 75px;
       top: 33px;
     }
 
     .erase-pop-over {
-      left: -45px;
+      left: 35px;
       top: 33px;
     }
   }

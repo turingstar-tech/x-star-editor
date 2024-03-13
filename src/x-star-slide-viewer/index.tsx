@@ -1,4 +1,4 @@
-import { useFullscreen } from 'ahooks';
+import { useEventListener, useFullscreen } from 'ahooks';
 import classNames from 'classnames';
 import html2canvas from 'html2canvas';
 import React, {
@@ -11,9 +11,11 @@ import React, {
 import SignaturePad from 'signature_pad';
 import { ViewerOptions } from 'x-star-editor/x-star-md-viewer/index.js';
 import workerRaw from '../../workers-dist/markdown.worker.js';
+import SvgDelete from '../icons/Delete';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgHelp from '../icons/Help';
 import SvgStrong from '../icons/Strong';
+import SvgUndo from '../icons/Undo';
 import SvgViewOnly from '../icons/ViewOnly';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
@@ -69,11 +71,21 @@ export interface XStarSlideViewerProps {
    * 内部PPT的样式
    */
   slideClassName?: string;
+
+  /**
+   * 一笔stroke后的回调
+   */
+  onStrokeEnd?: (val: any) => void;
+
+  /**
+   * canvas初始数据
+   */
+  canvasInitData?: any;
 }
 
 enum OperationType {
   NONE,
-  DRAW,
+  STROKE,
   ERASE,
 }
 
@@ -82,16 +94,27 @@ const XStarSlideViewer = React.forwardRef<
   XStarSlideViewerProps
 >(
   (
-    { className, style, height, theme, value = '', plugins, slideClassName },
+    {
+      className,
+      style,
+      height,
+      theme,
+      value = '',
+      plugins,
+      slideClassName,
+      onStrokeEnd,
+      canvasInitData,
+    },
     ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const childRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const signaturePadRef = useRef<SignaturePad | null>(null);
-    const containerWidth = useRef(0);
-    const [operationType, setOperationType] = useState(OperationType.NONE);
+    const clearHistoryRef = useRef<any[]>([]); // 保存清除历史
+    const laterStepRef = useRef<number[]>([0]); // 保存清空后的步数
     const pathBeginScale = useRef(1);
+    const [operationType, setOperationType] = useState(OperationType.NONE);
     const [strokeColor, setStrokeColor] = useState('#4285f4');
     const [strokeWidth, setStrokeWidth] = useState(5);
     const [eraseWidth, setEraseWidth] = useState(5);
@@ -103,13 +126,20 @@ const XStarSlideViewer = React.forwardRef<
         signaturePadRef.current = new SignaturePad(canvasRef.current, {
           penColor: '#4285f4',
         });
+        if (canvasInitData) {
+          signaturePadRef.current.fromData(canvasInitData);
+        }
         signaturePadRef.current.addEventListener('beginStroke', () => {
-          console.log(childRef.current!.style.transform);
           pathBeginScale.current = Number(
             childRef
               .current!.style.transform.replace('scale(', '')
               .replace(')', ''),
           );
+        });
+        signaturePadRef.current.addEventListener('endStroke', () => {
+          const last = Number(laterStepRef.current?.pop()) + 1; // 画完一笔后，步数加1（栈顶元素+1）
+          laterStepRef.current.push(last);
+          onStrokeEnd?.(signaturePadRef.current?.toData());
         });
       }
     }, []);
@@ -196,11 +226,8 @@ const XStarSlideViewer = React.forwardRef<
       requestAnimationFrame(() => {
         if (!containerRef.current) return;
         const parentWidth = entries[0]!?.contentRect.width; // 获取父容器的宽度
-        containerWidth.current = parentWidth;
         childRef.current!.style.transform = `scale(${parentWidth / 960})`;
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        // canvasRef.current!.style.width = `${parentWidth * ratio}px`;
-        // canvasRef.current!.style.height = `${parentWidth * (9 / 16) * ratio}px`;
         canvasRef.current!.width = parentWidth * ratio;
         canvasRef.current!.height = parentWidth * (9 / 16) * ratio;
         const data = signaturePadRef.current!.toData();
@@ -227,10 +254,10 @@ const XStarSlideViewer = React.forwardRef<
       return () => {
         resizeObserver.disconnect();
       };
-    }, [containerRef.current]);
+    }, []);
 
     useEffect(() => {
-      if (operationType === OperationType.DRAW) {
+      if (operationType === OperationType.STROKE) {
         signaturePadRef.current!.penColor = strokeColor;
         signaturePadRef.current!.minWidth = strokeWidth - 2;
         signaturePadRef.current!.maxWidth = strokeWidth;
@@ -238,7 +265,39 @@ const XStarSlideViewer = React.forwardRef<
         signaturePadRef.current!.minWidth = eraseWidth - 2;
         signaturePadRef.current!.maxWidth = eraseWidth;
       }
-    }, [strokeColor, strokeWidth, eraseWidth]);
+    }, [strokeColor, strokeWidth, eraseWidth, operationType]);
+
+    const handleUndo = () => {
+      const data = signaturePadRef.current!.toData();
+      if (
+        laterStepRef.current?.[laterStepRef.current.length - 1] === 0 &&
+        laterStepRef.current.length > 1
+      ) {
+        // 如果当前步数为0，且栈中有多于一个元素
+        laterStepRef.current.pop(); // 删除栈顶元素
+        signaturePadRef.current!.fromData(clearHistoryRef.current?.pop()); // 从清空历史中取出上一次清空前的画布数据 从数据中恢复画布
+        return;
+      }
+      if (data) {
+        data.pop(); // remove the last dot or line
+        const last = Number(laterStepRef.current?.pop()) - 1; // 撤销一笔，步数减1（栈顶元素-1）
+        laterStepRef.current.push(last);
+        signaturePadRef.current!.fromData(data);
+      }
+    };
+
+    const handleClear = () => {
+      if (laterStepRef.current[laterStepRef.current.length - 1] === 0) return; // 如果当前步数为0，不做任何操作
+      clearHistoryRef.current?.push(signaturePadRef.current?.toData()); // 当前画布数据入栈
+      laterStepRef.current.push(0); // 清空后，步数变为0（加入栈顶元素0）
+      signaturePadRef.current!.clear(); // 清空画布
+    };
+
+    useEventListener('keydown', (event) => {
+      if (event.ctrlKey && (event.key === 'z' || event.key === 'Z')) {
+        handleUndo();
+      }
+    });
 
     return (
       <div
@@ -254,7 +313,16 @@ const XStarSlideViewer = React.forwardRef<
           {children}
           <canvas
             ref={canvasRef}
-            className={classNames('pad')}
+            className={classNames(
+              'pad',
+              {
+                [`custom-cursor-pencil`]:
+                  operationType === OperationType.STROKE,
+              },
+              {
+                [`custom-cursor-eraser`]: operationType === OperationType.ERASE,
+              },
+            )}
             width={960}
             height={540}
           />
@@ -283,14 +351,14 @@ const XStarSlideViewer = React.forwardRef<
               className={classNames('common-btn', 'draw')}
               style={{
                 backgroundColor:
-                  operationType === OperationType.DRAW
+                  operationType === OperationType.STROKE
                     ? 'rgb(66, 133, 244)'
                     : '',
               }}
-              onClick={async () => {
-                if (operationType !== OperationType.DRAW) {
+              onClick={() => {
+                if (operationType !== OperationType.STROKE) {
                   signaturePadRef.current!.compositeOperation = 'source-over';
-                  setOperationType(OperationType.DRAW);
+                  setOperationType(OperationType.STROKE);
                 } else {
                   setOperationType(OperationType.NONE);
                 }
@@ -326,7 +394,7 @@ const XStarSlideViewer = React.forwardRef<
                     ? 'rgb(66, 133, 244)'
                     : '',
               }}
-              onClick={async () => {
+              onClick={() => {
                 if (operationType !== OperationType.ERASE) {
                   signaturePadRef.current!.compositeOperation =
                     'destination-out';
@@ -350,6 +418,18 @@ const XStarSlideViewer = React.forwardRef<
               />
             </div>
           </div>
+          <span
+            className={classNames('common-btn', 'clear')}
+            onClick={handleClear}
+          >
+            <SvgDelete />
+          </span>
+          <span
+            className={classNames('common-btn', 'undo')}
+            onClick={handleUndo}
+          >
+            <SvgUndo />
+          </span>
         </div>
       </div>
     );
