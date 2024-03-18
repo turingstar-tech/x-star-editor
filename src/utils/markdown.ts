@@ -18,6 +18,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
+import { visit } from 'unist-util-visit';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
@@ -420,11 +421,37 @@ export const toMarkdown = (sourceCode: string) =>
     ),
   );
 
+export type ToTextOptions = {
+  /**
+   * Whether to use `alt` for `image`s.
+   */
+  includeImageAlt?: boolean | null | undefined;
+  /**
+   * Whether to use `value` of HTML.
+   */
+  includeHtml?: boolean | null | undefined;
+  /**
+   * 替换图片的 alt 文本
+   */
+  replaceImageAlt?: string | null | undefined;
+};
+
 /**
  * 将 Markdown 文本转成纯文本
  *
  * @param sourceCode Markdown 文本
  * @returns 纯文本
  */
-export const toText = (sourceCode: string) =>
-  toString(toMdastProcessor.parse(sourceCode));
+export const toText = (sourceCode: string, options?: ToTextOptions) => {
+  const MdastRoot = toMdastProcessor.parse(sourceCode);
+  // 遍历内部的children，如果type为image，alt修改为[图片]
+  if (options?.replaceImageAlt) {
+    visit(MdastRoot, 'image', (node) => {
+      node.alt = options.replaceImageAlt;
+    });
+  }
+  return toString(MdastRoot, {
+    includeImageAlt: options?.includeImageAlt,
+    includeHtml: options?.includeHtml,
+  });
+};
