@@ -91,6 +91,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     const options = useMemo(
       () =>
         composeHandlers(plugins)({
+          // 这里的 plugins 是一个数组，里面是一些函数
           customSchema: getDefaultSchema(),
           customHTMLElements: {},
           customBlocks: {},

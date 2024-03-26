@@ -1,0 +1,145 @@
+.#{$prefix}-slide-viewer {
+  @include common;
+
+  --cursor-url: '';
+
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+
+  .slide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 960px;
+    height: 540px;
+    transform-origin: top left;
+    padding: 0 32px;
+
+    > :first-child {
+      margin-top: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+    }
+
+    > :last-child {
+      margin-bottom: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-weight: bold;
+    }
+
+    table {
+      margin: 16px 0;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 0.5em;
+      border: 1px solid $color-border;
+    }
+
+    th {
+      font-weight: bold;
+      background-color: $color-fill-secondary;
+    }
+
+    tr:nth-child(even) td {
+      background-color: $color-fill-tertiary;
+    }
+
+    pre {
+      width: 70%;
+    }
+
+    img {
+      max-height: 100%;
+      width: 30em;
+    }
+  }
+
+  .custom-cursor-pencil {
+    cursor: url('./cursor/pencil.png'), auto;
+  }
+
+  .custom-cursor-eraser {
+    cursor: url('./cursor/editor-eraser.png'), auto;
+  }
+
+  .btn-container {
+    position: absolute;
+    z-index: 10000;
+    top: 16px;
+    right: 32px;
+    height: 32px;
+    display: flex;
+    flex-direction: row-reverse;
+
+    .common-btn {
+      position: relative;
+      font-size: 32px;
+      background-color: transparent;
+      transition: all 0.3s ease-in-out;
+      display: flex;
+      color: #e2e2e2;
+      justify-content: center;
+      align-items: center;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 10px;
+
+      &:hover {
+        background-color: #f0f0f0;
+        color: #f8f8f8;
+      }
+    }
+
+    .pop-over {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #fff;
+      box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
+      border-radius: 6px;
+      z-index: 10000;
+      width: 150px;
+      height: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.51, 0.3, 0.06, 0.98);
+
+      > * {
+        margin: 8px 0;
+      }
+    }
+
+    .common-btn:hover + .pop-over,
+    .pop-over:hover {
+      height: 100px;
+    }
+
+    .draw-pop-over {
+      left: 75px;
+      top: 33px;
+    }
+
+    .erase-pop-over {
+      left: 35px;
+      top: 33px;
+    }
+  }
+
+  .pad {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 960px;
+    height: 540px;
+  }
+}

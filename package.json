@@ -45,9 +45,11 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
+    "ahooks": "^3.7.10",
     "classnames": "^2.3.2",
     "hast-util-to-jsx-runtime": "^1.2.0",
     "hast-util-to-text": "^3.1.2",
+    "html2canvas": "^1.4.1",
     "mdast-util-to-string": "^3.2.0",
     "rehype-katex": "^6.0.3",
     "rehype-mermaidjs": "^1.0.1",
@@ -63,6 +65,7 @@
     "remark-parse": "^10.0.2",
     "remark-rehype": "^10.1.0",
     "remark-stringify": "^10.0.3",
+    "signature_pad": "^4.2.0",
     "tinykeys": "^2.1.0",
     "unified": "^10.1.2",
     "unist-util-visit": "^4.1.2"
