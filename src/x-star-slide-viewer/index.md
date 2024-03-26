@@ -27,3 +27,17 @@ export default () => (
   />
 );
 ```
+
+:::
+
+## API
+
+### XStarMdViewer
+
+<API id="XStarSlideViewer"></API>
+
+#### Methods
+
+| 属性名            | 类型                   | 描述                    |
+| ----------------- | ---------------------- | ----------------------- |
+| getSlideContainer | `() => HTMLDivElement` | 获取内层容器 Slide 元素 |
