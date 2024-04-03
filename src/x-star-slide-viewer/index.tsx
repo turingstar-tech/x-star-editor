@@ -222,27 +222,32 @@ const XStarSlideViewer = React.forwardRef<
       }
     }, [operationType]);
 
+    const handleScale = (entries: any) => {
+      if (!containerRef.current || !canvasRef.current || !childRef.current)
+        return;
+      const parentWidth = entries[0]!?.contentRect.width; // 获取父容器的宽度
+      childRef.current.style.transform = `scale(${parentWidth / 960})`;
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvasRef.current.width = parentWidth * ratio;
+      canvasRef.current.height = parentWidth * (9 / 16) * ratio;
+      const data = signaturePadRef.current!.toData();
+      data.forEach(({ points }) =>
+        points.forEach((point) => {
+          point.x = (point.x / pathBeginScale.current) * (parentWidth / 960);
+          point.y = (point.y / pathBeginScale.current) * (parentWidth / 960);
+        }),
+      );
+      signaturePadRef.current!.fromData(data);
+      pathBeginScale.current = Number(
+        childRef
+          .current!.style.transform.replace('scale(', '')
+          .replace(')', ''),
+      );
+    };
+
     const scaleChild = (entries: any) =>
       requestAnimationFrame(() => {
-        if (!containerRef.current) return;
-        const parentWidth = entries[0]!?.contentRect.width; // 获取父容器的宽度
-        childRef.current!.style.transform = `scale(${parentWidth / 960})`;
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvasRef.current!.width = parentWidth * ratio;
-        canvasRef.current!.height = parentWidth * (9 / 16) * ratio;
-        const data = signaturePadRef.current!.toData();
-        data.forEach(({ points }) =>
-          points.forEach((point) => {
-            point.x = (point.x / pathBeginScale.current) * (parentWidth / 960);
-            point.y = (point.y / pathBeginScale.current) * (parentWidth / 960);
-          }),
-        );
-        signaturePadRef.current!.fromData(data);
-        pathBeginScale.current = Number(
-          childRef
-            .current!.style.transform.replace('scale(', '')
-            .replace(')', ''),
-        );
+        handleScale(entries);
       });
 
     const resizeObserver = new ResizeObserver(scaleChild);
@@ -256,14 +261,17 @@ const XStarSlideViewer = React.forwardRef<
       };
     }, []);
 
+    const handleStokeChange = (base: number, offset: number) => {
+      signaturePadRef.current!.minWidth = base + offset;
+      signaturePadRef.current!.maxWidth = base;
+    };
+
     useEffect(() => {
       if (operationType === OperationType.STROKE) {
         signaturePadRef.current!.penColor = strokeColor;
-        signaturePadRef.current!.minWidth = strokeWidth - 2;
-        signaturePadRef.current!.maxWidth = strokeWidth;
+        handleStokeChange(strokeWidth, -2);
       } else if (operationType === OperationType.ERASE) {
-        signaturePadRef.current!.minWidth = eraseWidth - 2;
-        signaturePadRef.current!.maxWidth = eraseWidth;
+        handleStokeChange(eraseWidth, 0);
       }
     }, [strokeColor, strokeWidth, eraseWidth, operationType]);
 
@@ -294,7 +302,11 @@ const XStarSlideViewer = React.forwardRef<
     };
 
     useEventListener('keydown', (event) => {
-      if (event.ctrlKey && (event.key === 'z' || event.key === 'Z')) {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        (event.key === 'z' || event.key === 'Z')
+      ) {
+        event.preventDefault(); // 阻止默认的撤销行为（如浏览器返回）
         handleUndo();
       }
     });
