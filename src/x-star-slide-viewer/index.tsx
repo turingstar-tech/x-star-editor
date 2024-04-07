@@ -8,12 +8,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import SignaturePad from 'signature_pad';
+import SignaturePad, { PointGroup } from 'signature_pad';
 import { ViewerOptions } from 'x-star-editor/x-star-md-viewer/index.js';
 import workerRaw from '../../workers-dist/markdown.worker.js';
 import SvgDelete from '../icons/Delete';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgHelp from '../icons/Help';
+import SvgRedo from '../icons/Redo';
 import SvgStrong from '../icons/Strong';
 import SvgUndo from '../icons/Undo';
 import SvgViewOnly from '../icons/ViewOnly';
@@ -111,15 +112,15 @@ const XStarSlideViewer = React.forwardRef<
     const childRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const signaturePadRef = useRef<SignaturePad | null>(null);
-    const clearHistoryRef = useRef<any[]>([]); // 保存清除历史
-    const laterStepRef = useRef<number[]>([0]); // 保存清空后的步数
+    const historyRef = useRef<PointGroup[][]>([[]]); // 保存清除历史
+    const currentShowIndex = useRef<number>(0);
     const pathBeginScale = useRef(1);
     const [operationType, setOperationType] = useState(OperationType.NONE);
     const [strokeColor, setStrokeColor] = useState('#4285f4');
     const [strokeWidth, setStrokeWidth] = useState(5);
     const [eraseWidth, setEraseWidth] = useState(5);
-
     const [, { toggleFullscreen }] = useFullscreen(containerRef);
+    const MAX_STEP = 100; // 最大保存历史记录数
 
     useEffect(() => {
       if (canvasRef.current) {
@@ -138,8 +139,17 @@ const XStarSlideViewer = React.forwardRef<
           );
         });
         signaturePadRef.current.addEventListener('endStroke', () => {
-          const last = Number(laterStepRef.current?.pop()) + 1; // 画完一笔后，步数加1（栈顶元素+1）
-          laterStepRef.current.push(last);
+          if (currentShowIndex.current < historyRef.current.length - 1) {
+            //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
+            historyRef.current.splice(currentShowIndex.current + 1);
+          }
+          if (historyRef.current.length > MAX_STEP) {
+            historyRef.current.shift();
+          } else {
+            currentShowIndex.current++;
+          }
+          historyRef.current.push([...signaturePadRef.current!.toData()]);
+
           onStrokeEnd?.(signaturePadRef.current?.toData());
         });
       }
@@ -225,6 +235,20 @@ const XStarSlideViewer = React.forwardRef<
       }
     }, [operationType]);
 
+    const computeScaledPoint = (
+      pointData: PointGroup[],
+      beforeScale: number,
+      parentWidth: number,
+    ) => {
+      console.log(beforeScale);
+      pointData.forEach(({ points }) =>
+        points.forEach((point) => {
+          point.x = (point.x / beforeScale) * (parentWidth / 960);
+          point.y = (point.y / beforeScale) * (parentWidth / 960);
+        }),
+      );
+    };
+
     const handleScale = (entries: any) => {
       if (
         !containerRef.current ||
@@ -235,18 +259,13 @@ const XStarSlideViewer = React.forwardRef<
         return;
       }
       const parentWidth = entries[0]!?.contentRect.width; // 获取父容器的宽度
-      childRef.current.style.transform = `scale(${parentWidth / 960})`;
+      const pointData = signaturePadRef.current.toData();
       const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      childRef.current.style.transform = `scale(${parentWidth / 960})`;
       canvasRef.current.width = parentWidth * ratio;
       canvasRef.current.height = parentWidth * (9 / 16) * ratio;
-      const data = signaturePadRef.current.toData();
-      data.forEach(({ points }) =>
-        points.forEach((point) => {
-          point.x = (point.x / pathBeginScale.current) * (parentWidth / 960);
-          point.y = (point.y / pathBeginScale.current) * (parentWidth / 960);
-        }),
-      );
-      signaturePadRef.current.fromData(data);
+      computeScaledPoint(pointData, pathBeginScale.current, parentWidth);
+      signaturePadRef.current.fromData(pointData);
       pathBeginScale.current = Number(
         childRef.current.style.transform.replace('scale(', '').replace(')', ''),
       );
@@ -285,33 +304,50 @@ const XStarSlideViewer = React.forwardRef<
 
     const handleUndo = () => {
       if (!signaturePadRef.current) return;
-      const data = signaturePadRef.current!.toData();
-      if (
-        laterStepRef.current?.[laterStepRef.current.length - 1] === 0 &&
-        laterStepRef.current.length > 1
-      ) {
-        // 如果当前步数为0，且栈中有多于一个元素
-        laterStepRef.current.pop(); // 删除栈顶元素
-        signaturePadRef.current.fromData(clearHistoryRef.current?.pop()); // 从清空历史中取出上一次清空前的画布数据 从数据中恢复画布
-        return;
+      if (currentShowIndex.current > 0) {
+        currentShowIndex.current--;
+        computeScaledPoint(
+          historyRef.current[currentShowIndex.current],
+          pathBeginScale.current,
+          containerRef.current?.clientWidth || 960,
+        );
+        signaturePadRef.current.fromData(
+          historyRef.current[currentShowIndex.current],
+        );
       }
-      if (data) {
-        data.pop(); // remove the last dot or line
-        const last = Number(laterStepRef.current?.pop()) - 1; // 撤销一笔，步数减1（栈顶元素-1）
-        laterStepRef.current.push(last);
-        signaturePadRef.current.fromData(data);
+    };
+
+    const handleRedo = () => {
+      if (!signaturePadRef.current) return;
+      if (currentShowIndex.current < historyRef.current.length - 1) {
+        currentShowIndex.current++;
+        computeScaledPoint(
+          historyRef.current[currentShowIndex.current],
+          pathBeginScale.current,
+          containerRef.current?.clientWidth || 960,
+        );
+        signaturePadRef.current.fromData(
+          historyRef.current[currentShowIndex.current],
+        );
       }
     };
 
     const handleClear = () => {
-      if (
-        laterStepRef.current[laterStepRef.current.length - 1] === 0 ||
-        !signaturePadRef.current
-      )
-        return; // 如果当前步数为0，不做任何操作
-      clearHistoryRef.current?.push(signaturePadRef.current?.toData()); // 当前画布数据入栈
-      laterStepRef.current.push(0); // 清空后，步数变为0（加入栈顶元素0）
+      if (!signaturePadRef.current || !childRef.current) return;
+      if (currentShowIndex.current < historyRef.current.length - 1) {
+        //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
+        historyRef.current.splice(currentShowIndex.current + 1);
+      }
       signaturePadRef.current.clear(); // 清空画布
+      if (historyRef.current.length > MAX_STEP) {
+        historyRef.current.shift();
+      } else {
+        currentShowIndex.current++;
+      }
+      historyRef.current.push([...signaturePadRef.current.toData()]);
+      pathBeginScale.current = Number(
+        childRef.current.style.transform.replace('scale(', '').replace(')', ''),
+      );
     };
 
     useEventListener('keydown', (event) => {
@@ -450,6 +486,12 @@ const XStarSlideViewer = React.forwardRef<
             onClick={handleClear}
           >
             <SvgDelete />
+          </span>
+          <span
+            className={classNames('common-btn', 'undo')}
+            onClick={handleRedo}
+          >
+            <SvgRedo />
           </span>
           <span
             className={classNames('common-btn', 'undo')}
