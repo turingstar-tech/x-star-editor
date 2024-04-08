@@ -25,6 +25,7 @@ import {
   postViewerRender,
   preViewerRender,
 } from '../utils/markdown';
+import { computeScaledPoint, getScaleNumber } from '../utils/slide';
 
 let worker: Worker;
 
@@ -90,6 +91,11 @@ enum OperationType {
   ERASE,
 }
 
+export type CanvasData = {
+  points: PointGroup[];
+  scale: number;
+};
+
 const XStarSlideViewer = React.forwardRef<
   XStarSlideViewerHandle,
   XStarSlideViewerProps
@@ -112,8 +118,8 @@ const XStarSlideViewer = React.forwardRef<
     const childRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const signaturePadRef = useRef<SignaturePad | null>(null);
-    const historyRef = useRef<PointGroup[][]>([[]]); // 保存清除历史
-    const currentShowIndex = useRef<number>(0);
+    const historyRef = useRef<CanvasData[]>([]); // 保存清除历史
+    const currentShowIndex = useRef<number>(-1);
     const pathBeginScale = useRef(1);
     const [operationType, setOperationType] = useState(OperationType.NONE);
     const [strokeColor, setStrokeColor] = useState('#4285f4');
@@ -132,13 +138,12 @@ const XStarSlideViewer = React.forwardRef<
         }
         signaturePadRef.current.addEventListener('beginStroke', () => {
           if (!childRef.current) return;
-          pathBeginScale.current = Number(
-            childRef.current.style.transform
-              .replace('scale(', '')
-              .replace(')', ''),
+          pathBeginScale.current = getScaleNumber(
+            childRef.current.style.transform,
           );
         });
         signaturePadRef.current.addEventListener('endStroke', () => {
+          if (!childRef.current) return;
           if (currentShowIndex.current < historyRef.current.length - 1) {
             //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
             historyRef.current.splice(currentShowIndex.current + 1);
@@ -148,8 +153,14 @@ const XStarSlideViewer = React.forwardRef<
           } else {
             currentShowIndex.current++;
           }
-          historyRef.current.push([...signaturePadRef.current!.toData()]);
-
+          historyRef.current.push(
+            JSON.parse(
+              JSON.stringify({
+                points: signaturePadRef.current!.toData(),
+                scale: getScaleNumber(childRef.current.style.transform),
+              }),
+            ),
+          );
           onStrokeEnd?.(signaturePadRef.current?.toData());
         });
       }
@@ -235,21 +246,8 @@ const XStarSlideViewer = React.forwardRef<
       }
     }, [operationType]);
 
-    const computeScaledPoint = (
-      pointData: PointGroup[],
-      beforeScale: number,
-      parentWidth: number,
-    ) => {
-      console.log(beforeScale);
-      pointData.forEach(({ points }) =>
-        points.forEach((point) => {
-          point.x = (point.x / beforeScale) * (parentWidth / 960);
-          point.y = (point.y / beforeScale) * (parentWidth / 960);
-        }),
-      );
-    };
-
     const handleScale = (entries: any) => {
+      // 处理尺寸变化后的scale
       if (
         !containerRef.current ||
         !canvasRef.current ||
@@ -264,11 +262,14 @@ const XStarSlideViewer = React.forwardRef<
       childRef.current.style.transform = `scale(${parentWidth / 960})`;
       canvasRef.current.width = parentWidth * ratio;
       canvasRef.current.height = parentWidth * (9 / 16) * ratio;
-      computeScaledPoint(pointData, pathBeginScale.current, parentWidth);
-      signaturePadRef.current.fromData(pointData);
-      pathBeginScale.current = Number(
-        childRef.current.style.transform.replace('scale(', '').replace(')', ''),
+      pointData.forEach(({ points }) =>
+        points.forEach((point) => {
+          point.x = (point.x / pathBeginScale.current) * (parentWidth / 960);
+          point.y = (point.y / pathBeginScale.current) * (parentWidth / 960);
+        }),
       );
+      signaturePadRef.current.fromData(pointData);
+      pathBeginScale.current = getScaleNumber(childRef.current.style.transform);
     };
 
     const scaleChild = (entries: any) =>
@@ -279,6 +280,7 @@ const XStarSlideViewer = React.forwardRef<
     const resizeObserver = new ResizeObserver(scaleChild);
 
     useEffect(() => {
+      // 容器尺寸监听
       if (containerRef.current) {
         resizeObserver.observe(containerRef.current);
       }
@@ -288,12 +290,14 @@ const XStarSlideViewer = React.forwardRef<
     }, []);
 
     const handleStokeChange = (base: number, offset: number) => {
+      // 处理stroke大小变化
       if (!signaturePadRef.current) return;
       signaturePadRef.current.minWidth = base + offset;
       signaturePadRef.current.maxWidth = base;
     };
 
     useEffect(() => {
+      // 编辑模式切换
       if (operationType === OperationType.STROKE) {
         signaturePadRef.current!.penColor = strokeColor;
         handleStokeChange(strokeWidth, -2);
@@ -303,32 +307,31 @@ const XStarSlideViewer = React.forwardRef<
     }, [strokeColor, strokeWidth, eraseWidth, operationType]);
 
     const handleUndo = () => {
-      if (!signaturePadRef.current) return;
+      // 撤销函数
+      if (!signaturePadRef.current || !childRef.current) return;
       if (currentShowIndex.current > 0) {
         currentShowIndex.current--;
-        computeScaledPoint(
+        const data = computeScaledPoint(
           historyRef.current[currentShowIndex.current],
-          pathBeginScale.current,
           containerRef.current?.clientWidth || 960,
         );
-        signaturePadRef.current.fromData(
-          historyRef.current[currentShowIndex.current],
-        );
+        signaturePadRef.current.fromData(data);
+      } else {
+        // currentShowIndex为0清空画布
+        signaturePadRef.current.clear();
       }
     };
 
     const handleRedo = () => {
-      if (!signaturePadRef.current) return;
+      // 恢复函数
+      if (!signaturePadRef.current || !childRef.current) return;
       if (currentShowIndex.current < historyRef.current.length - 1) {
         currentShowIndex.current++;
-        computeScaledPoint(
+        const data = computeScaledPoint(
           historyRef.current[currentShowIndex.current],
-          pathBeginScale.current,
           containerRef.current?.clientWidth || 960,
         );
-        signaturePadRef.current.fromData(
-          historyRef.current[currentShowIndex.current],
-        );
+        signaturePadRef.current.fromData(data);
       }
     };
 
@@ -344,9 +347,13 @@ const XStarSlideViewer = React.forwardRef<
       } else {
         currentShowIndex.current++;
       }
-      historyRef.current.push([...signaturePadRef.current.toData()]);
-      pathBeginScale.current = Number(
-        childRef.current.style.transform.replace('scale(', '').replace(')', ''),
+      historyRef.current.push(
+        JSON.parse(
+          JSON.stringify({
+            points: signaturePadRef.current!.toData(),
+            scale: 1,
+          }),
+        ),
       );
     };
 
@@ -360,8 +367,48 @@ const XStarSlideViewer = React.forwardRef<
       }
     });
 
+    useEventListener('keydown', (event) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        (event.key === 'y' || event.key === 'Y')
+      ) {
+        event.preventDefault(); // 阻止默认的恢复行为（如浏览器返回）
+        handleRedo();
+      }
+    });
+
+    const handleScreenShot = async () => {
+      const canvas = await html2canvas(childRef.current!, {
+        ignoreElements: (e) => e.classList.contains('btn-container'),
+      });
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'ppt.png';
+      a.click();
+    };
+
+    const handleSwitchToErase = () => {
+      if (!signaturePadRef.current) return;
+      if (operationType !== OperationType.ERASE) {
+        signaturePadRef.current.compositeOperation = 'destination-out';
+        setOperationType(OperationType.ERASE);
+      } else {
+        setOperationType(OperationType.NONE);
+      }
+    };
+
+    const handleSwitchToDraw = () => {
+      if (!signaturePadRef.current) return;
+      if (operationType !== OperationType.STROKE) {
+        signaturePadRef.current.compositeOperation = 'source-over';
+        setOperationType(OperationType.STROKE);
+      } else {
+        setOperationType(OperationType.NONE);
+      }
+    };
     return (
       <div
+        id="container"
         ref={containerRef}
         className={classNames(
           `${prefix}-slide-viewer`,
@@ -395,15 +442,7 @@ const XStarSlideViewer = React.forwardRef<
           </span>
           <span
             className={classNames('common-btn', 'shot')}
-            onClick={async () => {
-              const canvas = await html2canvas(childRef.current!, {
-                ignoreElements: (e) => e.classList.contains('btn-container'),
-              });
-              const a = document.createElement('a');
-              a.href = canvas.toDataURL('image/png');
-              a.download = 'ppt.png';
-              a.click();
-            }}
+            onClick={handleScreenShot}
           >
             <SvgHelp />
           </span>
@@ -416,15 +455,7 @@ const XStarSlideViewer = React.forwardRef<
                     ? 'rgb(66, 133, 244)'
                     : '',
               }}
-              onClick={() => {
-                if (!signaturePadRef.current) return;
-                if (operationType !== OperationType.STROKE) {
-                  signaturePadRef.current.compositeOperation = 'source-over';
-                  setOperationType(OperationType.STROKE);
-                } else {
-                  setOperationType(OperationType.NONE);
-                }
-              }}
+              onClick={handleSwitchToDraw}
             >
               <SvgStrong />
             </span>
@@ -456,16 +487,7 @@ const XStarSlideViewer = React.forwardRef<
                     ? 'rgb(66, 133, 244)'
                     : '',
               }}
-              onClick={() => {
-                if (!signaturePadRef.current) return;
-                if (operationType !== OperationType.ERASE) {
-                  signaturePadRef.current.compositeOperation =
-                    'destination-out';
-                  setOperationType(OperationType.ERASE);
-                } else {
-                  setOperationType(OperationType.NONE);
-                }
-              }}
+              onClick={handleSwitchToErase}
             >
               <SvgViewOnly />
             </span>

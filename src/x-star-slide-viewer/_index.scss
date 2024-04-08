@@ -125,12 +125,12 @@
     }
 
     .draw-pop-over {
-      left: 75px;
+      left: 120px;
       top: 33px;
     }
 
     .erase-pop-over {
-      left: 35px;
+      left: 75px;
       top: 33px;
     }
   }
@@ -141,5 +141,18 @@
     left: 0;
     width: 960px;
     height: 540px;
+  }
+
+  .ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid black;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    pointer-events: none; /* 防止圆环遮挡鼠标事件 */
+    opacity: 0.5; /* 圆环内部透明 */
   }
 }
