@@ -1,13 +1,11 @@
 .#{$prefix}-slide-viewer {
   @include common;
 
-  --cursor-url: '';
-
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
 
-  .slide {
+  .#{$prefix}-slide {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -15,6 +13,7 @@
     height: 540px;
     transform-origin: top left;
     padding: 0 32px;
+    background-color: $color-bg-container;
 
     > :first-child {
       margin-top: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
@@ -63,15 +62,15 @@
     }
   }
 
-  .custom-cursor-pencil {
+  .#{$prefix}-custom-cursor-pencil {
     cursor: url('./cursor/pencil.png'), auto;
   }
 
-  .custom-cursor-eraser {
+  .#{$prefix}-custom-cursor-eraser {
     cursor: url('./cursor/editor-eraser.png'), auto;
   }
 
-  .btn-container {
+  .#{$prefix}-btn-container {
     position: absolute;
     z-index: 10000;
     top: 16px;
@@ -80,7 +79,7 @@
     display: flex;
     flex-direction: row-reverse;
 
-    .common-btn {
+    .#{$prefix}-common-btn {
       position: relative;
       font-size: 32px;
       background-color: transparent;
@@ -99,7 +98,7 @@
       }
     }
 
-    .pop-over {
+    .#{$prefix}-pop-over {
       position: absolute;
       display: flex;
       flex-direction: column;
@@ -119,23 +118,23 @@
       }
     }
 
-    .common-btn:hover + .pop-over,
-    .pop-over:hover {
+    .#{$prefix}-common-btn:hover + .#{$prefix}-pop-over,
+    .#{$prefix}-pop-over:hover {
       height: 100px;
     }
 
-    .draw-pop-over {
+    .#{$prefix}-draw-pop-over {
       left: 120px;
       top: 33px;
     }
 
-    .erase-pop-over {
+    .#{$prefix}-erase-pop-over {
       left: 75px;
       top: 33px;
     }
   }
 
-  .pad {
+  .#{$prefix}-pad {
     position: absolute;
     top: 0;
     left: 0;
@@ -143,7 +142,7 @@
     height: 540px;
   }
 
-  .ring {
+  .#{$prefix}-ring {
     position: absolute;
     top: 50%;
     left: 50%;
