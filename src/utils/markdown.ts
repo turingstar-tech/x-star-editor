@@ -270,12 +270,18 @@ const toHastProcessor = unified()
             })
           : h(node, 'div'),
       image: (h, node) => {
-        const styles = node?.alt?.split(' ');
-        return h(node, 'img', {
-          src: node.url,
-          style: styles?.filter((i: string) => /:/.test(i))?.join(';'),
-          alt: styles?.filter((i: string) => !/:/.test(i))?.join(''),
-        });
+        try {
+          const styles = node?.alt?.split(' ');
+          return h(node, 'img', {
+            src: node.url,
+            style: styles?.filter((i: string) => /:/.test(i))?.join(';'),
+            alt: styles?.filter((i: string) => !/:/.test(i))?.join(''),
+          });
+        } catch {
+          return h(node, 'img', {
+            src: node.url,
+          });
+        }
       },
     },
   })
