@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import SignaturePad, { PointGroup } from 'signature_pad';
+//  import SignaturePad, { PointGroup } from 'signature_pad';
 import { ViewerOptions } from 'x-star-editor/x-star-md-viewer/index.js';
 import workerRaw from '../../workers-dist/markdown.worker.js';
 // import SvgDelete from '../icons/Delete';
@@ -24,7 +24,7 @@ import {
   postViewerRender,
   preViewerRender,
 } from '../utils/markdown';
-import { getScaleNumber } from '../utils/slide';
+// import { getScaleNumber } from '../utils/slide';
 
 let worker: Worker;
 
@@ -76,12 +76,12 @@ export interface XStarSlideViewerProps {
   /**
    * 一笔stroke后的回调
    */
-  onStrokeEnd?: (val: any) => void;
+  // onStrokeEnd?: (val: any) => void;
 
   /**
    * canvas初始数据
    */
-  canvasInitData?: any;
+  // canvasInitData?: any;
 }
 
 // enum OperationType {
@@ -90,10 +90,10 @@ export interface XStarSlideViewerProps {
 //   ERASE,
 // }
 
-export type CanvasData = {
-  points: PointGroup[];
-  scale: number;
-};
+// export type CanvasData = {
+//   points: PointGroup[];
+//   scale: number;
+// };
 
 const XStarSlideViewer = React.forwardRef<
   XStarSlideViewerHandle,
@@ -108,62 +108,62 @@ const XStarSlideViewer = React.forwardRef<
       value = '',
       plugins,
       slideClassName,
-      onStrokeEnd,
-      canvasInitData,
+      // onStrokeEnd,
+      // canvasInitData,
     },
     ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const childRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const signaturePadRef = useRef<SignaturePad | null>(null);
-    const historyRef = useRef<CanvasData[]>([]); // 保存清除历史
-    const currentShowIndex = useRef<number>(-1);
-    const pathBeginScale = useRef(1);
+    // const canvasRef = useRef<HTMLCanvasElement>(null);
+    // const signaturePadRef = useRef<SignaturePad | null>(null);
+    // const historyRef = useRef<CanvasData[]>([]); // 保存清除历史
+    // const currentShowIndex = useRef<number>(-1);
+    // const pathBeginScale = useRef(1);
     // const [operationType, setOperationType] = useState(OperationType.NONE);
     // const [strokeColor, setStrokeColor] = useState('#4285f4');
     // const [strokeWidth, setStrokeWidth] = useState(5);
     // const [eraseWidth, setEraseWidth] = useState(5);
     // const [, { toggleFullscreen }] = useFullscreen(containerRef);
-    const MAX_STEP = 100; // 最大保存历史记录数
+    // const MAX_STEP = 100; // 最大保存历史记录数
 
-    useEffect(() => {
-      if (canvasRef.current) {
-        signaturePadRef.current = new SignaturePad(canvasRef.current, {
-          penColor: '#4285f4',
-        });
-        if (canvasInitData) {
-          signaturePadRef.current.fromData(canvasInitData);
-        }
-        signaturePadRef.current.addEventListener('beginStroke', () => {
-          if (!childRef.current) return;
-          pathBeginScale.current = getScaleNumber(
-            childRef.current.style.transform,
-          );
-        });
-        signaturePadRef.current.addEventListener('endStroke', () => {
-          if (!childRef.current) return;
-          if (currentShowIndex.current < historyRef.current.length - 1) {
-            //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
-            historyRef.current.splice(currentShowIndex.current + 1);
-          }
-          if (historyRef.current.length > MAX_STEP) {
-            historyRef.current.shift();
-          } else {
-            currentShowIndex.current++;
-          }
-          historyRef.current.push(
-            JSON.parse(
-              JSON.stringify({
-                points: signaturePadRef.current!.toData(),
-                scale: getScaleNumber(childRef.current.style.transform),
-              }),
-            ),
-          );
-          onStrokeEnd?.(signaturePadRef.current?.toData());
-        });
-      }
-    }, []);
+    // useEffect(() => {
+    //   if (canvasRef.current) {
+    //     signaturePadRef.current = new SignaturePad(canvasRef.current, {
+    //       penColor: '#4285f4',
+    //     });
+    //     if (canvasInitData) {
+    //       signaturePadRef.current.fromData(canvasInitData);
+    //     }
+    //     signaturePadRef.current.addEventListener('beginStroke', () => {
+    //       if (!childRef.current) return;
+    //       pathBeginScale.current = getScaleNumber(
+    //         childRef.current.style.transform,
+    //       );
+    //     });
+    //     signaturePadRef.current.addEventListener('endStroke', () => {
+    //       if (!childRef.current) return;
+    //       if (currentShowIndex.current < historyRef.current.length - 1) {
+    //         //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
+    //         historyRef.current.splice(currentShowIndex.current + 1);
+    //       }
+    //       if (historyRef.current.length > MAX_STEP) {
+    //         historyRef.current.shift();
+    //       } else {
+    //         currentShowIndex.current++;
+    //       }
+    //       historyRef.current.push(
+    //         JSON.parse(
+    //           JSON.stringify({
+    //             points: signaturePadRef.current!.toData(),
+    //             scale: getScaleNumber(childRef.current.style.transform),
+    //           }),
+    //         ),
+    //       );
+    //       onStrokeEnd?.(signaturePadRef.current?.toData());
+    //     });
+    //   }
+    // }, []);
 
     useImperativeHandle(
       ref,
