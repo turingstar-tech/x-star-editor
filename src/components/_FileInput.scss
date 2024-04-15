@@ -33,8 +33,8 @@
     background-color: $color-bg-container;
     border: 1px solid $color-border;
     border-radius: $border-radius;
-    cursor: pointer;
     user-select: none;
+    cursor: pointer;
 
     &.#{$prefix}-primary {
       color: $color-text-light-solid;

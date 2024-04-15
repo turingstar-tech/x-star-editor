@@ -6,14 +6,14 @@
   aspect-ratio: 16 / 9;
 
   .#{$prefix}-slide {
+    width: 960px;
+    height: 540px;
+    padding: 0 32px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 960px;
-    height: 540px;
-    transform-origin: top left;
-    padding: 0 32px;
     background-color: $color-bg-container;
+    transform-origin: top left;
 
     > :first-child {
       margin-top: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
@@ -39,7 +39,7 @@
 
     th,
     td {
-      padding: 0.5em;
+      padding: 8px;
       border: 1px solid $color-border;
     }
 
@@ -57,8 +57,8 @@
     }
 
     img {
-      max-height: 100%;
       width: 100%;
+      max-height: 100%;
     }
   }
 
@@ -72,45 +72,45 @@
 
   .#{$prefix}-btn-container {
     position: absolute;
-    z-index: 10000;
     top: 16px;
     right: 32px;
     height: 32px;
     display: flex;
     flex-direction: row-reverse;
+    z-index: 10000;
 
     .#{$prefix}-common-btn {
       position: relative;
-      font-size: 32px;
-      background-color: transparent;
-      transition: all 0.3s ease-in-out;
-      display: flex;
-      color: #e2e2e2;
-      justify-content: center;
-      align-items: center;
-      border-radius: 6px;
-      cursor: pointer;
       margin-left: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #e2e2e2;
+      background-color: transparent;
+      border-radius: 6px;
+      transition: all 0.3s ease-in-out;
+      cursor: pointer;
 
       &:hover {
-        background-color: #f0f0f0;
         color: #f8f8f8;
+        background-color: #f0f0f0;
       }
     }
 
-    .#{$prefix}-pop-over {
+    .#{$prefix}-popover {
       position: absolute;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: #fff;
-      box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
-      border-radius: 6px;
-      z-index: 10000;
       width: 150px;
       height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
       overflow: hidden;
+      z-index: 10000;
       transition: all 0.3s cubic-bezier(0.51, 0.3, 0.06, 0.98);
 
       > * {
@@ -118,19 +118,19 @@
       }
     }
 
-    .#{$prefix}-common-btn:hover + .#{$prefix}-pop-over,
-    .#{$prefix}-pop-over:hover {
+    .#{$prefix}-common-btn:hover + .#{$prefix}-popover,
+    .#{$prefix}-popover:hover {
       height: 100px;
     }
 
-    .#{$prefix}-draw-pop-over {
-      left: 120px;
+    .#{$prefix}-draw-popover {
       top: 33px;
+      left: 120px;
     }
 
-    .#{$prefix}-erase-pop-over {
-      left: 75px;
+    .#{$prefix}-erase-popover {
       top: 33px;
+      left: 75px;
     }
   }
 
@@ -146,12 +146,12 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    border: 2px solid black;
-    border-radius: 50%;
     width: 100px;
     height: 100px;
-    pointer-events: none; /* 防止圆环遮挡鼠标事件 */
+    border: 2px solid black;
+    border-radius: 50%;
     opacity: 0.5; /* 圆环内部透明 */
+    transform: translate(-50%, -50%);
+    pointer-events: none; /* 防止圆环遮挡鼠标事件 */
   }
 }

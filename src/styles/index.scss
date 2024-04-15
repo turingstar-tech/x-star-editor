@@ -1,10 +1,10 @@
 @import './global';
+@import './katex';
+@import './markdown';
+@import './prism';
 @import '../components/FileInput';
 @import '../components/Toolbar';
 @import '../x-star-editor';
 @import '../x-star-md-editor';
 @import '../x-star-md-viewer';
 @import '../x-star-slide-viewer';
-@import './katex';
-@import './markdown';
-@import './prism';

@@ -21,7 +21,6 @@ export default () => (
 # 冒泡排序与选择排序
 
 信友队C++课程
-
 `}
     slideClassName={styles.slide}
   />
@@ -38,6 +37,7 @@ export default () => (
 
 #### Methods
 
-| 属性名            | 类型                   | 描述                    |
-| ----------------- | ---------------------- | ----------------------- |
-| getSlideContainer | `() => HTMLDivElement` | 获取内层容器 Slide 元素 |
+| 属性名             | 类型                   | 描述                           |
+| ------------------ | ---------------------- | ------------------------------ |
+| getViewerContainer | `() => HTMLDivElement` | 获取查看器 `div` 元素          |
+| getSlideContainer  | `() => HTMLDivElement` | 获取内部 Slide 容器 `div` 元素 |

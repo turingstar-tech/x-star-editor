@@ -59,6 +59,11 @@ export interface XStarSlideViewerProps {
   theme?: string;
 
   /**
+   * 内部 Slide 容器 CSS 类名
+   */
+  slideClassName?: string;
+
+  /**
    * 文本
    */
   value?: string;
@@ -69,19 +74,14 @@ export interface XStarSlideViewerProps {
   plugins?: XStarSlideViewerPlugin[];
 
   /**
-   * 内部PPT的样式
+   * 画板初始数据
    */
-  slideClassName?: string;
+  // padInitialValue?: any;
 
   /**
-   * 一笔stroke后的回调
+   * 画板改变回调函数
    */
-  // onStrokeEnd?: (val: any) => void;
-
-  /**
-   * canvas初始数据
-   */
-  // canvasInitData?: any;
+  // onPadChange?: (value: any) => void;
 }
 
 // enum OperationType {
@@ -105,11 +105,11 @@ const XStarSlideViewer = React.forwardRef<
       style,
       height,
       theme,
+      slideClassName,
       value = '',
       plugins,
-      slideClassName,
-      // onStrokeEnd,
-      // canvasInitData,
+      // padInitialValue,
+      // onPadChange,
     },
     ref,
   ) => {
@@ -132,8 +132,8 @@ const XStarSlideViewer = React.forwardRef<
     //     signaturePadRef.current = new SignaturePad(canvasRef.current, {
     //       penColor: '#4285f4',
     //     });
-    //     if (canvasInitData) {
-    //       signaturePadRef.current.fromData(canvasInitData);
+    //     if (padInitialValue) {
+    //       signaturePadRef.current.fromData(padInitialValue);
     //     }
     //     signaturePadRef.current.addEventListener('beginStroke', () => {
     //       if (!childRef.current) return;
@@ -160,7 +160,7 @@ const XStarSlideViewer = React.forwardRef<
     //           }),
     //         ),
     //       );
-    //       onStrokeEnd?.(signaturePadRef.current?.toData());
+    //       onPadChange?.(signaturePadRef.current?.toData());
     //     });
     //   }
     // }, []);
@@ -176,8 +176,8 @@ const XStarSlideViewer = React.forwardRef<
 
     const options = useMemo(
       () =>
+        // plugins 是一个数组，里面是一些函数
         composeHandlers(plugins)({
-          // 这里的 plugins 是一个数组，里面是一些函数
           customSchema: getDefaultSchema(),
           customHTMLElements: {},
           customBlocks: {},
@@ -245,7 +245,7 @@ const XStarSlideViewer = React.forwardRef<
     //   }
     // }, [operationType]);
 
-    const handleScale = (entries: any) => {
+    const handleScale = (entries: ResizeObserverEntry[]) => {
       // 处理尺寸变化后的scale
       if (
         !containerRef.current ||
@@ -255,7 +255,7 @@ const XStarSlideViewer = React.forwardRef<
       ) {
         return;
       }
-      const parentWidth = entries[0]!?.contentRect.width; // 获取父容器的宽度
+      const parentWidth = entries[0].contentRect.width; // 获取父容器的宽度
       // const pointData = signaturePadRef.current.toData();
       // const ratio = Math.max(window.devicePixelRatio || 1, 1);
       childRef.current.style.transform = `scale(${parentWidth / 960})`;
@@ -271,21 +271,16 @@ const XStarSlideViewer = React.forwardRef<
       // pathBeginScale.current = getScaleNumber(childRef.current.style.transform);
     };
 
-    const scaleChild = (entries: any) =>
-      requestAnimationFrame(() => {
-        handleScale(entries);
-      });
-
-    const resizeObserver = new ResizeObserver(scaleChild);
+    const resizeObserver = new ResizeObserver((entries) =>
+      requestAnimationFrame(() => handleScale(entries)),
+    );
 
     useEffect(() => {
       // 容器尺寸监听
       if (containerRef.current) {
         resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
       }
-      return () => {
-        resizeObserver.disconnect();
-      };
     }, []);
 
     // const handleStokeChange = (base: number, offset: number) => {
@@ -382,7 +377,7 @@ const XStarSlideViewer = React.forwardRef<
     //   });
     //   const a = document.createElement('a');
     //   a.href = canvas.toDataURL('image/png');
-    //   a.download = 'ppt.png';
+    //   a.download = 'slide.png';
     //   a.click();
     // };
 
@@ -418,8 +413,8 @@ const XStarSlideViewer = React.forwardRef<
         style={{ ...style, height }}
       >
         <div
-          className={classNames(`${prefix}-slide`, slideClassName)}
           ref={childRef}
+          className={classNames(`${prefix}-slide`, slideClassName)}
         >
           {children}
           {/* <canvas
@@ -462,7 +457,7 @@ const XStarSlideViewer = React.forwardRef<
             >
               <SvgStrong />
             </span>
-            <div className={classNames('pop-over', 'draw-pop-over')}>
+            <div className={classNames('popover', 'draw-popover')}>
               <input
                 type="color"
                 value={strokeColor}
@@ -494,7 +489,7 @@ const XStarSlideViewer = React.forwardRef<
             >
               <SvgViewOnly />
             </span>
-            <div className={classNames('pop-over', 'erase-pop-over')}>
+            <div className={classNames('popover', 'erase-popover')}>
               <input
                 type="range"
                 min={5}

@@ -5,11 +5,11 @@
 
 .slide > * {
   margin: 0 auto;
+  margin-bottom: 0.4em !important;
   padding: 0;
   display: flex;
   align-items: center;
   text-align: center;
-  margin-bottom: 0.4em !important;
 }
 
 .slide > :first-child {
@@ -45,11 +45,11 @@
 }
 
 .slide > :nth-child(3) {
-  background-color: #326cfc;
-  color: white;
   padding: 0.5em 1.6em;
-  font-weight: 500;
-  border-radius: 6em;
   font-size: 1.2em;
+  font-weight: 500;
+  color: white;
+  background-color: #326cfc;
+  border-radius: 6em;
   box-shadow: rgb(0 0 0 / 10%) 0 10px 15px -3px, rgb(0 0 0 / 5%) 0 4px 6px -2px;
 }

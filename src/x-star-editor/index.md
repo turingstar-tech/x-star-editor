@@ -198,7 +198,8 @@ print('Hello, Markdown!')
 
 效果：
 
-> 这是一段引用`}
+> 这是一段引用
+`}
         viewerProps={{ theme: 'lark' }}
       />
     </>
@@ -225,7 +226,7 @@ import { useState } from 'react';
 import { XStarEditor } from 'x-star-editor';
 
 export default () => {
-  const [value, setValue] = useState('Hello **x-star-editor**!');
+  const [value, setValue] = useState('Hello **x-star-editor**!\n');
 
   return (
     <>
