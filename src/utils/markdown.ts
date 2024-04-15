@@ -2,6 +2,7 @@ import type { Root as HastRoot } from 'hast';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
 import type { Content as MdastNode, Root as MdastRoot } from 'mdast';
+import type { Options as ToStringOptions } from 'mdast-util-to-string';
 import { toString } from 'mdast-util-to-string';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
@@ -18,6 +19,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
+import { visit } from 'unist-util-visit';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
@@ -265,6 +267,18 @@ const toHastProcessor = unified()
         node.meta
           ? h(node.position, 'custom', { meta: node.meta, value: node.value })
           : h(node, 'div'),
+      image: (h, node) => {
+        try {
+          const styles = node.alt?.split(' ');
+          return h(node, 'img', {
+            src: node.url,
+            alt: styles?.filter((i: string) => !i.includes(':')).join(' '),
+            style: styles?.filter((i: string) => i.includes(':')).join(';'),
+          });
+        } catch {
+          return h(node, 'img', { src: node.url, alt: node.alt });
+        }
+      },
     },
   })
   .use(rehypeMermaid, {
@@ -409,11 +423,26 @@ export const toMarkdown = (sourceCode: string) =>
     ),
   );
 
+export interface ToTextOptions extends ToStringOptions {
+  /**
+   * 替换图片的 alt 文本
+   */
+  replaceImageAlt?: string;
+}
+
 /**
  * 将 Markdown 文本转成纯文本
  *
  * @param sourceCode Markdown 文本
  * @returns 纯文本
  */
-export const toText = (sourceCode: string) =>
-  toString(toMdastProcessor.parse(sourceCode));
+export const toText = (sourceCode: string, options?: ToTextOptions) => {
+  const root = toMdastProcessor.parse(sourceCode);
+  if (options?.replaceImageAlt) {
+    // 遍历 Mdast 树的图片节点，替换 alt 文本
+    visit(root, 'image', (node) => {
+      node.alt = options.replaceImageAlt;
+    });
+  }
+  return toString(root, options);
+};

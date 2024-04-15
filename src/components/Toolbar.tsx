@@ -145,15 +145,15 @@ const headingOptions = [
 ] as const;
 
 const mermaidOptions = [
-  // {
-  //   label: 'Flowchart',
-  //   value: `flowchart TD
-  //   A[Start] --> B{Is it?}
-  //   B -- Yes --> C[OK]
-  //   C --> D[Rethink]
-  //   D --> B
-  //   B -- No ----> E[End]`,
-  // },
+  {
+    label: 'Flowchart',
+    value: `flowchart TD
+    A[Start] --> B{Is it?}
+    B -- Yes --> C[OK]
+    C --> D[Rethink]
+    D --> B
+    B -- No ----> E[End]`,
+  },
   {
     label: 'Sequence Diagram',
     value: `sequenceDiagram
@@ -164,30 +164,45 @@ const mermaidOptions = [
   {
     label: 'Class Diagram',
     value: `classDiagram
-    class BankAccount
-    BankAccount : +String owner
-    BankAccount : +Bigdecimal balance
-    BankAccount : +deposit(amount)
-    BankAccount : +withdrawal(amount)`,
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal <|-- Zebra
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal()
+    Animal: +mate()
+    class Duck{
+      +String beakColor
+      +swim()
+      +quack()
+    }
+    class Fish{
+      -int sizeInFeet
+      -canEat()
+    }
+    class Zebra{
+      +bool is_wild
+      +run()
+    }`,
   },
-  // {
-  //   label: 'State Diagram',
-  //   value: `stateDiagram-v2
-  //   [*] --> Still
-  //   Still --> [*]
+  {
+    label: 'State Diagram',
+    value: `stateDiagram-v2
+    [*] --> Still
+    Still --> [*]
 
-  //   Still --> Moving
-  //   Moving --> Still
-  //   Moving --> Crash
-  //   Crash --> [*]`,
-  // },
-  // {
-  //   label: 'Entity Relationship Diagram',
-  //   value: `erDiagram
-  //   CUSTOMER ||--o{ ORDER : places
-  //   ORDER ||--|{ LINE-ITEM : contains
-  //   CUSTOMER }|..|{ DELIVERY-ADDRESS : uses`,
-  // },
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]`,
+  },
+  {
+    label: 'Entity Relationship Diagram',
+    value: `erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses`,
+  },
   {
     label: 'User Journey',
     value: `journey
@@ -236,23 +251,23 @@ const mermaidOptions = [
     Campaign E: [0.40, 0.34]
     Campaign F: [0.35, 0.78]`,
   },
-  // {
-  //   label: 'Requirement Diagram',
-  //   value: `requirementDiagram
+  {
+    label: 'Requirement Diagram',
+    value: `requirementDiagram
 
-  //   requirement test_req {
-  //   id: 1
-  //   text: the test text.
-  //   risk: high
-  //   verifymethod: test
-  //   }
+    requirement test_req {
+    id: 1
+    text: the test text.
+    risk: high
+    verifymethod: test
+    }
 
-  //   element test_entity {
-  //   type: simulation
-  //   }
+    element test_entity {
+    type: simulation
+    }
 
-  //   test_entity - satisfies -> test_req`,
-  // },
+    test_entity - satisfies -> test_req`,
+  },
   {
     label: 'Gitgraph (Git) Diagram',
     value: `gitGraph

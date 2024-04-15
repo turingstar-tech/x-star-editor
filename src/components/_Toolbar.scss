@@ -22,8 +22,8 @@
       align-items: center;
       justify-content: center;
       border-radius: $border-radius;
-      cursor: pointer;
       user-select: none;
+      cursor: pointer;
 
       &.#{$prefix}-disabled::before {
         content: '';
@@ -87,8 +87,8 @@
 
       .#{$prefix}-option {
         padding: 6px 12px;
-        cursor: pointer;
         user-select: none;
+        cursor: pointer;
 
         &:hover {
           background-color: $color-primary-bg;

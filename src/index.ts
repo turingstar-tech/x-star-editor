@@ -26,3 +26,12 @@ export type {
   XStarMdViewerPlugin,
   XStarMdViewerProps,
 } from './x-star-md-viewer';
+export {
+  default as XStarSlideViewer,
+  useSlideViewerRef,
+} from './x-star-slide-viewer';
+export type {
+  XStarSlideViewerHandle,
+  XStarSlideViewerPlugin,
+  XStarSlideViewerProps,
+} from './x-star-slide-viewer';
