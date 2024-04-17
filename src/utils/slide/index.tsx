@@ -12,7 +12,6 @@ export const getScaleNumber = (scaleString: string) =>
 /**
  *
  * @param pointData
- * @param beforeScale
  * @param parentWidth
  */
 export const computeScaledPoint = (
