@@ -29,6 +29,11 @@ import { computeScaledPoint, getScaleNumber } from '../utils/slide';
 
 let worker: Worker;
 
+export type CanvasData = {
+  points: PointGroup[];
+  scale: number;
+};
+
 export interface XStarSlideViewerPlugin {
   (ctx: ViewerOptions): void;
 }
@@ -77,7 +82,7 @@ export interface XStarSlideViewerProps {
   /**
    * 画板初始数据
    */
-  padInitialValue?: any;
+  padInitialValue?: CanvasData;
 
   /**
    * 画板改变回调函数
@@ -90,11 +95,6 @@ enum OperationType {
   STROKE,
   ERASE,
 }
-
-export type CanvasData = {
-  points: PointGroup[];
-  scale: number;
-};
 
 const XStarSlideViewer = React.forwardRef<
   XStarSlideViewerHandle,
@@ -134,7 +134,8 @@ const XStarSlideViewer = React.forwardRef<
           penColor: '#4285f4',
         });
         if (padInitialValue) {
-          signaturePadRef.current.fromData(padInitialValue);
+          signaturePadRef.current.fromData(padInitialValue.points);
+          currentShowIndex.current++;
         }
         signaturePadRef.current.addEventListener('beginStroke', () => {
           if (!childRef.current) return;
@@ -149,6 +150,7 @@ const XStarSlideViewer = React.forwardRef<
             historyRef.current.splice(currentShowIndex.current + 1);
           }
           if (historyRef.current.length > MAX_STEP) {
+            // 超出最大历史记录
             historyRef.current.shift();
           } else {
             currentShowIndex.current++;
@@ -304,29 +306,36 @@ const XStarSlideViewer = React.forwardRef<
     const handleUndo = () => {
       // 撤销函数
       if (!signaturePadRef.current || !childRef.current) return;
-      if (currentShowIndex.current > 0) {
-        currentShowIndex.current--;
+      const index =
+        currentShowIndex.current >= 0 ? currentShowIndex.current - 1 : -1;
+      if (index > -1) {
         const data = computeScaledPoint(
-          historyRef.current[currentShowIndex.current],
+          historyRef.current[index],
           containerRef.current?.clientWidth || 1280,
         );
         signaturePadRef.current.fromData(data);
+        currentShowIndex.current = index;
       } else {
-        // currentShowIndex为0清空画布
-        signaturePadRef.current.clear();
+        if (padInitialValue) {
+          signaturePadRef.current.fromData(padInitialValue.points);
+        } else {
+          signaturePadRef.current.clear();
+        }
       }
     };
 
     const handleRedo = () => {
       // 恢复函数
       if (!signaturePadRef.current || !childRef.current) return;
-      if (currentShowIndex.current < historyRef.current.length - 1) {
-        currentShowIndex.current++;
+      if (currentShowIndex.current <= historyRef.current.length - 1) {
         const data = computeScaledPoint(
           historyRef.current[currentShowIndex.current],
           containerRef.current?.clientWidth || 1280,
         );
         signaturePadRef.current.fromData(data);
+        if (currentShowIndex.current < historyRef.current.length - 1) {
+          currentShowIndex.current++;
+        }
       }
     };
 
