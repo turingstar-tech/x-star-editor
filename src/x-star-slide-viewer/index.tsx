@@ -327,7 +327,10 @@ const XStarSlideViewer = React.forwardRef<
     const handleRedo = () => {
       // 恢复函数
       if (!signaturePadRef.current || !childRef.current) return;
-      if (currentShowIndex.current <= historyRef.current.length - 1) {
+      if (
+        historyRef.current.length >= 1 &&
+        currentShowIndex.current <= historyRef.current.length - 1
+      ) {
         const data = computeScaledPoint(
           historyRef.current[currentShowIndex.current],
           containerRef.current?.clientWidth || 1280,
