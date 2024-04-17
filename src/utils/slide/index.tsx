@@ -20,7 +20,6 @@ export const computeScaledPoint = (
   pointData: CanvasData,
   parentWidth: number,
 ) => {
-  console.log(pointData);
   const beforeScale = pointData.scale;
   const newData = _.cloneDeep(pointData.points);
   newData.forEach(({ points }) =>

@@ -87,7 +87,7 @@ export interface XStarSlideViewerProps {
   /**
    * 画板改变回调函数
    */
-  onPadChange?: (value: any) => void;
+  onPadChange?: (value: any, scale: number) => void;
 }
 
 enum OperationType {
@@ -129,43 +129,48 @@ const XStarSlideViewer = React.forwardRef<
     const MAX_STEP = 100; // 最大保存历史记录数
 
     useEffect(() => {
-      if (canvasRef.current) {
-        signaturePadRef.current = new SignaturePad(canvasRef.current, {
-          penColor: '#4285f4',
-        });
-        if (padInitialValue) {
-          signaturePadRef.current.fromData(padInitialValue.points);
+      if (!canvasRef.current || !containerRef.current) return;
+      signaturePadRef.current = new SignaturePad(canvasRef.current, {
+        penColor: '#4285f4',
+      });
+      if (padInitialValue) {
+        const initData = computeScaledPoint(
+          padInitialValue,
+          containerRef.current?.clientWidth || 1280,
+        );
+        signaturePadRef.current.fromData(initData);
+      }
+      signaturePadRef.current.addEventListener('beginStroke', () => {
+        if (!childRef.current) return;
+        pathBeginScale.current = getScaleNumber(
+          childRef.current.style.transform,
+        );
+      });
+      signaturePadRef.current.addEventListener('endStroke', () => {
+        if (!childRef.current) return;
+        if (currentShowIndex.current < historyRef.current.length - 1) {
+          //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
+          historyRef.current.splice(currentShowIndex.current + 1);
+        }
+        if (historyRef.current.length > MAX_STEP) {
+          // 超出最大历史记录
+          historyRef.current.shift();
+        } else {
           currentShowIndex.current++;
         }
-        signaturePadRef.current.addEventListener('beginStroke', () => {
-          if (!childRef.current) return;
-          pathBeginScale.current = getScaleNumber(
-            childRef.current.style.transform,
-          );
-        });
-        signaturePadRef.current.addEventListener('endStroke', () => {
-          if (!childRef.current) return;
-          if (currentShowIndex.current < historyRef.current.length - 1) {
-            //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
-            historyRef.current.splice(currentShowIndex.current + 1);
-          }
-          if (historyRef.current.length > MAX_STEP) {
-            // 超出最大历史记录
-            historyRef.current.shift();
-          } else {
-            currentShowIndex.current++;
-          }
-          historyRef.current.push(
-            JSON.parse(
-              JSON.stringify({
-                points: signaturePadRef.current!.toData(),
-                scale: getScaleNumber(childRef.current.style.transform),
-              }),
-            ),
-          );
-          onPadChange?.(signaturePadRef.current?.toData());
-        });
-      }
+        historyRef.current.push(
+          JSON.parse(
+            JSON.stringify({
+              points: signaturePadRef.current!.toData(),
+              scale: getScaleNumber(childRef.current.style.transform),
+            }),
+          ),
+        );
+        onPadChange?.(
+          signaturePadRef.current?.toData(),
+          getScaleNumber(childRef.current.style.transform),
+        );
+      });
     }, []);
 
     useImperativeHandle(
@@ -306,21 +311,21 @@ const XStarSlideViewer = React.forwardRef<
     const handleUndo = () => {
       // 撤销函数
       if (!signaturePadRef.current || !childRef.current) return;
-      const index =
-        currentShowIndex.current >= 0 ? currentShowIndex.current - 1 : -1;
-      if (index > -1) {
+      if (currentShowIndex.current >= 0) {
+        currentShowIndex.current--;
+        if (currentShowIndex.current === -1) {
+          if (padInitialValue) {
+            signaturePadRef.current.fromData(padInitialValue.points);
+          } else {
+            signaturePadRef.current.clear();
+          }
+          return;
+        }
         const data = computeScaledPoint(
-          historyRef.current[index],
+          historyRef.current[currentShowIndex.current],
           containerRef.current?.clientWidth || 1280,
         );
         signaturePadRef.current.fromData(data);
-        currentShowIndex.current = index;
-      } else {
-        if (padInitialValue) {
-          signaturePadRef.current.fromData(padInitialValue.points);
-        } else {
-          signaturePadRef.current.clear();
-        }
       }
     };
 
@@ -328,17 +333,15 @@ const XStarSlideViewer = React.forwardRef<
       // 恢复函数
       if (!signaturePadRef.current || !childRef.current) return;
       if (
-        historyRef.current.length >= 1 &&
-        currentShowIndex.current <= historyRef.current.length - 1
+        historyRef.current.length > 0 &&
+        currentShowIndex.current < historyRef.current.length - 1
       ) {
+        currentShowIndex.current++;
         const data = computeScaledPoint(
           historyRef.current[currentShowIndex.current],
           containerRef.current?.clientWidth || 1280,
         );
         signaturePadRef.current.fromData(data);
-        if (currentShowIndex.current < historyRef.current.length - 1) {
-          currentShowIndex.current++;
-        }
       }
     };
 
@@ -385,9 +388,7 @@ const XStarSlideViewer = React.forwardRef<
     };
 
     const handleScreenShot = async () => {
-      const canvas = await html2canvas(childRef.current!, {
-        ignoreElements: (e) => e.classList.contains('btn-container'),
-      });
+      const canvas = await html2canvas(childRef.current!);
       const a = document.createElement('a');
       a.href = canvas.toDataURL('image/png');
       a.download = 'slide.png';
