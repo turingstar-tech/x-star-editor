@@ -8,8 +8,8 @@ import React, {
   useState,
 } from 'react';
 //  import SignaturePad, { PointGroup } from 'signature_pad';
-import { ViewerOptions } from 'x-star-editor/x-star-md-viewer/index.js';
 import workerRaw from '../../workers-dist/markdown.worker.js';
+import type { ViewerOptions } from '../x-star-md-viewer';
 // import SvgDelete from '../icons/Delete';
 // import SvgEnterFullscreen from '../icons/EnterFullscreen';
 // import SvgHelp from '../icons/Help';
