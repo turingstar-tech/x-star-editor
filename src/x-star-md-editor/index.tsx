@@ -212,14 +212,14 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
         exec,
         getEditorContainer: () => containerRef.current!,
         getValue: () => sourceCodeLatest.current,
-        setValue: (value: string) =>
-          exec(({ selection, dispatch }) =>
-            dispatch({
-              type: 'set',
-              payload: { sourceCode: value, selection },
-              selection,
-            }),
-          ),
+        setValue: (value: string) => {
+          const selection = getSelection();
+          dispatch({
+            type: 'set',
+            payload: { sourceCode: value, selection },
+            selection,
+          });
+        },
       }),
       [],
     );

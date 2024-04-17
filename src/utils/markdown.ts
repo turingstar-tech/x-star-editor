@@ -1,9 +1,14 @@
 import type { Root as HastRoot } from 'hast';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
-import type { Content as MdastNode, Root as MdastRoot } from 'mdast';
+import type {
+  Image as MdastImage,
+  Content as MdastNode,
+  Root as MdastRoot,
+} from 'mdast';
+import type { Math as MdastMath } from 'mdast-util-math';
 import type { Options as ToStringOptions } from 'mdast-util-to-string';
-import { toString } from 'mdast-util-to-string';
+import { toString as mdastToString } from 'mdast-util-to-string';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
@@ -262,18 +267,38 @@ const toHastProcessor = unified()
   .use(remarkRehype, {
     allowDangerousHtml: true,
     handlers: {
-      math: (h, node) =>
+      math: (h, node: MdastMath) =>
         // 如果 Math 节点的 `meta` 属性不为空，则视为自定义块
         node.meta
           ? h(node.position, 'custom', { meta: node.meta, value: node.value })
           : h(node, 'div'),
-      image: (h, node) => {
+      image: (h, node: MdastImage) => {
         try {
-          const styles = node.alt?.split(' ');
+          const alts: string[] = [];
+          const styles: string[] = [];
+          node.alt?.split(' ').forEach((word) => {
+            const s = word.split(':');
+            if (s.length !== 2) {
+              alts.push(word);
+            } else {
+              if (s[0] === 'w') {
+                s[0] = 'width';
+              } else if (s[0] === 'h') {
+                s[0] = 'height';
+              }
+              if (
+                (s[0] === 'width' || s[0] === 'height') &&
+                /^\d+$/.test(s[1])
+              ) {
+                s[1] += 'px';
+              }
+              styles.push(s.join(':'));
+            }
+          });
           return h(node, 'img', {
             src: node.url,
-            alt: styles?.filter((i: string) => !i.includes(':')).join(' '),
-            style: styles?.filter((i: string) => i.includes(':')).join(';'),
+            alt: alts.join(' '),
+            style: styles.join(';'),
           });
         } catch {
           return h(node, 'img', { src: node.url, alt: node.alt });
@@ -367,7 +392,7 @@ const toHTMLProcessor = unified()
   .use(remarkRehype, {
     allowDangerousHtml: true,
     handlers: {
-      math: (h, node) =>
+      math: (h, node: MdastMath) =>
         // 如果 Math 节点的 `meta` 属性不为空，则视为自定义块
         node.meta
           ? h(node.position, 'custom', { meta: node.meta, value: node.value })
@@ -423,7 +448,7 @@ export const toMarkdown = (sourceCode: string) =>
     ),
   );
 
-export interface ToTextOptions extends ToStringOptions {
+interface ToTextOptions extends ToStringOptions {
   /**
    * 替换图片的 alt 文本
    */
@@ -444,5 +469,5 @@ export const toText = (sourceCode: string, options?: ToTextOptions) => {
       node.alt = options.replaceImageAlt;
     });
   }
-  return toString(root, options);
+  return mdastToString(root, options);
 };

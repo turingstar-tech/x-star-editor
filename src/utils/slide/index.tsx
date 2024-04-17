@@ -1,5 +1,5 @@
 // import _ from 'lodash';
-// import { CanvasData } from 'x-star-editor/x-star-slide-viewer';
+// import { CanvasData } from '../../x-star-slide-viewer';
 
 // /**
 //  *
