@@ -117,9 +117,10 @@ const XStarSlideViewer = React.forwardRef<
     const containerRef = useRef<HTMLDivElement>(null);
     const childRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    //const circle = useRef<HTMLDivElement>(null);
     const signaturePadRef = useRef<SignaturePad | null>(null);
     const historyRef = useRef<CanvasData[]>([]); // 保存清除历史
-    const currentShowIndex = useRef<number>(-1);
+    const currentShowIndex = useRef<number>(0);
     const pathBeginScale = useRef(1);
     const [operationType, setOperationType] = useState(OperationType.NONE);
     const [strokeColor, setStrokeColor] = useState('#4285f4');
@@ -134,19 +135,24 @@ const XStarSlideViewer = React.forwardRef<
         penColor: '#4285f4',
       });
       if (padInitialValue) {
-        const initData = computeScaledPoint(
-          padInitialValue,
-          containerRef.current?.clientWidth || 1280,
-        );
+        // 初始画布数据
+        historyRef.current.push(JSON.parse(JSON.stringify(padInitialValue)));
+        const initData = computeScaledPoint(padInitialValue, 1280);
         signaturePadRef.current.fromData(initData);
+      } else {
+        historyRef.current.push(
+          JSON.parse(JSON.stringify({ points: [], scale: 1 })),
+        );
       }
       signaturePadRef.current.addEventListener('beginStroke', () => {
+        // 开始画笔，记录此时scale
         if (!childRef.current) return;
         pathBeginScale.current = getScaleNumber(
           childRef.current.style.transform,
         );
       });
       signaturePadRef.current.addEventListener('endStroke', () => {
+        // 结束画笔，记录此时画布数据
         if (!childRef.current) return;
         if (currentShowIndex.current < historyRef.current.length - 1) {
           //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
@@ -159,6 +165,7 @@ const XStarSlideViewer = React.forwardRef<
           currentShowIndex.current++;
         }
         historyRef.current.push(
+          // 保存画布数据
           JSON.parse(
             JSON.stringify({
               points: signaturePadRef.current!.toData(),
@@ -167,6 +174,7 @@ const XStarSlideViewer = React.forwardRef<
           ),
         );
         onPadChange?.(
+          // 画板数据变化回调
           signaturePadRef.current?.toData(),
           getScaleNumber(childRef.current.style.transform),
         );
@@ -311,16 +319,8 @@ const XStarSlideViewer = React.forwardRef<
     const handleUndo = () => {
       // 撤销函数
       if (!signaturePadRef.current || !childRef.current) return;
-      if (currentShowIndex.current >= 0) {
+      if (currentShowIndex.current > 0) {
         currentShowIndex.current--;
-        if (currentShowIndex.current === -1) {
-          if (padInitialValue) {
-            signaturePadRef.current.fromData(padInitialValue.points);
-          } else {
-            signaturePadRef.current.clear();
-          }
-          return;
-        }
         const data = computeScaledPoint(
           historyRef.current[currentShowIndex.current],
           containerRef.current?.clientWidth || 1280,
@@ -364,6 +364,14 @@ const XStarSlideViewer = React.forwardRef<
         handleRedo();
       }
     });
+
+    // useEventListener('mousemove', (event) => {
+    //   if (operationType !== OperationType.ERASE || !containerRef.current || !circle.current) return;
+    //   const x = event.clientX - containerRef.current.offsetLeft;
+    //   const y = event.clientY - containerRef.current.offsetTop;
+    //   circle.current.style.left = x + 'px';
+    //   circle.current.style.top = y + 'px';
+    // }, { target: canvasRef.current })
 
     const handleClear = () => {
       if (!signaturePadRef.current || !childRef.current) return;
@@ -548,6 +556,7 @@ const XStarSlideViewer = React.forwardRef<
             <SvgUndo />
           </span>
         </div>
+        {/* <div className={classNames(`${prefix}-ring`)} ref={circle} /> */}
       </div>
     );
   },
