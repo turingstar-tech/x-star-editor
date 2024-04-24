@@ -18,6 +18,7 @@ import SvgPencil from '../icons/Pencil';
 import SvgRedo from '../icons/Redo';
 import SvgScreenShot from '../icons/ScreenShot';
 import SvgUndo from '../icons/Undo';
+import { useLocale } from '../locales';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import {
@@ -127,6 +128,7 @@ const XStarSlideViewer = React.forwardRef<
     const [strokeWidth, setStrokeWidth] = useState(5);
     const [eraseWidth, setEraseWidth] = useState(10);
     const [, { toggleFullscreen }] = useFullscreen(containerRef);
+    const { format: t } = useLocale('slideViewer');
     const MAX_STEP = 100; // 最大保存历史记录数
 
     useEffect(() => {
@@ -466,7 +468,7 @@ const XStarSlideViewer = React.forwardRef<
               <SvgEnterFullscreen />
             </span>
             <div className={classNames(`${prefix}-tooltip`)}>
-              {'Full Screen'}
+              {t('fullScreen')}
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -477,7 +479,7 @@ const XStarSlideViewer = React.forwardRef<
               <SvgScreenShot />
             </span>
             <div className={classNames(`${prefix}-tooltip`)}>
-              {'Screen Shot'}
+              {t('screenShot')}
             </div>
           </div>
           <div>
@@ -501,7 +503,7 @@ const XStarSlideViewer = React.forwardRef<
             >
               <div>
                 <span className={classNames(`${prefix}-popover-label`)}>
-                  {'画笔属性'}
+                  {t('pencil')}
                 </span>
                 <input
                   type="color"
@@ -542,7 +544,7 @@ const XStarSlideViewer = React.forwardRef<
               )}
             >
               <span className={classNames(`${prefix}-popover-label`)}>
-                {'橡皮擦属性'}
+                {t('eraser')}
               </span>
               <input
                 type="range"
@@ -562,7 +564,7 @@ const XStarSlideViewer = React.forwardRef<
             >
               <SvgClear />
             </span>
-            <div className={classNames(`${prefix}-tooltip`)}>{'Clear'}</div>
+            <div className={classNames(`${prefix}-tooltip`)}>{t('clear')}</div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
@@ -571,7 +573,7 @@ const XStarSlideViewer = React.forwardRef<
             >
               <SvgRedo />
             </span>
-            <div className={classNames(`${prefix}-tooltip`)}>{'Redo'}</div>
+            <div className={classNames(`${prefix}-tooltip`)}>{t('redo')}</div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
@@ -580,7 +582,7 @@ const XStarSlideViewer = React.forwardRef<
             >
               <SvgUndo />
             </span>
-            <div className={classNames(`${prefix}-tooltip`)}>{'Undo'}</div>
+            <div className={classNames(`${prefix}-tooltip`)}>{t('undo')}</div>
           </div>
         </div>
       </div>

@@ -48,4 +48,13 @@ export default {
     mindMaps: '思维导图',
     timeLine: '时间线图',
   },
+  slideViewer: {
+    undo: '撤销',
+    redo: '恢复',
+    clear: '清空画布',
+    pencil: '画笔',
+    eraser: '橡皮擦',
+    screenShot: '截图',
+    fullScreen: '全屏',
+  },
 } as const;

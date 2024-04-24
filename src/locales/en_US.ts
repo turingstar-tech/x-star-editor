@@ -48,4 +48,13 @@ export default {
     mindMaps: 'Mindmaps',
     timeLine: 'Timeline',
   },
+  slideViewer: {
+    undo: 'Undo',
+    redo: 'Redo',
+    clear: 'Clear',
+    pencil: 'Pencil',
+    eraser: 'Eraser',
+    screenShot: 'Screen Shot',
+    fullScreen: 'Full Screen',
+  },
 } as const;
