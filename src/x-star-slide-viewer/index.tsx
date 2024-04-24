@@ -125,7 +125,7 @@ const XStarSlideViewer = React.forwardRef<
     const [operationType, setOperationType] = useState(OperationType.NONE);
     const [strokeColor, setStrokeColor] = useState('#4285f4');
     const [strokeWidth, setStrokeWidth] = useState(5);
-    const [eraseWidth, setEraseWidth] = useState(5);
+    const [eraseWidth, setEraseWidth] = useState(10);
     const [, { toggleFullscreen }] = useFullscreen(containerRef);
     const MAX_STEP = 100; // 最大保存历史记录数
 
@@ -458,18 +458,28 @@ const XStarSlideViewer = React.forwardRef<
         </div>
 
         <div className={classNames(`${prefix}-btn-container`)}>
-          <span
-            className={classNames(`${prefix}-common-btn`)}
-            onClick={toggleFullscreen}
-          >
-            <SvgEnterFullscreen />
-          </span>
-          <span
-            className={classNames(`${prefix}-common-btn`, `${prefix}-shot`)}
-            onClick={handleScreenShot}
-          >
-            <SvgScreenShot />
-          </span>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <span
+              className={classNames(`${prefix}-common-btn`)}
+              onClick={toggleFullscreen}
+            >
+              <SvgEnterFullscreen />
+            </span>
+            <div className={classNames(`${prefix}-tooltip`)}>
+              {'Full Screen'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <span
+              className={classNames(`${prefix}-common-btn`, `${prefix}-shot`)}
+              onClick={handleScreenShot}
+            >
+              <SvgScreenShot />
+            </span>
+            <div className={classNames(`${prefix}-tooltip`)}>
+              {'Screen Shot'}
+            </div>
+          </div>
           <div>
             <span
               className={classNames(`${prefix}-common-btn`, `${prefix}-draw`)}
@@ -489,13 +499,18 @@ const XStarSlideViewer = React.forwardRef<
                 `${prefix}-draw-popover`,
               )}
             >
-              <input
-                type="color"
-                value={strokeColor}
-                onChange={(e) => {
-                  setStrokeColor(e.target.value);
-                }}
-              />
+              <div>
+                <span className={classNames(`${prefix}-popover-label`)}>
+                  {'画笔属性'}
+                </span>
+                <input
+                  type="color"
+                  value={strokeColor}
+                  onChange={(e) => {
+                    setStrokeColor(e.target.value);
+                  }}
+                />
+              </div>
               <input
                 type="range"
                 min={1}
@@ -526,6 +541,9 @@ const XStarSlideViewer = React.forwardRef<
                 `${prefix}-erase-popover`,
               )}
             >
+              <span className={classNames(`${prefix}-popover-label`)}>
+                {'橡皮擦属性'}
+              </span>
               <input
                 type="range"
                 min={5}
@@ -537,26 +555,34 @@ const XStarSlideViewer = React.forwardRef<
               />
             </div>
           </div>
-          <span
-            className={classNames(`${prefix}-common-btn`, `${prefix}-clear`)}
-            onClick={handleClear}
-          >
-            <SvgClear />
-          </span>
-          <span
-            className={classNames(`${prefix}-common-btn`, `${prefix}-undo`)}
-            onClick={handleRedo}
-          >
-            <SvgRedo />
-          </span>
-          <span
-            className={classNames(`${prefix}-common-btn`, `${prefix}-undo`)}
-            onClick={handleUndo}
-          >
-            <SvgUndo />
-          </span>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <span
+              className={classNames(`${prefix}-common-btn`, `${prefix}-clear`)}
+              onClick={handleClear}
+            >
+              <SvgClear />
+            </span>
+            <div className={classNames(`${prefix}-tooltip`)}>{'Clear'}</div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <span
+              className={classNames(`${prefix}-common-btn`, `${prefix}-undo`)}
+              onClick={handleRedo}
+            >
+              <SvgRedo />
+            </span>
+            <div className={classNames(`${prefix}-tooltip`)}>{'Redo'}</div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <span
+              className={classNames(`${prefix}-common-btn`, `${prefix}-undo`)}
+              onClick={handleUndo}
+            >
+              <SvgUndo />
+            </span>
+            <div className={classNames(`${prefix}-tooltip`)}>{'Undo'}</div>
+          </div>
         </div>
-        {/* <div className={classNames(`${prefix}-ring`)} ref={circle} /> */}
       </div>
     );
   },
