@@ -18,5 +18,3 @@ features:
     emoji: 🚀
     description: 自定义块为 React 组件，支持使用上下文
 ---
-
-x-star-editor
