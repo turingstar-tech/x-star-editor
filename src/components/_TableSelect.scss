@@ -1,0 +1,22 @@
+.#{$prefix}-toolbar-table-container-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 15px !important;
+
+  .#{$prefix}-toolbar-table-container {
+    border-collapse: collapse;
+  }
+
+  .#{$prefix}-toolbar-table-cell {
+    width: 20px;
+    height: 20px;
+    border: 1px solid black;
+    box-sizing: border-box;
+  }
+
+  .#{$prefix}-toolbar-table-cell-selected {
+    background-color: $color-primary-hover;
+  }
+}

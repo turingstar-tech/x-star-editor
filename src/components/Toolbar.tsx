@@ -29,6 +29,7 @@ import { redoHandler, toggleHandler, undoHandler } from '../utils/handler';
 import { toHTML, toMarkdown } from '../utils/markdown';
 import Fade from './Fade';
 import FileInput from './FileInput';
+import TableSelect from './TableSelect';
 
 interface ItemProps {
   children: React.ReactNode;
@@ -512,7 +513,8 @@ export const getDefaultToolbarItemMap = (
     table: {
       children: <SvgTable className={classNames(`${prefix}-icon`)} />,
       tooltip: t('table'),
-      onClick: (exec) => exec(toggleHandler({ type: 'table' })),
+      // onClick: (exec) => exec(toggleHandler({ type: 'table' })),
+      popoverRender: (exec) => <TableSelect exec={exec} />,
     },
 
     taskList: {
