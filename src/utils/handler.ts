@@ -1,7 +1,8 @@
 import { createKeybindingsHandler } from 'tinykeys';
-import { createSelection } from './container';
+import { createSelection, getRange } from './container';
 import type {
   BatchAction,
+  IndentAction,
   InsertAction,
   MutateAction,
   SelectAction,
@@ -31,6 +32,11 @@ export const toggleHandler =
   (payload: ToggleAction['payload']): Handler =>
   ({ selection, dispatch }) =>
     dispatch({ type: 'toggle', payload, selection });
+
+export const indentHandler =
+  (payload: IndentAction['payload']): Handler =>
+  ({ selection, dispatch }) =>
+    dispatch({ type: 'indent', payload, selection });
 
 export const setHandler =
   (payload: SetAction['payload']): Handler =>
@@ -83,7 +89,18 @@ export const getDefaultKeyboardEventHandlers = (): KeyboardEventHandler[] => [
     createKeybindingsHandler({
       Tab: (e) => {
         e.preventDefault();
-        dispatch({ type: 'insert', payload: { text: '\t' }, selection });
+        const { startOffset, endOffset } = getRange(selection);
+        const text = sourceCode.slice(startOffset, endOffset);
+        if (text.includes('\n')) {
+          dispatch({ type: 'indent', payload: { indent: true }, selection });
+        } else {
+          dispatch({ type: 'insert', payload: { text: '\t' }, selection });
+        }
+      },
+
+      'Shift+Tab': (e) => {
+        e.preventDefault();
+        dispatch({ type: 'indent', payload: { indent: false }, selection });
       },
 
       '$mod+KeyZ': (e) => {
