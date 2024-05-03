@@ -16,11 +16,11 @@
     transform-origin: top left;
 
     > :first-child {
-      margin-top: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+      margin-top: 0; // 防止垂直居中时出现视觉上不居中的现象
     }
 
     > :last-child {
-      margin-bottom: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+      margin-bottom: 0; // 防止垂直居中时出现视觉上不居中的现象
     }
 
     h1,
@@ -53,12 +53,12 @@
     }
 
     pre {
-      width: 70%;
+      width: max-content;
+      max-width: 100%;
     }
 
-    img[id^='user-content-mermaid-'] {
-      width: 100%;
-      max-height: 100%;
+    img[id^='user-content-mermaid'] {
+      max-width: 100%;
     }
   }
 
