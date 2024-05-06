@@ -1,20 +1,19 @@
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
-import { Executor } from 'x-star-editor';
+import { Executor, toggleHandler } from 'x-star-editor';
 import { prefix } from '../utils/global';
 
 interface TableSelectProps {
   exec: Executor;
 }
 
-const TableSelect = (): TableSelectProps => {
+const TableSelect = ({ exec }: TableSelectProps) => {
   const [tableSize, setTableSize] = useState({ rows: 6, cols: 6 });
   const [selectedArea, setSelectedArea] = useState({ row: 0, col: 0 });
-  console.log(selectedArea, 'selectedArea');
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      const tableContainer = e.currentTarget;
+    const handleMouseMove = (e: MouseEvent) => {
+      const tableContainer = e.currentTarget as HTMLTableElement;
       const rect = tableContainer.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -57,17 +56,27 @@ const TableSelect = (): TableSelectProps => {
       table.push(<tr key={i}>{row}</tr>);
     }
 
-    return <tbody>{table}</tbody>;
+    return (
+      <tbody
+        onClick={() => {
+          const { row, col } = selectedArea;
+          exec(toggleHandler({ type: 'table', row, col }));
+          close();
+        }}
+      >
+        {table}
+      </tbody>
+    );
   };
 
   return (
     <div className={classNames(`${prefix}-toolbar-table-container-wrap`)}>
-      <div
+      <table
         id="toolbar-table-container"
         className={classNames(`${prefix}-toolbar-table-container`)}
       >
         {renderTable()}
-      </div>
+      </table>
       <div>
         {selectedArea.row}*{selectedArea.col}
       </div>

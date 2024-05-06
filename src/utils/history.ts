@@ -29,14 +29,14 @@ export interface ToggleAction {
           | 'math'
           | 'orderedList'
           | 'strong'
-          | 'table'
           | 'taskList'
           | 'thematicBreak'
           | 'unorderedList';
       }
     | { type: 'code'; lang: string; value: string; showLineNumbers: boolean }
     | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
-    | { type: 'image' | 'link'; url: string; description: string };
+    | { type: 'image' | 'link'; url: string; description: string }
+    | { type: 'table'; row?: number; col?: number };
   selection: ContainerSelection;
 }
 
@@ -223,12 +223,16 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
         }
 
         case 'table': {
+          const { row = 3, col = 2 } = action.payload;
+          const header = `\n${'|  '.repeat(col)}|\n${'| - '.repeat(col)}|\n`;
+          const content = `${'|  '.repeat(col)}|\n`.repeat(row - 1);
+          const tableCode = header + content;
           return {
             sourceCode: `${sourceCode.slice(
               0,
               lineEndOffset,
-            )}\n|  |  |\n| - | - |\n|  |  |\n|  |  |\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + 3),
+            )}${tableCode}${lineAfter}`,
+            selection: createSelection(lineEndOffset + row),
           };
         }
 
