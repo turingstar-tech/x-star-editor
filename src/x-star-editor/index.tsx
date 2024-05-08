@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { createKeybindingsHandler } from 'tinykeys';
+import { containerRefContext } from '../../src/context/containerRefContext';
 import SvgEditOnly from '../icons/EditOnly';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgExitFullscreen from '../icons/ExitFullscreen';
@@ -374,65 +375,70 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
     const [sourceCode, setSourceCode] = useState(value ?? initialValue);
 
     return (
-      <div
-        ref={containerRef}
-        className={classNames(
-          `${prefix}-editor`,
-          { [`${prefix}-fullscreen`]: fullscreen },
-          className,
-        )}
-        style={style}
-      >
-        <XStarMdEditor
-          ref={editorRef}
-          {...editorProps}
+      <containerRefContext.Provider value={{ editorRef, viewerRef }}>
+        <div
+          ref={containerRef}
           className={classNames(
-            { [`${prefix}-active`]: editOnly, [`${prefix}-hidden`]: viewOnly },
-            editorProps?.className,
+            `${prefix}-editor`,
+            { [`${prefix}-fullscreen`]: fullscreen },
+            className,
           )}
-          height={height}
-          locale={locale}
-          placeholder={placeholder}
-          value={value ?? sourceCode}
-          readOnly={viewOnly || readOnly}
-          plugins={editorPlugins}
-          onChange={(value) => {
-            setSourceCode(value);
-            onChange?.(value);
-          }}
-          onInsertFile={onInsertFile}
-        />
-        {viewerRender ? (
-          <ViewerRenderWrapper
-            ref={viewerRef}
+          style={style}
+        >
+          <XStarMdEditor
+            ref={editorRef}
+            {...editorProps}
             className={classNames(
               {
-                [`${prefix}-active`]: viewOnly,
-                [`${prefix}-hidden`]: editOnly,
+                [`${prefix}-active`]: editOnly,
+                [`${prefix}-hidden`]: viewOnly,
               },
-              viewerProps?.className,
-            )}
-            style={viewerProps?.style}
-            height={height}
-          >
-            {viewerRender(value ?? sourceCode)}
-          </ViewerRenderWrapper>
-        ) : (
-          <XStarMdViewer
-            ref={viewerRef}
-            {...viewerProps}
-            className={classNames(
-              {
-                [`${prefix}-active`]: viewOnly,
-                [`${prefix}-hidden`]: editOnly,
-              },
-              viewerProps?.className,
+              editorProps?.className,
             )}
             height={height}
+            locale={locale}
+            placeholder={placeholder}
             value={value ?? sourceCode}
+            readOnly={viewOnly || readOnly}
+            plugins={editorPlugins}
+            onChange={(value) => {
+              setSourceCode(value);
+              onChange?.(value);
+            }}
+            onInsertFile={onInsertFile}
           />
-        )}
-      </div>
+          {viewerRender ? (
+            <ViewerRenderWrapper
+              ref={viewerRef}
+              className={classNames(
+                {
+                  [`${prefix}-active`]: viewOnly,
+                  [`${prefix}-hidden`]: editOnly,
+                },
+                viewerProps?.className,
+              )}
+              style={viewerProps?.style}
+              height={height}
+            >
+              {viewerRender(value ?? sourceCode)}
+            </ViewerRenderWrapper>
+          ) : (
+            <XStarMdViewer
+              ref={viewerRef}
+              {...viewerProps}
+              className={classNames(
+                {
+                  [`${prefix}-active`]: viewOnly,
+                  [`${prefix}-hidden`]: editOnly,
+                },
+                viewerProps?.className,
+              )}
+              height={height}
+              value={value ?? sourceCode}
+            />
+          )}
+        </div>
+      </containerRefContext.Provider>
     );
   },
 );

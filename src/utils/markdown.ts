@@ -9,6 +9,7 @@ import type {
 import type { Math as MdastMath } from 'mdast-util-math';
 import type { Options as ToStringOptions } from 'mdast-util-to-string';
 import { toString as mdastToString } from 'mdast-util-to-string';
+import React, { useContext } from 'react';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
@@ -25,6 +26,7 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
+import { containerRefContext } from '../context/containerRefContext';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
@@ -329,62 +331,6 @@ export const preViewerRender = async (sourceCode: string) =>
  */
 export type Schema = typeof defaultSchema;
 
-export const getDefaultSchema = (): Schema => ({
-  ...defaultSchema,
-  attributes: {
-    ...defaultSchema.attributes,
-    custom: ['meta', 'value'],
-    span: ['line'],
-    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className', 'style'],
-  },
-  protocols: {
-    ...defaultSchema.protocols,
-    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
-  },
-  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
-});
-
-const Input = ({ checked, ...props }: any) =>
-  jsx('input', { checked: !!checked, ...props });
-
-const Custom = ({ component, value }: any) =>
-  jsx(component, { children: value });
-
-/**
- * 将 Hast 树映射到 React 虚拟 DOM 树
- *
- * @param root Hast 树
- * @param options 配置项
- * @returns React 虚拟 DOM 树
- */
-export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
-  try {
-    const components = {
-      ...options.customHTMLElements,
-      // 直接在这里写函数会有重复渲染问题，因此用全局组件
-      input: Input,
-      custom: Custom,
-    };
-    return toJsxRuntime(
-      unified()
-        .use(rehypeKatex)
-        .use(rehypeCustom, options.customBlocks)
-        .runSync(root),
-      {
-        Fragment,
-        jsx,
-        jsxs,
-        components,
-      },
-    );
-  } catch {
-    return jsx('div', {
-      style: { fontStyle: 'italic', color: 'red' },
-      children: 'Parse error!',
-    });
-  }
-};
-
 const toHTMLProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -447,6 +393,90 @@ export const toMarkdown = (sourceCode: string) =>
       toHTMLProcessor.runSync(toHTMLProcessor.parse(sourceCode)),
     ),
   );
+
+export const getDefaultSchema = (): Schema => ({
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    custom: ['meta', 'value'],
+    span: ['line'],
+    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className', 'style'],
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
+  },
+  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
+});
+
+const Input = ({ checked, ...props }: any) =>
+  jsx('input', { checked: !!checked, ...props });
+
+const Custom = ({ component, value }: any) =>
+  jsx(component, { children: value });
+
+// 自定义渲染table
+const Table = ({ ...props }: any) => {
+  const { editorRef } = useContext(containerRefContext);
+  const sourceCode = editorRef?.current?.getValue();
+
+  // 精准更新table的源码
+  const handleInput = (e: React.FormEvent<HTMLTableElement>) => {
+    const target = e.target as HTMLTableCellElement;
+    if (target && target.nodeName === 'TABLE') {
+      const tableCode = toMarkdown(target.outerHTML || '');
+      const sourceCodeStart = Number(target.getAttribute('data-start'));
+      const sourceCodeEnd = Number(target.getAttribute('data-end'));
+      editorRef?.current?.setValue(
+        sourceCode?.slice(0, sourceCodeStart) +
+          tableCode +
+          sourceCode?.slice(sourceCodeEnd + 1),
+      );
+    }
+  };
+
+  return jsx('table', {
+    ...props,
+    contentEditable: true,
+    onInput: handleInput,
+  });
+};
+
+/**
+ * 将 Hast 树映射到 React 虚拟 DOM 树
+ *
+ * @param root Hast 树
+ * @param options 配置项
+ * @returns React 虚拟 DOM 树
+ */
+export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
+  try {
+    const components = {
+      ...options.customHTMLElements,
+      // 直接在这里写函数会有重复渲染问题，因此用全局组件
+      input: Input,
+      custom: Custom,
+      table: Table,
+    };
+    return toJsxRuntime(
+      unified()
+        .use(rehypeKatex)
+        .use(rehypeCustom, options.customBlocks)
+        .runSync(root),
+      {
+        Fragment,
+        jsx,
+        jsxs,
+        components,
+      },
+    );
+  } catch {
+    return jsx('div', {
+      style: { fontStyle: 'italic', color: 'red' },
+      children: 'Parse error!',
+    });
+  }
+};
 
 interface ToTextOptions extends ToStringOptions {
   /**
