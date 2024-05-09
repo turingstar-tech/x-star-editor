@@ -7,6 +7,9 @@ export default {
     file: '文件',
     url: '网址',
   },
+  textColor: {
+    confirm: '确定',
+  },
   toolbarItem: {
     blockquote: '引用',
     code: '代码块',
@@ -47,5 +50,6 @@ export default {
     gitGraphDiagram: 'Git图',
     mindMaps: '思维导图',
     timeLine: '时间线图',
+    textColor: '文本颜色',
   },
 } as const;

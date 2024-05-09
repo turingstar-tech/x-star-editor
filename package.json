@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.24.1",
+    "@rc-component/color-picker": "^1.5.3",
     "ahooks": "^3.7.10",
     "classnames": "^2.3.2",
     "hast-util-to-jsx-runtime": "^1.2.0",

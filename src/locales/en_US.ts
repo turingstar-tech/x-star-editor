@@ -7,6 +7,9 @@ export default {
     file: 'File',
     url: 'URL',
   },
+  textColor: {
+    confirm: 'Confirm',
+  },
   toolbarItem: {
     blockquote: 'Blockquote',
     code: 'Code Block',
@@ -47,5 +50,6 @@ export default {
     gitGraphDiagram: 'Gitgraph (Git) Diagram',
     mindMaps: 'Mindmaps',
     timeLine: 'Timeline',
+    textColor: 'Text Color',
   },
 } as const;

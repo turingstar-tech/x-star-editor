@@ -36,7 +36,8 @@ export interface ToggleAction {
     | { type: 'code'; lang: string; value: string; showLineNumbers: boolean }
     | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
     | { type: 'image' | 'link'; url: string; description: string }
-    | { type: 'table'; row?: number; col?: number };
+    | { type: 'table'; row?: number; col?: number }
+    | { type: 'textColor'; color: string };
   selection: ContainerSelection;
 }
 
@@ -163,7 +164,23 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
             ),
           };
         }
+        case 'textColor': {
+          // 构造span标签
+          const getTextColor = (text: string, color: string) => {
+            const textDom = document.createElement('span');
+            textDom.style.color = color;
+            textDom.textContent = text;
+            return textDom.outerHTML;
+          };
+          // 获取选中的文本
+          const text = sourceCode.slice(startOffset, endOffset);
+          const { color } = action.payload;
 
+          return {
+            sourceCode: `${before}${getTextColor(text, color)}${after}`,
+            selection: createSelection(anchorOffset, focusOffset),
+          };
+        }
         case 'heading': {
           const { depth } = action.payload;
           const lines = sourceCode
