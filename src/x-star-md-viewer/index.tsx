@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import type { Components } from 'hast-util-to-jsx-runtime';
 import React, {
+  useContext,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -8,6 +9,7 @@ import React, {
   useState,
 } from 'react';
 import workerRaw from '../../workers-dist/markdown.worker.js';
+import { containerRefContext } from '../context/containerRefContext';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { Schema } from '../utils/markdown';
@@ -81,6 +83,7 @@ export interface XStarMdViewerProps {
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
   ({ className, style, height, theme, value = '', plugins }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const { editorRef } = useContext(containerRefContext);
 
     useImperativeHandle(
       ref,
@@ -108,6 +111,10 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       [],
     );
+
+    const selection = window.getSelection();
+    const anchorNode = selection?.anchorNode;
+    const anchorOffset = selection?.anchorOffset;
 
     useEffect(() => {
       if (!worker) {
@@ -143,6 +150,13 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     // 确保在末尾输入时能同步滚动
     useEffect(() => {
+      if (
+        anchorNode &&
+        anchorOffset &&
+        editorRef?.current?.getIsViewerChangeCode()
+      )
+        selection.setPosition(anchorNode, anchorOffset);
+
       const timer = window.setTimeout(
         () => containerRef.current?.dispatchEvent(new Event('render')),
         100,

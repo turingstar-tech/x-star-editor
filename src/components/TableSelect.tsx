@@ -5,9 +5,10 @@ import { prefix } from '../utils/global';
 
 interface TableSelectProps {
   exec: Executor;
+  close: () => void;
 }
 
-const TableSelect = ({ exec }: TableSelectProps) => {
+const TableSelect = ({ exec, close }: TableSelectProps) => {
   const [tableSize, setTableSize] = useState({ rows: 6, cols: 6 });
   const [selectedArea, setSelectedArea] = useState({ row: 0, col: 0 });
 
@@ -45,12 +46,13 @@ const TableSelect = ({ exec }: TableSelectProps) => {
       let row = [];
       for (let j = 1; j <= cols; j++) {
         const isSelected = i <= selRow && j <= selCol;
-        const tableCellClass = classNames(`${prefix}-toolbar-table-cell`);
-        const selectedClass = isSelected
-          ? classNames(`${prefix}-toolbar-table-cell-selected`)
-          : classNames();
         row.push(
-          <td key={j} className={`${tableCellClass} ${selectedClass}`}></td>,
+          <td
+            key={j}
+            className={classNames(`${prefix}-toolbar-table-cell`, {
+              [`${prefix}-toolbar-table-cell-selected`]: isSelected,
+            })}
+          ></td>,
         );
       }
       table.push(<tr key={i}>{row}</tr>);

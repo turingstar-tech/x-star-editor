@@ -329,7 +329,7 @@ export const getDefaultToolbarItemMap = (
 
   return {
     textColor: {
-      children: <SvgTextColor className={classNames(`${prefix}-icon`)} />,
+      children: <SvgTextColor />,
       tooltip: t('textColor'),
       popoverRender: (exec, close) => {
         return <PickColor exec={exec} close={close} />;
@@ -524,7 +524,7 @@ export const getDefaultToolbarItemMap = (
       children: <SvgTable className={classNames(`${prefix}-icon`)} />,
       tooltip: t('table'),
       // onClick: (exec) => exec(toggleHandler({ type: 'table' })),
-      popoverRender: (exec) => <TableSelect exec={exec} />,
+      popoverRender: (exec, close) => <TableSelect exec={exec} close={close} />,
     },
 
     taskList: {

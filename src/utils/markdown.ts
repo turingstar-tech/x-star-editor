@@ -424,6 +424,7 @@ const Table = ({ ...props }: any) => {
   const handleInput = (e: React.FormEvent<HTMLTableElement>) => {
     const target = e.target as HTMLTableCellElement;
     if (target && target.nodeName === 'TABLE') {
+      editorRef?.current?.setIsViewerChangeCode(true);
       const tableCode = toMarkdown(target.outerHTML || '');
       const sourceCodeStart = Number(target.getAttribute('data-start'));
       const sourceCodeEnd = Number(target.getAttribute('data-end'));
@@ -439,6 +440,7 @@ const Table = ({ ...props }: any) => {
     ...props,
     contentEditable: true,
     onInput: handleInput,
+    onBlur: () => editorRef?.current?.setIsViewerChangeCode(false),
   });
 };
 
