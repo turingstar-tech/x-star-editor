@@ -32,6 +32,7 @@ import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
 import rehypeMath, { isMathNode } from './rehype/rehype-math';
 import rehypeRawPositions from './rehype/rehype-raw-positions';
+import { debounce } from './utils';
 
 /**
  * 将 Markdown 文本解析为 Mdast 树的处理器
@@ -439,7 +440,7 @@ const Table = ({ ...props }: any) => {
   return jsx('table', {
     ...props,
     contentEditable: true,
-    onInput: handleInput,
+    onInput: debounce(handleInput),
     onBlur: () => editorRef?.current?.setIsViewerChangeCode(false),
   });
 };
