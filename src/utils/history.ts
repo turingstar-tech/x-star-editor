@@ -241,7 +241,7 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
 
         case 'table': {
           const { row = 3, col = 2 } = action.payload;
-          const header = `\n${'|  '.repeat(col)}|\n${'| - '.repeat(col)}|\n`;
+          const header = `${'|  '.repeat(col)}|\n${'| - '.repeat(col)}|\n`;
           const content = `${'|  '.repeat(col)}|\n`.repeat(row - 1);
           const tableCode = header + content;
           return {

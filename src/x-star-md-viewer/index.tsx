@@ -78,10 +78,26 @@ export interface XStarMdViewerProps {
    * 插件
    */
   plugins?: XStarMdViewerPlugin[];
+
+  /**
+   * viewer是否可编辑
+   */
+  canContentEditable?: boolean;
 }
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
-  ({ className, style, height, theme, value = '', plugins }, ref) => {
+  (
+    {
+      className,
+      style,
+      height,
+      theme,
+      value = '',
+      plugins,
+      canContentEditable = false,
+    },
+    ref,
+  ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { editorRef } = useContext(containerRefContext);
 
@@ -127,7 +143,13 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
       const listener = ({ data }: MessageEvent) => {
         if (data.id === id) {
-          setChildren(postViewerRender(data.root, optionsLatest.current));
+          setChildren(
+            postViewerRender(
+              data.root,
+              optionsLatest.current,
+              canContentEditable,
+            ),
+          );
         }
       };
 
@@ -154,7 +176,8 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
         anchorNode &&
         anchorOffset &&
         anchorNode.nodeType === Node.TEXT_NODE &&
-        editorRef?.current?.getIsViewerChangeCode()
+        editorRef?.current?.getIsViewerChangeCode() &&
+        canContentEditable
       ) {
         // 确保 anchorOffset 不超过 anchorNode 的长度
         const validOffset = Math.min(

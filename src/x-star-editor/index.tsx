@@ -425,6 +425,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
           ) : (
             <XStarMdViewer
               ref={viewerRef}
+              canContentEditable={!viewOnly && !editOnly}
               {...viewerProps}
               className={classNames(
                 {

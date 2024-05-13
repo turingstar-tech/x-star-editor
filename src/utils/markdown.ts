@@ -466,14 +466,19 @@ const Table = ({ ...props }: any) => {
  * @param options 配置项
  * @returns React 虚拟 DOM 树
  */
-export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
+export const postViewerRender = (
+  root: HastRoot,
+  options: ViewerOptions,
+  canContentEditable?: boolean,
+) => {
+  const tableOpts = canContentEditable ? { table: Table } : {};
   try {
     const components = {
       ...options.customHTMLElements,
       // 直接在这里写函数会有重复渲染问题，因此用全局组件
       input: Input,
       custom: Custom,
-      table: Table,
+      ...tableOpts,
     };
     return toJsxRuntime(
       unified()
