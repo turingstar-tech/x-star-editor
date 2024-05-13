@@ -9,7 +9,7 @@ import type {
 import type { Math as MdastMath } from 'mdast-util-math';
 import type { Options as ToStringOptions } from 'mdast-util-to-string';
 import { toString as mdastToString } from 'mdast-util-to-string';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
@@ -418,11 +418,12 @@ const Custom = ({ component, value }: any) =>
 
 // 自定义渲染table
 const Table = ({ ...props }: any) => {
+  const [isComposition, setIsComposition] = useState(false);
   const { editorRef } = useContext(containerRefContext);
   const sourceCode = editorRef?.current?.getValue();
 
   // 精准更新table的源码
-  const handleInput = (e: React.FormEvent<HTMLTableElement>) => {
+  const updateTableSource = (e: React.FormEvent<HTMLTableElement>) => {
     const target = e.target as HTMLTableCellElement;
     if (target && target.nodeName === 'TABLE') {
       editorRef?.current?.setIsViewerChangeCode(true);
@@ -437,10 +438,23 @@ const Table = ({ ...props }: any) => {
     }
   };
 
+  // 组合输入时 不更新源码
+  const handleInput = (e: React.FormEvent<HTMLTableElement>) => {
+    if (isComposition) return;
+    updateTableSource(e);
+  };
+
+  const compositionEndUpdate = (e: React.FormEvent<HTMLTableElement>) => {
+    setIsComposition(false);
+    updateTableSource(e);
+  };
+
   return jsx('table', {
     ...props,
     contentEditable: true,
     onInput: debounce(handleInput),
+    onCompositionStart: () => setIsComposition(true),
+    onCompositionEnd: debounce(compositionEndUpdate),
     onBlur: () => editorRef?.current?.setIsViewerChangeCode(false),
   });
 };

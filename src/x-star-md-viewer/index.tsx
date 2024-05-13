@@ -153,9 +153,16 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       if (
         anchorNode &&
         anchorOffset &&
+        anchorNode.nodeType === Node.TEXT_NODE &&
         editorRef?.current?.getIsViewerChangeCode()
-      )
-        selection.setPosition(anchorNode, anchorOffset);
+      ) {
+        // 确保 anchorOffset 不超过 anchorNode 的长度
+        const validOffset = Math.min(
+          anchorOffset,
+          anchorNode.textContent?.length || 0,
+        );
+        selection.setPosition(anchorNode, validOffset);
+      }
 
       const timer = window.setTimeout(
         () => containerRef.current?.dispatchEvent(new Event('render')),
