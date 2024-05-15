@@ -175,10 +175,16 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
           // 获取选中的文本
           const text = sourceCode.slice(startOffset, endOffset);
           const { color } = action.payload;
-
+          const textContent = getTextColor(text, color);
+          const textOffset = text
+            ? textContent.split(text)[0].length
+            : textContent.length - '</span>'.length;
           return {
-            sourceCode: `${before}${getTextColor(text, color)}${after}`,
-            selection: createSelection(anchorOffset, focusOffset),
+            sourceCode: `${before}${textContent}${after}`,
+            selection: createSelection(
+              anchorOffset + textOffset,
+              focusOffset + textOffset,
+            ),
           };
         }
         case 'heading': {
