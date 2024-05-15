@@ -9,7 +9,7 @@ import type {
 import type { Math as MdastMath } from 'mdast-util-math';
 import type { Options as ToStringOptions } from 'mdast-util-to-string';
 import { toString as mdastToString } from 'mdast-util-to-string';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
@@ -447,7 +447,7 @@ const Custom = ({ component, value }: any) =>
 const Table = ({ ...props }: any) => {
   const [isComposition, setIsComposition] = useState(false);
   const [newSourceCode, setNewSourceCode] = useState('');
-
+  const tableRef = useRef<HTMLTableElement>(null);
   const { editorRef } = useContext(containerRefContext);
   const sourceCode = editorRef?.current?.getValue();
 
@@ -488,8 +488,46 @@ const Table = ({ ...props }: any) => {
     editorRef?.current?.setValue(newSourceCode);
   };
 
+  useEffect(() => {
+    const table = tableRef.current;
+    if (!table) return;
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'A') {
+        event.stopPropagation();
+        event.preventDefault();
+        window.open((target as HTMLAnchorElement).href, '_blank');
+      }
+    };
+
+    const handleMouseOver = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'A') {
+        target.style.cursor = 'pointer';
+      }
+    };
+
+    const handleMouseOut = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'A') {
+        target.style.cursor = 'default';
+      }
+    };
+
+    table.addEventListener('click', handleClick);
+    table.addEventListener('mouseover', handleMouseOver);
+    table.addEventListener('mouseout', handleMouseOut);
+
+    return () => {
+      table.removeEventListener('click', handleClick);
+      table.removeEventListener('mouseover', handleMouseOver);
+      table.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, []);
+
   return jsx('table', {
     ...props,
+    ref: tableRef,
     contentEditable: true,
     onInput: handleInput,
     onCompositionStart: () => setIsComposition(true),

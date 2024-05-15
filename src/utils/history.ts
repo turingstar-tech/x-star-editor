@@ -249,7 +249,7 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
               0,
               lineEndOffset,
             )}${tableCode}${lineAfter}`,
-            selection: createSelection(lineEndOffset + row),
+            selection: createSelection(lineEndOffset + 1),
           };
         }
 
