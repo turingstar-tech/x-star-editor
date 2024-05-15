@@ -158,15 +158,18 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     }, []);
 
     useEffect(() => {
-      const timer = window.setTimeout(
-        async () =>
-          worker.postMessage({
-            id,
-            root: await preViewerRender(value),
-            schema: options.customSchema,
-          }),
-        100,
-      );
+      let timer: ReturnType<typeof setTimeout> | number;
+      if (!editorRef?.current?.getIsViewerChangeCode()) {
+        timer = window.setTimeout(
+          async () =>
+            worker.postMessage({
+              id,
+              root: await preViewerRender(value),
+              schema: options.customSchema,
+            }),
+          100,
+        );
+      }
       return () => window.clearTimeout(timer);
     }, [value, options]);
 
@@ -196,6 +199,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     return (
       <div
+        key={new Date().valueOf()}
         ref={containerRef}
         className={classNames(
           `${prefix}-md-viewer`,

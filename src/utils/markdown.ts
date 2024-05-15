@@ -13,6 +13,7 @@ import React, { useContext, useState } from 'react';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
+import rehypeParse from 'rehype-parse';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
 import rehypeRemark, { defaultHandlers } from 'rehype-remark';
@@ -32,7 +33,7 @@ import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
 import rehypeMath, { isMathNode } from './rehype/rehype-math';
 import rehypeRawPositions from './rehype/rehype-raw-positions';
-import { debounce } from './utils';
+import rehypeTableCell from './rehype/rehype-table-cell';
 
 /**
  * 将 Markdown 文本解析为 Mdast 树的处理器
@@ -373,6 +374,11 @@ const toMarkdownProcessor = unified()
         isMathNode(node)
           ? h(node, 'inlineMath', hastToText(node))
           : defaultHandlers.span(h, node),
+      br: (h, node) => {
+        return node.tabelCell === true
+          ? { type: 'html', value: '<br>' }
+          : defaultHandlers.br(h, node);
+      },
       custom: (h, node) =>
         h(node, 'math', { meta: node.properties.meta }, node.properties.value),
     },
@@ -381,6 +387,27 @@ const toMarkdownProcessor = unified()
   .use(remarkGfm)
   .use(remarkStringify)
   .freeze();
+
+/**
+ * table元素解析为Markdown 进行单独处理
+ *
+ * @param element HTMLTableCellElement
+ * @returns sourceCode Markdown 文本
+ */
+const toTableMarkdownProcessor = (element: HTMLTableCellElement) => {
+  const tableCode = toMarkdownProcessor.stringify(
+    toMarkdownProcessor.runSync(
+      unified()
+        .use(rehypeTableCell)
+        .runSync(
+          unified()
+            .use(rehypeParse)
+            .parse(element.outerHTML || ''),
+        ),
+    ),
+  );
+  return tableCode;
+};
 
 /**
  * 将带有 HTML 的 Markdown 文本转成 Markdown 文本
@@ -419,6 +446,8 @@ const Custom = ({ component, value }: any) =>
 // 自定义渲染table
 const Table = ({ ...props }: any) => {
   const [isComposition, setIsComposition] = useState(false);
+  const [newSourceCode, setNewSourceCode] = useState('');
+
   const { editorRef } = useContext(containerRefContext);
   const sourceCode = editorRef?.current?.getValue();
 
@@ -427,12 +456,11 @@ const Table = ({ ...props }: any) => {
     const target = e.target as HTMLTableCellElement;
     if (target && target.nodeName === 'TABLE') {
       editorRef?.current?.setIsViewerChangeCode(true);
-      const tableCode = toMarkdown(target.outerHTML || '');
       const sourceCodeStart = Number(target.getAttribute('data-start'));
       const sourceCodeEnd = Number(target.getAttribute('data-end'));
-      editorRef?.current?.setValue(
+      setNewSourceCode(
         sourceCode?.slice(0, sourceCodeStart) +
-          tableCode +
+          toTableMarkdownProcessor(target) +
           sourceCode?.slice(sourceCodeEnd + 1),
       );
     }
@@ -449,13 +477,25 @@ const Table = ({ ...props }: any) => {
     updateTableSource(e);
   };
 
+  const handleFocus = (e: React.FormEvent<HTMLTableElement>) => {
+    updateTableSource(e);
+  };
+
+  // 由于限制了viewer的渲染时机会导致rehype插件无法实时更新
+  // 所以在table失焦时候 统一更新markdown源码
+  const handleBlur = () => {
+    editorRef?.current?.setIsViewerChangeCode(false);
+    editorRef?.current?.setValue(newSourceCode);
+  };
+
   return jsx('table', {
     ...props,
     contentEditable: true,
-    onInput: debounce(handleInput),
+    onInput: handleInput,
     onCompositionStart: () => setIsComposition(true),
-    onCompositionEnd: debounce(compositionEndUpdate),
-    onBlur: () => editorRef?.current?.setIsViewerChangeCode(false),
+    onCompositionEnd: compositionEndUpdate,
+    onFocus: handleFocus,
+    onBlur: handleBlur,
   });
 };
 
