@@ -136,6 +136,21 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     const selection = window.getSelection();
 
+    const handleEditorTableKeyBoard = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        e.preventDefault(); // 阻止Tab键的默认行为
+        const { selectedCell, tableCells } =
+          viewerRef?.current?.editorTableInstance || {};
+        if (selectedCell && tableCells && selection) {
+          const nextTableCellIndex =
+            tableCells.indexOf(selectedCell) + 1 >= tableCells.length
+              ? 0
+              : tableCells.indexOf(selectedCell) + 1;
+          selection.setPosition(tableCells[nextTableCellIndex], 0);
+        }
+      }
+    };
+
     useEffect(() => {
       if (!worker) {
         worker = new Worker(
@@ -186,20 +201,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
           .forEach((item) => {
             (item as HTMLTableElement).addEventListener(
               'keydown',
-              (e: KeyboardEvent) => {
-                if (e.key === 'Tab') {
-                  e.preventDefault(); // 阻止Tab键的默认行为
-                  const { selectedCell, tableCells } =
-                    viewerRef?.current?.editorTableInstance || {};
-                  if (selectedCell && tableCells && selection) {
-                    const nextTableCellIndex =
-                      tableCells.indexOf(selectedCell) + 1 >= tableCells.length
-                        ? 0
-                        : tableCells.indexOf(selectedCell) + 1;
-                    selection.setPosition(tableCells[nextTableCellIndex], 0);
-                  }
-                }
-              },
+              handleEditorTableKeyBoard,
             );
           });
       }
@@ -208,7 +210,18 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
         () => containerRef.current?.dispatchEvent(new Event('render')),
         100,
       );
-      return () => window.clearTimeout(timer);
+      return () => {
+        window.clearTimeout(timer);
+        if (canContentEditable)
+          document
+            .querySelectorAll('table[contenteditable="true"]')
+            .forEach((item) => {
+              (item as HTMLTableElement).removeEventListener(
+                'keydown',
+                handleEditorTableKeyBoard,
+              );
+            });
+      };
     }, [children]);
 
     return (
