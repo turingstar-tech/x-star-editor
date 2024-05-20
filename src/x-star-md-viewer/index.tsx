@@ -44,8 +44,15 @@ export interface XStarMdViewerPlugin {
   (ctx: ViewerOptions): void;
 }
 
+export interface IEditorTableInstance {
+  tableRef?: HTMLTableElement | null;
+  tableCells?: HTMLTableCellElement[];
+  selectedCell?: HTMLTableCellElement | null;
+}
+
 export interface XStarMdViewerHandle {
   getViewerContainer: () => HTMLDivElement;
+  editorTableInstance?: IEditorTableInstance;
 }
 
 export interface XStarMdViewerProps {
@@ -99,8 +106,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const { editorRef } = useContext(containerRefContext);
-
+    const { editorRef, viewerRef } = useContext(containerRefContext);
     useImperativeHandle(
       ref,
       () => ({ getViewerContainer: () => containerRef.current! }),
@@ -129,8 +135,6 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     );
 
     const selection = window.getSelection();
-    const anchorNode = selection?.anchorNode;
-    const anchorOffset = selection?.anchorOffset;
 
     useEffect(() => {
       if (!worker) {
@@ -175,19 +179,29 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
 
     // 确保在末尾输入时能同步滚动
     useEffect(() => {
-      if (
-        anchorNode &&
-        anchorOffset &&
-        anchorNode.nodeType === Node.TEXT_NODE &&
-        editorRef?.current?.getIsViewerChangeCode() &&
-        canContentEditable
-      ) {
-        // 确保 anchorOffset 不超过 anchorNode 的长度
-        const validOffset = Math.min(
-          anchorOffset,
-          anchorNode.textContent?.length || 0,
-        );
-        selection.setPosition(anchorNode, validOffset);
+      // 可编辑表格中按下tab键时，将光标手动移动到下一个单元格
+      if (canContentEditable) {
+        document
+          .querySelectorAll('table[contenteditable="true"]')
+          .forEach((item) => {
+            (item as HTMLTableElement).addEventListener(
+              'keydown',
+              (e: KeyboardEvent) => {
+                if (e.key === 'Tab') {
+                  e.preventDefault(); // 阻止Tab键的默认行为
+                  const { selectedCell, tableCells } =
+                    viewerRef?.current?.editorTableInstance || {};
+                  if (selectedCell && tableCells && selection) {
+                    const nextTableCellIndex =
+                      tableCells.indexOf(selectedCell) + 1 >= tableCells.length
+                        ? 0
+                        : tableCells.indexOf(selectedCell) + 1;
+                    selection.setPosition(tableCells[nextTableCellIndex], 0);
+                  }
+                }
+              },
+            );
+          });
       }
 
       const timer = window.setTimeout(

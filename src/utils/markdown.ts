@@ -448,7 +448,7 @@ const Table = ({ ...props }: any) => {
   const [isComposition, setIsComposition] = useState(false);
   const [newSourceCode, setNewSourceCode] = useState('');
   const tableRef = useRef<HTMLTableElement>(null);
-  const { editorRef } = useContext(containerRefContext);
+  const { editorRef, viewerRef } = useContext(containerRefContext);
   const sourceCode = editorRef?.current?.getValue();
 
   // 精准更新table的源码
@@ -491,6 +491,10 @@ const Table = ({ ...props }: any) => {
   useEffect(() => {
     const table = tableRef.current;
     if (!table) return;
+    if (viewerRef && viewerRef.current)
+      viewerRef.current.editorTableInstance = {
+        tableRef: table,
+      };
     const handleClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (target.tagName === 'A') {
@@ -513,15 +517,69 @@ const Table = ({ ...props }: any) => {
         target.style.cursor = 'default';
       }
     };
+    // 处理选择变化
+    const handleSelectionChange = () => {
+      const table = tableRef?.current;
+
+      const selection = window.getSelection();
+
+      if (!selection?.rangeCount || !table || !viewerRef?.current) return;
+
+      const range = selection.getRangeAt(0);
+
+      // 获取选择范围的起始和结束容器，如果是文本节点则获取其父元素
+      const startContainer =
+        range.startContainer.nodeType === 3
+          ? range.startContainer.parentElement
+          : range.startContainer;
+      const endContainer =
+        range.endContainer.nodeType === 3
+          ? range.endContainer.parentElement
+          : range.endContainer;
+
+      // 检查选择范围是否在表格内
+      if (table.contains(startContainer) && table.contains(endContainer)) {
+        let currentNode: Node | Element | null = startContainer;
+        let selectedCell: HTMLTableCellElement | null = null;
+        const tableCells = Array.from(
+          table.querySelectorAll<HTMLTableCellElement>('th, td'),
+        );
+
+        // 遍历从起始容器开始的所有节点，直到找到结束容器
+        while (currentNode) {
+          if (currentNode instanceof HTMLTableCellElement) {
+            selectedCell = currentNode;
+            if (currentNode === endContainer) break;
+          }
+          // 确保 currentNode 是 Element 类型
+          if (currentNode instanceof Element) {
+            currentNode =
+              currentNode.nextElementSibling ||
+              currentNode.parentElement?.nextElementSibling ||
+              null;
+          } else {
+            currentNode = null;
+          }
+        }
+
+        // 更新 editorTableInstance 对象
+        viewerRef.current.editorTableInstance = {
+          tableRef: table,
+          selectedCell,
+          tableCells,
+        };
+      }
+    };
 
     table.addEventListener('click', handleClick);
     table.addEventListener('mouseover', handleMouseOver);
     table.addEventListener('mouseout', handleMouseOut);
-
+    document.addEventListener('selectionchange', handleSelectionChange);
     return () => {
       table.removeEventListener('click', handleClick);
       table.removeEventListener('mouseover', handleMouseOver);
       table.removeEventListener('mouseout', handleMouseOut);
+      document.removeEventListener('selectionchange', handleSelectionChange);
     };
   }, []);
 
