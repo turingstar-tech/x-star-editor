@@ -35,7 +35,11 @@ const rehypeTableCell = () => (root: HastRoot) =>
                 .flat()
                 .slice(0, -1),
             );
-          } else if (child.type === 'element' && child.tagName === 'br') {
+          } else if (
+            node.children.length > 1 &&
+            child.type === 'element' &&
+            child.tagName === 'br'
+          ) {
             newChildren.push({ ...child, tabelCell: true });
           } else if (child.type === 'element' && child.tagName === 'span') {
             newChildren.push({ ...child, tabelCell: true });
