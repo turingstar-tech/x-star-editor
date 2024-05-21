@@ -3,6 +3,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 /**
  * 将单元格内的换行转成 `<br>`
+ * 给 br、span 添加 tableCell 标识
  */
 const rehypeTableCell = () => (root: HastRoot) =>
   visit(
@@ -35,6 +36,8 @@ const rehypeTableCell = () => (root: HastRoot) =>
                 .slice(0, -1),
             );
           } else if (child.type === 'element' && child.tagName === 'br') {
+            newChildren.push({ ...child, tabelCell: true });
+          } else if (child.type === 'element' && child.tagName === 'span') {
             newChildren.push({ ...child, tabelCell: true });
           } else {
             newChildren.push(child);

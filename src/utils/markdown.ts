@@ -1,4 +1,5 @@
 import type { Root as HastRoot } from 'hast';
+import { toHtml } from 'hast-util-to-html';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
 import type {
@@ -370,10 +371,13 @@ const toMarkdownProcessor = unified()
         isMathNode(node)
           ? h(node, 'math', hastToText(node))
           : defaultHandlers.div(h, node),
-      span: (h, node) =>
-        isMathNode(node)
+      span: (h, node) => {
+        return isMathNode(node)
           ? h(node, 'inlineMath', hastToText(node))
-          : defaultHandlers.span(h, node),
+          : node.tabelCell === true
+          ? h(node, 'html', toHtml(node))
+          : defaultHandlers.span(h, node);
+      },
       br: (h, node) => {
         return node.tabelCell === true
           ? { type: 'html', value: '<br>' }
