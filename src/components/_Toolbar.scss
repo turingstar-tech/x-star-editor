@@ -12,6 +12,10 @@
   border-top-left-radius: $border-radius;
   border-top-right-radius: $border-radius;
 
+  [data-theme='xcamp'] & {
+    background-color: $color-primary-bg-xcamp;
+  }
+
   .#{$prefix}-item-container {
     position: relative;
 
@@ -31,11 +35,19 @@
         inset: 0;
         background-color: color.adjust($color-primary-bg, $alpha: -0.3);
         cursor: not-allowed;
+
+        [data-theme='xcamp'] & {
+          background-color: color.adjust($color-primary-bg-xcamp, $alpha: -0.3);
+        }
       }
 
       &:hover,
       &.#{$prefix}-active {
         background-color: $color-primary-bg-hover;
+
+        [data-theme='xcamp'] & {
+          background-color: $color-primary-bg-hover-xcamp;
+        }
       }
 
       .#{$prefix}-icon {
@@ -43,6 +55,10 @@
 
         &.#{$prefix}-active {
           color: $color-primary;
+
+          [data-theme='xcamp'] & {
+            color: $color-primary-xcamp;
+          }
         }
       }
     }
@@ -92,6 +108,10 @@
 
         &:hover {
           background-color: $color-primary-bg;
+
+          [data-theme='xcamp'] & {
+            background-color: $color-primary-bg-xcamp;
+          }
         }
       }
     }

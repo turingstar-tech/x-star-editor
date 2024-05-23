@@ -18,5 +18,9 @@
 
   .#{$prefix}-toolbar-table-cell-selected {
     background-color: $color-primary-hover;
+
+    [data-theme='xcamp'] & {
+      background-color: $color-primary-hover-xcamp;
+    }
   }
 }

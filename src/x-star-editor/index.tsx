@@ -60,6 +60,8 @@ export interface XStarEditorHandle
   getContainer: () => HTMLDivElement;
 }
 
+export type ThemeType = 'xcamp' | 'xyd';
+
 export interface XStarEditorProps {
   /**
    * CSS 类名
@@ -135,6 +137,11 @@ export interface XStarEditorProps {
    * 文件插入回调函数
    */
   onInsertFile?: XStarMdEditorProps['onInsertFile'];
+
+  /**
+   * 编辑器主题
+   */
+  themeType?: ThemeType;
 }
 
 const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
@@ -153,6 +160,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       viewerRender,
       onChange,
       onInsertFile,
+      themeType = 'xyd',
     },
     ref,
   ) => {
@@ -371,6 +379,14 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
         };
       }
     }, [fullscreen]);
+
+    useEffect(() => {
+      if (!themeType) return;
+      containerRef?.current?.parentElement?.setAttribute(
+        'data-theme',
+        themeType,
+      );
+    }, [themeType]);
 
     const [sourceCode, setSourceCode] = useState(value ?? initialValue);
 

@@ -18,6 +18,7 @@ import {
   postViewerRender,
   preViewerRender,
 } from '../utils/markdown';
+import { ThemeType } from '../x-star-editor/index';
 
 let worker: Worker;
 
@@ -90,6 +91,11 @@ export interface XStarMdViewerProps {
    * viewer是否可编辑
    */
   canContentEditable?: boolean;
+
+  /**
+   * 编辑器主题
+   */
+  themeType?: ThemeType;
 }
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
@@ -102,6 +108,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       value = '',
       plugins,
       canContentEditable = false,
+      themeType = 'xyd',
     },
     ref,
   ) => {
@@ -223,6 +230,14 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
             });
       };
     }, [children]);
+
+    useEffect(() => {
+      if (!themeType) return;
+      containerRef?.current?.parentElement?.setAttribute(
+        'data-theme',
+        themeType,
+      );
+    }, [themeType]);
 
     return (
       <div
