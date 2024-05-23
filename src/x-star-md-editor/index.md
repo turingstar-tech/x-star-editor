@@ -9,14 +9,26 @@ Markdown 编辑器。需要查看正在编辑的 Markdown 时，请使用 XStarE
  * title: 基本使用
  * description: 更多示例可参考 XStarEditor。
  */
-
+import { useState } from 'react';
 import { XStarMdEditor } from 'x-star-editor';
 
-export default () => (
-  <XStarMdEditor
-    height="50vh"
-    placeholder={'请输入文本\n快快输入文本'}
-    initialValue={`# Markdown 语法示例
+export default () => {
+  const [themeType, setThemeType] = useState('xyd');
+
+  return (
+    <>
+      <div style={{ marginBottom: 8, display: 'flex', gap: 8 }}>
+        <button
+          onClick={() => setThemeType(themeType === 'xyd' ? 'xcamp' : 'xyd')}
+        >
+          当前配色：{themeType}
+        </button>
+      </div>
+      <XStarMdEditor
+        themeType={themeType}
+        height="50vh"
+        placeholder={'请输入文本\n快快输入文本'}
+        initialValue={`# Markdown 语法示例
 
 ## 标题
 
@@ -188,8 +200,10 @@ print('Hello, Markdown!')
 
 > 这是一段引用
 `}
-  />
-);
+      />
+    </>
+  );
+};
 ```
 
 ```tsx
