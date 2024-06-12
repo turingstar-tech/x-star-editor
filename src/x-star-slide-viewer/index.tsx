@@ -1,6 +1,5 @@
 import { useEventListener, useFullscreen } from 'ahooks';
 import classNames from 'classnames';
-import html2canvas from 'html2canvas';
 import React, {
   useEffect,
   useImperativeHandle,
@@ -16,7 +15,6 @@ import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgEraser from '../icons/Eraser';
 import SvgPencil from '../icons/Pencil';
 import SvgRedo from '../icons/Redo';
-import SvgScreenShot from '../icons/ScreenShot';
 import SvgUndo from '../icons/Undo';
 import { useLocale } from '../locales';
 import { prefix } from '../utils/global';
@@ -125,7 +123,7 @@ const XStarSlideViewer = React.forwardRef<
     const pathBeginScale = useRef(1);
     const [operationType, setOperationType] = useState(OperationType.NONE);
     const [strokeColor, setStrokeColor] = useState('#4285f4');
-    const [strokeWidth, setStrokeWidth] = useState(5);
+    const [strokeWidth, setStrokeWidth] = useState(3);
     const [eraseWidth, setEraseWidth] = useState(10);
     const [, { toggleFullscreen }] = useFullscreen(containerRef);
     const { format: t } = useLocale('slideViewer');
@@ -397,13 +395,15 @@ const XStarSlideViewer = React.forwardRef<
       );
     };
 
-    const handleScreenShot = async () => {
-      const canvas = await html2canvas(childRef.current!);
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = 'slide.png';
-      a.click();
-    };
+    // const handleScreenShot = async () => {
+    //   const canvas = await html2canvas(containerRef.current!, {
+    //     ignoreElements: (e) => e.id === 'btn-container',
+    //   });
+    //   const a = document.createElement('a');
+    //   a.href = canvas.toDataURL('image/png');
+    //   a.download = 'slide.png';
+    //   a.click();
+    // };
 
     const handleSwitchToErase = () => {
       if (!signaturePadRef.current) return;
@@ -441,25 +441,27 @@ const XStarSlideViewer = React.forwardRef<
           className={classNames(`${prefix}-slide`, slideClassName)}
         >
           {children}
-          <canvas
-            ref={canvasRef}
-            className={classNames(
-              `${prefix}-pad`,
-              {
-                [`${prefix}-custom-cursor-pencil`]:
-                  operationType === OperationType.STROKE,
-              },
-              {
-                [`${prefix}-custom-cursor-eraser`]:
-                  operationType === OperationType.ERASE,
-              },
-            )}
-            width={1280}
-            height={720}
-          />
         </div>
-
-        <div className={classNames(`${prefix}-btn-container`)}>
+        <canvas
+          ref={canvasRef}
+          className={classNames(
+            `${prefix}-pad`,
+            {
+              [`${prefix}-custom-cursor-pencil`]:
+                operationType === OperationType.STROKE,
+            },
+            {
+              [`${prefix}-custom-cursor-eraser`]:
+                operationType === OperationType.ERASE,
+            },
+          )}
+          width={1280}
+          height={720}
+        />
+        <div
+          className={classNames(`${prefix}-btn-container`)}
+          id="btn-container"
+        >
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
               className={classNames(`${prefix}-common-btn`)}
@@ -471,7 +473,7 @@ const XStarSlideViewer = React.forwardRef<
               {t('fullScreen')}
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
               className={classNames(`${prefix}-common-btn`, `${prefix}-shot`)}
               onClick={handleScreenShot}
@@ -481,7 +483,7 @@ const XStarSlideViewer = React.forwardRef<
             <div className={classNames(`${prefix}-tooltip`)}>
               {t('screenShot')}
             </div>
-          </div>
+          </div> */}
           <div>
             <span
               className={classNames(`${prefix}-common-btn`, `${prefix}-draw`)}

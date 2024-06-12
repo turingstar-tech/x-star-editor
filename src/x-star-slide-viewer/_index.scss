@@ -77,7 +77,7 @@
     height: 32px;
     display: flex;
     flex-direction: row-reverse;
-    z-index: 10000;
+    z-index: 100;
 
     .#{$prefix}-common-btn {
       position: relative;
@@ -171,7 +171,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 1280;
-    height: 720px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+
+    // width: 1280;
+    // height: 720px;
   }
 }
