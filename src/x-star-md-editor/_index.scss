@@ -20,7 +20,7 @@
   }
 
   &.#{$prefix}-empty {
-    // 文本为空时显示提示
+    /* 文本为空时显示提示 */
     &::before {
       content: attr(placeholder);
       position: absolute;
