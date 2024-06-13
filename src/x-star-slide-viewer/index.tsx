@@ -395,7 +395,7 @@ const XStarSlideViewer = React.forwardRef<
       );
     };
 
-    // const handleScreenShot = async () => {
+    // const handleScreenshot = async () => {
     //   const canvas = await html2canvas(containerRef.current!, {
     //     ignoreElements: (e) => e.id === 'btn-container',
     //   });
@@ -470,18 +470,18 @@ const XStarSlideViewer = React.forwardRef<
               <SvgEnterFullscreen />
             </span>
             <div className={classNames(`${prefix}-tooltip`)}>
-              {t('fullScreen')}
+              {t('fullscreen')}
             </div>
           </div>
           {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
               className={classNames(`${prefix}-common-btn`, `${prefix}-shot`)}
-              onClick={handleScreenShot}
+              onClick={handleScreenshot}
             >
-              <SvgScreenShot />
+              <SvgScreenshot />
             </span>
             <div className={classNames(`${prefix}-tooltip`)}>
-              {t('screenShot')}
+              {t('screenshot')}
             </div>
           </div> */}
           <div>
