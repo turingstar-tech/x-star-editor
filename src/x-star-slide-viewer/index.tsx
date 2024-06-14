@@ -441,25 +441,23 @@ const XStarSlideViewer = React.forwardRef<
           className={classNames(`${prefix}-slide`, slideClassName)}
         >
           {children}
-          <canvas
-            ref={canvasRef}
-            className={classNames(
-              `${prefix}-pad`,
-              {
-                [`${prefix}-custom-cursor-pencil`]:
-                  operationType === OperationType.STROKE,
-              },
-              {
-                [`${prefix}-custom-cursor-eraser`]:
-                  operationType === OperationType.ERASE,
-              },
-            )}
-            width={1280}
-            height={720}
-            style={{ position: 'absolute', top: 0, left: 0 }}
-          />
         </div>
-
+        <canvas
+          ref={canvasRef}
+          className={classNames(
+            `${prefix}-pad`,
+            {
+              [`${prefix}-custom-cursor-pencil`]:
+                operationType === OperationType.STROKE,
+            },
+            {
+              [`${prefix}-custom-cursor-eraser`]:
+                operationType === OperationType.ERASE,
+            },
+          )}
+          width={1280}
+          height={720}
+        />
         <div
           className={classNames(`${prefix}-btn-container`)}
           id="btn-container"
