@@ -273,10 +273,9 @@ const XStarSlideViewer = React.forwardRef<
       }
       const parentWidth = entries[0].contentRect.width; // 获取父容器的宽度
       const pointData = signaturePadRef.current.toData();
-      const ratio = Math.max(window.devicePixelRatio || 1, 1);
       childRef.current.style.transform = `scale(${parentWidth / 1280})`;
-      canvasRef.current.width = parentWidth * ratio;
-      canvasRef.current.height = parentWidth * (9 / 16) * ratio;
+      canvasRef.current.width = parentWidth;
+      canvasRef.current.height = parentWidth * (9 / 16);
       pointData.forEach(({ points }) =>
         points.forEach((point) => {
           point.x = (point.x / pathBeginScale.current) * (parentWidth / 1280);
