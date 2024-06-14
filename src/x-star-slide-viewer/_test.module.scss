@@ -16,37 +16,12 @@
   color: #326cfc;
 }
 
-.slide > :is(h1) {
-  font-size: 3em;
-}
-
-.slide > :is(h2) {
-  font-size: 2.4em;
-}
-
-.slide > :is(h3) {
-  font-size: 2em;
-}
-
-.slide > :is(h4) {
-  font-size: 1.9em;
-}
-
-.slide > :is(h5) {
-  font-size: 1.8em;
-}
-
-.slide > :is(h6) {
-  font-size: 1.2em;
-}
-
 .slide > :nth-child(2) {
   color: black;
 }
 
 .slide > :nth-child(3) {
   padding: 0.5em 1.6em;
-  font-size: 1.2em;
   font-weight: 500;
   color: white;
   background-color: #326cfc;

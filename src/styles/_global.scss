@@ -37,3 +37,38 @@ $box-shadow: 0 6px 16px 0 rgb(0 0 0 / 8%), 0 3px 6px -4px rgb(0 0 0 / 12%),
   border-bottom-right-radius: $border-radius;
   border-bottom-left-radius: $border-radius;
 }
+
+@mixin viewer {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: bold;
+  }
+
+  table {
+    margin: 1em 0;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 0.5em;
+    border: 1px solid $color-border;
+  }
+
+  th {
+    font-weight: bold;
+    background-color: $color-fill-secondary;
+  }
+
+  tr:nth-child(even) td {
+    background-color: $color-fill-tertiary;
+  }
+
+  img {
+    max-width: 100%;
+  }
+}

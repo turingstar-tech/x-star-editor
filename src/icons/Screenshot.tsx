@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react';
 import React from 'react';
-const SvgScreenShot = (props: SVGProps<SVGSVGElement>) => (
+const SvgScreenshot = (props: SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="1em"
@@ -14,4 +14,4 @@ const SvgScreenShot = (props: SVGProps<SVGSVGElement>) => (
     </g>
   </svg>
 );
-export default SvgScreenShot;
+export default SvgScreenshot;

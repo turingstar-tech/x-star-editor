@@ -40,13 +40,19 @@ export interface ToggleAction {
   selection: ContainerSelection;
 }
 
+export interface IndentAction {
+  type: 'indent';
+  payload: { indent: boolean };
+  selection: ContainerSelection;
+}
+
 export interface SetAction {
   type: 'set';
   payload: State;
   selection: ContainerSelection;
 }
 
-type StateAction = InsertAction | ToggleAction | SetAction;
+type StateAction = InsertAction | ToggleAction | IndentAction | SetAction;
 
 const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
   const { anchorOffset, focusOffset } = action.selection;
@@ -68,6 +74,42 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
       const lineEndOffset = endOffset + `${after}\n`.indexOf('\n');
       const lineBefore = sourceCode.slice(0, lineStartOffset);
       const lineAfter = sourceCode.slice(lineEndOffset);
+
+      const toggleDelimiters = (...delimiters: string[]) => {
+        const text = sourceCode.slice(startOffset, endOffset);
+        for (const delimiter of delimiters) {
+          if (before.endsWith(delimiter) && after.startsWith(delimiter)) {
+            // 删除分隔文本
+            return {
+              sourceCode: `${before.slice(
+                0,
+                before.length - delimiter.length,
+              )}${text}${after.slice(delimiter.length)}`,
+              selection: createSelection(
+                anchorOffset - delimiter.length,
+                focusOffset - delimiter.length,
+              ),
+            };
+          }
+        }
+        const delimiter = delimiters[0];
+        // 插入分隔文本
+        return {
+          sourceCode: `${before}${delimiter}${text}${delimiter}${after}`,
+          selection: createSelection(
+            anchorOffset + delimiter.length,
+            focusOffset + delimiter.length,
+          ),
+        };
+      };
+
+      const toggleBlock = (block: string, offset: number) => ({
+        sourceCode: `${sourceCode.slice(
+          0,
+          lineEndOffset,
+        )}\n${block}\n${lineAfter}`,
+        selection: createSelection(lineEndOffset + offset + 1),
+      });
 
       switch (action.payload.type) {
         case 'blockquote':
@@ -121,47 +163,12 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
           };
         }
 
-        case 'delete':
-        case 'emphasis':
-        case 'inlineCode':
-        case 'inlineMath':
-        case 'strong': {
-          const { type } = action.payload;
-          const delimiters =
-            type === 'emphasis'
-              ? ['*', '_']
-              : type === 'strong'
-              ? ['**', '__']
-              : type === 'inlineCode'
-              ? ['`']
-              : type === 'delete'
-              ? ['~~']
-              : ['$'];
-          const text = sourceCode.slice(startOffset, endOffset);
-          for (const delimiter of delimiters) {
-            if (before.endsWith(delimiter) && after.startsWith(delimiter)) {
-              // 删除分隔文本
-              return {
-                sourceCode: `${before.slice(
-                  0,
-                  before.length - delimiter.length,
-                )}${text}${after.slice(delimiter.length)}`,
-                selection: createSelection(
-                  anchorOffset - delimiter.length,
-                  focusOffset - delimiter.length,
-                ),
-              };
-            }
-          }
-          const delimiter = delimiters[0];
-          // 插入分隔文本
-          return {
-            sourceCode: `${before}${delimiter}${text}${delimiter}${after}`,
-            selection: createSelection(
-              anchorOffset + delimiter.length,
-              focusOffset + delimiter.length,
-            ),
-          };
+        case 'delete': {
+          return toggleDelimiters('~~');
+        }
+
+        case 'emphasis': {
+          return toggleDelimiters('*', '_');
         }
 
         case 'heading': {
@@ -212,34 +219,28 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
           };
         }
 
+        case 'inlineCode': {
+          return toggleDelimiters('`');
+        }
+
+        case 'inlineMath': {
+          return toggleDelimiters('$');
+        }
+
         case 'math': {
-          return {
-            sourceCode: `${sourceCode.slice(
-              0,
-              lineEndOffset,
-            )}\n$$\n\n$$\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + 4),
-          };
+          return toggleBlock('$$\n\n$$', 3);
+        }
+
+        case 'strong': {
+          return toggleDelimiters('**', '__');
         }
 
         case 'table': {
-          return {
-            sourceCode: `${sourceCode.slice(
-              0,
-              lineEndOffset,
-            )}\n|  |  |\n| - | - |\n|  |  |\n|  |  |\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + 3),
-          };
+          return toggleBlock('|  |  |\n| - | - |\n|  |  |\n|  |  |', 2);
         }
 
         case 'thematicBreak': {
-          return {
-            sourceCode: `${sourceCode.slice(
-              0,
-              lineEndOffset,
-            )}\n***\n${lineAfter}`,
-            selection: createSelection(lineEndOffset + 5),
-          };
+          return toggleBlock('***', 4);
         }
 
         default: {
@@ -247,6 +248,27 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
           return _;
         }
       }
+    }
+
+    case 'indent': {
+      const lineStartOffset = before.lastIndexOf('\n') + 1;
+      const lineEndOffset = endOffset + `${after}\n`.indexOf('\n');
+      const lineBefore = sourceCode.slice(0, lineStartOffset);
+      const lineAfter = sourceCode.slice(lineEndOffset);
+      const text = sourceCode
+        .slice(lineStartOffset, lineEndOffset)
+        .split('\n')
+        .map((line) =>
+          action.payload.indent ? `\t${line}` : line.replace(/^(\t|  )/, ''),
+        )
+        .join('\n');
+      return {
+        sourceCode: `${lineBefore}${text}${lineAfter}`,
+        selection: createSelection(
+          lineStartOffset,
+          lineStartOffset + text.length,
+        ),
+      };
     }
 
     case 'set': {
