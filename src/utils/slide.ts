@@ -1,31 +1,32 @@
-import _ from 'lodash';
-import { CanvasData } from 'x-star-editor/x-star-slide-viewer';
+import type { PointGroup } from 'signature_pad';
 
 /**
+ * 获取缩放值
  *
- * @param scaleString
- * @returns 'scale(3)' -> 3
+ * @param scale scale 函数字符串
+ * @returns 缩放值
  */
-export const getScaleNumber = (scaleString: string) =>
-  Number(scaleString.replace('scale(', '').replace(')', ''));
+export const getScale = (scale: string) =>
+  Number(scale.match(/scale\((.*?)\)/)?.[1]);
+
+export interface PadValue {
+  data: PointGroup[];
+  scale: number;
+}
 
 /**
+ * 计算缩放后点的坐标值
  *
- * @param pointData
- * @param parentWidth
+ * @param padValue 画板数据
+ * @param parentWidth 父元素宽度
+ * @returns 新坐标值
  */
-export const computeScaledPoint = (
-  // 计算点scale后的坐标值
-  pointData: CanvasData,
-  parentWidth: number,
-) => {
-  const beforeScale = pointData.scale;
-  const newData = _.cloneDeep(pointData.points);
-  newData.forEach(({ points }) =>
-    points.forEach((point) => {
-      point.x = (point.x / beforeScale) * (parentWidth / 1280);
-      point.y = (point.y / beforeScale) * (parentWidth / 1280);
-    }),
-  );
-  return newData;
-};
+export const getScaledData = ({ data, scale }: PadValue, parentWidth: number) =>
+  data.map((group) => ({
+    ...group,
+    points: group.points.map((point) => ({
+      ...point,
+      x: (point.x / scale) * (parentWidth / 1280),
+      y: (point.y / scale) * (parentWidth / 1280),
+    })),
+  }));

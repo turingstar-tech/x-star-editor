@@ -1,7 +1,6 @@
 .#{$prefix}-slide-viewer {
   @include common;
 
-  position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
 
@@ -27,12 +26,20 @@
     }
   }
 
+  .#{$prefix}-pad {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
   .#{$prefix}-custom-cursor-pencil {
     cursor: url('./cursor/pencil.png'), auto;
   }
 
   .#{$prefix}-custom-cursor-eraser {
-    cursor: url('./cursor/editor-eraser.png'), auto;
+    cursor: url('./cursor/eraser.png'), auto;
   }
 
   .#{$prefix}-btn-container {
@@ -42,7 +49,7 @@
     height: 32px;
     display: flex;
     flex-direction: row-reverse;
-    z-index: 100;
+    z-index: 1;
 
     .#{$prefix}-common-btn {
       position: relative;
@@ -67,8 +74,8 @@
       position: absolute;
       width: 150px;
       height: 0;
-      display: flex;
       margin: 5px;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -76,8 +83,9 @@
       border-radius: 6px;
       box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
       overflow: hidden;
-      z-index: 10000;
+      z-index: 1;
       transition: all 0.3s cubic-bezier(0.51, 0.3, 0.06, 0.98);
+      user-select: none;
 
       > * {
         margin: 8px 0;
@@ -85,35 +93,35 @@
     }
 
     .#{$prefix}-popover-label {
-      font-size: 12px;
       margin-right: 15px;
+      font-size: 12px;
     }
 
     .#{$prefix}-tooltip {
       position: absolute;
       height: 0;
-      display: flex;
       margin-top: 36px;
       margin-left: 10px;
+      padding: 10px;
+      display: flex;
       flex-direction: column;
-      line-height: 30px;
-      font-size: 12px;
-      white-space: nowrap;
       align-items: center;
       justify-content: center;
+      line-height: 30px;
+      white-space: nowrap;
+      font-size: 12px;
       background-color: #fff;
       border-radius: 6px;
       box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
-      padding: 10px;
-      z-index: 10000;
+      z-index: 1;
       transform: scale(0);
       transition: all 0.25s cubic-bezier(0.51, 0.3, 0.06, 0.98);
-      overflow: visible;
+      user-select: none;
     }
 
     .#{$prefix}-common-btn:hover + .#{$prefix}-tooltip {
-      transform: scale(1);
       height: 30px;
+      transform: scale(1);
     }
 
     .#{$prefix}-common-btn:hover + .#{$prefix}-popover,
@@ -121,25 +129,14 @@
       height: 100px;
     }
 
-    .#{$prefix}-draw-popover {
+    .#{$prefix}-pencil-popover {
       top: 33px;
       left: 120px;
     }
 
-    .#{$prefix}-erase-popover {
+    .#{$prefix}-eraser-popover {
       top: 33px;
       left: 75px;
     }
-  }
-
-  .#{$prefix}-pad {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-
-    // width: 1280;
-    // height: 720px;
   }
 }

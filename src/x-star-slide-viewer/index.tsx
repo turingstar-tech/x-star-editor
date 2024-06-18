@@ -1,4 +1,3 @@
-import { useEventListener, useFullscreen } from 'ahooks';
 import classNames from 'classnames';
 import React, {
   useEffect,
@@ -7,8 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import SignaturePad, { PointGroup } from 'signature_pad';
-import { ViewerOptions } from 'x-star-editor/x-star-md-viewer/index.js';
+import SignaturePad from 'signature_pad';
 import workerRaw from '../../workers-dist/markdown.worker.js';
 import SvgClear from '../icons/Clear';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
@@ -24,14 +22,11 @@ import {
   postViewerRender,
   preViewerRender,
 } from '../utils/markdown';
-import { computeScaledPoint, getScaleNumber } from '../utils/slide';
+import type { PadValue } from '../utils/slide';
+import { getScale, getScaledData } from '../utils/slide';
+import type { ViewerOptions } from '../x-star-md-viewer';
 
 let worker: Worker;
-
-export type CanvasData = {
-  points: PointGroup[];
-  scale: number;
-};
 
 export interface XStarSlideViewerPlugin {
   (ctx: ViewerOptions): void;
@@ -79,20 +74,20 @@ export interface XStarSlideViewerProps {
   plugins?: XStarSlideViewerPlugin[];
 
   /**
-   * 画板初始数据
+   * 初始画板数据
    */
-  padInitialValue?: CanvasData;
+  initialPadValue?: PadValue;
 
   /**
    * 画板改变回调函数
    */
-  onPadChange?: (value: any, scale: number) => void;
+  onPadChange?: (value: PadValue) => void;
 }
 
 enum OperationType {
   NONE,
-  STROKE,
-  ERASE,
+  PENCIL,
+  ERASER,
 }
 
 const XStarSlideViewer = React.forwardRef<
@@ -108,7 +103,7 @@ const XStarSlideViewer = React.forwardRef<
       slideClassName,
       value = '',
       plugins,
-      padInitialValue,
+      initialPadValue,
       onPadChange,
     },
     ref,
@@ -116,68 +111,74 @@ const XStarSlideViewer = React.forwardRef<
     const containerRef = useRef<HTMLDivElement>(null);
     const childRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    //const circle = useRef<HTMLDivElement>(null);
-    const signaturePadRef = useRef<SignaturePad | null>(null);
-    const historyRef = useRef<CanvasData[]>([]); // 保存清除历史
-    const currentShowIndex = useRef<number>(0);
-    const pathBeginScale = useRef(1);
+    const padRef = useRef<SignaturePad | null>(null);
+
+    /**
+     * 画板历史保存上限
+     */
+    const MAX_STEP = 100;
+
+    /**
+     * 画板历史
+     */
+    const history = useRef<{ states: PadValue[]; index: number }>({
+      states: [],
+      index: 0,
+    });
+
+    /**
+     * 缩放值
+     */
+    const scale = useRef(1);
+
     const [operationType, setOperationType] = useState(OperationType.NONE);
-    const [strokeColor, setStrokeColor] = useState('#4285f4');
-    const [strokeWidth, setStrokeWidth] = useState(3);
-    const [eraseWidth, setEraseWidth] = useState(10);
-    const [, { toggleFullscreen }] = useFullscreen(containerRef);
+    const [pencilColor, setPencilColor] = useState('#4285f4');
+    const [pencilWidth, setPencilWidth] = useState(3);
+    const [eraserWidth, setEraserWidth] = useState(10);
+
     const { format: t } = useLocale('slideViewer');
-    const MAX_STEP = 100; // 最大保存历史记录数
 
     useEffect(() => {
-      if (!canvasRef.current || !containerRef.current) return;
-      signaturePadRef.current = new SignaturePad(canvasRef.current, {
-        penColor: '#4285f4',
+      padRef.current = new SignaturePad(canvasRef.current!, {
+        penColor: pencilColor,
       });
-      if (padInitialValue) {
-        // 初始画布数据
-        historyRef.current.push(JSON.parse(JSON.stringify(padInitialValue)));
-        const initData = computeScaledPoint(padInitialValue, 1280);
-        signaturePadRef.current.fromData(initData);
+
+      if (initialPadValue) {
+        // 初始画板数据
+        padRef.current.fromData(getScaledData(initialPadValue, 1280));
+        history.current = {
+          states: [JSON.parse(JSON.stringify(initialPadValue))],
+          index: 0,
+        };
       } else {
-        historyRef.current.push(
-          JSON.parse(JSON.stringify({ points: [], scale: 1 })),
-        );
+        history.current = { states: [{ data: [], scale: 1 }], index: 0 };
       }
-      signaturePadRef.current.addEventListener('beginStroke', () => {
-        // 开始画笔，记录此时scale
-        if (!childRef.current) return;
-        pathBeginScale.current = getScaleNumber(
-          childRef.current.style.transform,
-        );
+
+      padRef.current.addEventListener('beginPencil', () => {
+        // 开始画笔，记录此时 scale
+        scale.current = getScale(childRef.current!.style.transform);
       });
-      signaturePadRef.current.addEventListener('endStroke', () => {
-        // 结束画笔，记录此时画布数据
-        if (!childRef.current) return;
-        if (currentShowIndex.current < historyRef.current.length - 1) {
-          //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
-          historyRef.current.splice(currentShowIndex.current + 1);
-        }
-        if (historyRef.current.length > MAX_STEP) {
-          // 超出最大历史记录
-          historyRef.current.shift();
-        } else {
-          currentShowIndex.current++;
-        }
-        historyRef.current.push(
-          // 保存画布数据
-          JSON.parse(
-            JSON.stringify({
-              points: signaturePadRef.current!.toData(),
-              scale: getScaleNumber(childRef.current.style.transform),
-            }),
-          ),
-        );
-        onPadChange?.(
-          // 画板数据变化回调
-          signaturePadRef.current?.toData(),
-          getScaleNumber(childRef.current.style.transform),
-        );
+
+      padRef.current.addEventListener('endPencil', () => {
+        // 结束画笔，记录此时画板数据
+        const value = {
+          data: padRef.current!.toData(),
+          scale: getScale(childRef.current!.style.transform),
+        };
+        const { states, index } = history.current;
+        history.current = {
+          states: [
+            ...states.slice(
+              index < MAX_STEP ? 0 : index - MAX_STEP + 1,
+              index + 1,
+            ),
+            // 保存画板数据
+            JSON.parse(JSON.stringify(value)),
+          ],
+          index: index < MAX_STEP ? index + 1 : MAX_STEP,
+        };
+        // 画板改变回调
+        onPadChange?.(value);
       });
     }, []);
 
@@ -200,6 +201,7 @@ const XStarSlideViewer = React.forwardRef<
         }),
       [plugins],
     );
+
     const optionsLatest = useRef(options);
     optionsLatest.current = options;
 
@@ -245,153 +247,123 @@ const XStarSlideViewer = React.forwardRef<
     // 确保在末尾输入时能同步滚动
     useEffect(() => {
       const timer = window.setTimeout(
-        () => containerRef.current?.dispatchEvent(new Event('render')),
+        () => containerRef.current!.dispatchEvent(new Event('render')),
         100,
       );
       return () => window.clearTimeout(timer);
     }, [children]);
 
-    useEffect(() => {
-      if (canvasRef.current) {
-        if (operationType !== OperationType.NONE) {
-          canvasRef.current.style.pointerEvents = 'auto';
-        } else {
-          canvasRef.current.style.pointerEvents = 'none';
-        }
-      }
-    }, [operationType]);
-
-    const handleScale = (entries: ResizeObserverEntry[]) => {
-      // 处理尺寸变化后的scale
-      if (
-        !containerRef.current ||
-        !canvasRef.current ||
-        !childRef.current ||
-        !signaturePadRef.current
-      ) {
-        return;
-      }
-      const parentWidth = entries[0].contentRect.width; // 获取父容器的宽度
-      const pointData = signaturePadRef.current.toData();
-      childRef.current.style.transform = `scale(${parentWidth / 1280})`;
-      canvasRef.current.width = parentWidth;
-      canvasRef.current.height = parentWidth * (9 / 16);
-      pointData.forEach(({ points }) =>
-        points.forEach((point) => {
-          point.x = (point.x / pathBeginScale.current) * (parentWidth / 1280);
-          point.y = (point.y / pathBeginScale.current) * (parentWidth / 1280);
-        }),
+    const resizeObserver = new ResizeObserver((entries) => {
+      // 处理尺寸改变后的 scale
+      const parentWidth = entries[0].contentRect.width;
+      childRef.current!.style.transform = `scale(${parentWidth / 1280})`;
+      canvasRef.current!.width = parentWidth;
+      canvasRef.current!.height = parentWidth / (16 / 9);
+      padRef.current!.fromData(
+        getScaledData(
+          {
+            data: padRef.current!.toData(),
+            scale: scale.current,
+          },
+          parentWidth,
+        ),
       );
-      signaturePadRef.current.fromData(pointData);
-      pathBeginScale.current = getScaleNumber(childRef.current.style.transform);
-    };
+      scale.current = getScale(childRef.current!.style.transform);
+    });
 
-    const resizeObserver = new ResizeObserver((entries) =>
-      requestAnimationFrame(() => handleScale(entries)),
-    );
-
+    // 监听容器尺寸改变
     useEffect(() => {
-      // 容器尺寸监听
-      if (containerRef.current) {
-        resizeObserver.observe(containerRef.current);
-        return () => resizeObserver.disconnect();
-      }
+      resizeObserver.observe(containerRef.current!);
+      return () => resizeObserver.disconnect();
     }, []);
 
-    const handleStokeChange = (base: number, offset: number) => {
-      // 处理stroke大小变化
-      if (!signaturePadRef.current) return;
-      signaturePadRef.current.minWidth = base + offset;
-      signaturePadRef.current.maxWidth = base;
-    };
-
+    // 处理操作切换
     useEffect(() => {
-      // 编辑模式切换
-      if (operationType === OperationType.STROKE) {
-        signaturePadRef.current!.penColor = strokeColor;
-        handleStokeChange(strokeWidth, -2);
-      } else if (operationType === OperationType.ERASE) {
-        handleStokeChange(eraseWidth, 0);
+      if (operationType === OperationType.PENCIL) {
+        canvasRef.current!.style.pointerEvents = 'auto';
+        padRef.current!.penColor = pencilColor;
+        padRef.current!.maxWidth = pencilWidth;
+        padRef.current!.minWidth = pencilWidth - 2;
+        padRef.current!.compositeOperation = 'source-over';
+      } else if (operationType === OperationType.ERASER) {
+        canvasRef.current!.style.pointerEvents = 'auto';
+        padRef.current!.maxWidth = eraserWidth;
+        padRef.current!.minWidth = eraserWidth;
+        padRef.current!.compositeOperation = 'destination-out';
+      } else {
+        canvasRef.current!.style.pointerEvents = 'none';
       }
-    }, [strokeColor, strokeWidth, eraseWidth, operationType]);
+    }, [operationType, pencilColor, pencilWidth, eraserWidth]);
 
+    /**
+     * 撤销画板操作
+     */
     const handleUndo = () => {
-      // 撤销函数
-      if (!signaturePadRef.current || !childRef.current) return;
-      if (currentShowIndex.current > 0) {
-        currentShowIndex.current--;
-        const data = computeScaledPoint(
-          historyRef.current[currentShowIndex.current],
-          containerRef.current?.clientWidth || 1280,
-        );
-        signaturePadRef.current.fromData(data);
+      const { states, index } = history.current;
+      if (!index) {
+        return;
       }
+      padRef.current!.fromData(
+        getScaledData(states[index - 1], containerRef.current!.clientWidth),
+      );
+      history.current = { states, index: index - 1 };
     };
 
+    /**
+     * 恢复画板操作
+     */
     const handleRedo = () => {
-      // 恢复函数
-      if (!signaturePadRef.current || !childRef.current) return;
-      if (
-        historyRef.current.length > 0 &&
-        currentShowIndex.current < historyRef.current.length - 1
-      ) {
-        currentShowIndex.current++;
-        const data = computeScaledPoint(
-          historyRef.current[currentShowIndex.current],
-          containerRef.current?.clientWidth || 1280,
-        );
-        signaturePadRef.current.fromData(data);
+      const { states, index } = history.current;
+      if (index === states.length - 1) {
+        return;
       }
+      padRef.current!.fromData(
+        getScaledData(states[index + 1], containerRef.current!.clientWidth),
+      );
+      history.current = { states, index: index + 1 };
     };
 
-    useEventListener('keydown', (event) => {
-      if (
-        (event.ctrlKey || event.metaKey) &&
-        (event.key === 'z' || event.key === 'Z')
-      ) {
-        event.preventDefault(); // 阻止默认的撤销行为（如浏览器返回）
-        handleUndo();
-      }
-    });
-
-    useEventListener('keydown', (event) => {
-      if (
-        (event.ctrlKey || event.metaKey) &&
-        (event.key === 'y' || event.key === 'Y')
-      ) {
-        event.preventDefault(); // 阻止默认的恢复行为（如浏览器返回）
-        handleRedo();
-      }
-    });
+    // useEventListener(
+    //   'keydown',
+    //   createKeybindingsHandler({
+    //     '$mod+KeyZ': (e) => {
+    //       e.preventDefault();
+    //       handleUndo();
+    //     },
+    //     '$mod+KeyY': (e) => {
+    //       e.preventDefault();
+    //       handleRedo();
+    //     },
+    //   }),
+    // );
 
     // useEventListener('mousemove', (event) => {
-    //   if (operationType !== OperationType.ERASE || !containerRef.current || !circle.current) return;
+    //   if (operationType !== OperationType.ERASER || !containerRef.current || !circle.current) return;
     //   const x = event.clientX - containerRef.current.offsetLeft;
     //   const y = event.clientY - containerRef.current.offsetTop;
     //   circle.current.style.left = x + 'px';
     //   circle.current.style.top = y + 'px';
     // }, { target: canvasRef.current })
 
+    /**
+     * 清空画板
+     */
     const handleClear = () => {
-      if (!signaturePadRef.current || !childRef.current) return;
-      if (currentShowIndex.current < historyRef.current.length - 1) {
-        //小于说明发生过撤销，并且触发了endStroke（动过画布）, 就不支持恢复
-        historyRef.current.splice(currentShowIndex.current + 1);
+      const { states, index } = history.current;
+      if (!states[index].data.length) {
+        return;
       }
-      signaturePadRef.current.clear(); // 清空画布
-      if (historyRef.current.length > MAX_STEP) {
-        historyRef.current.shift();
-      } else {
-        currentShowIndex.current++;
-      }
-      historyRef.current.push(
-        JSON.parse(
-          JSON.stringify({
-            points: signaturePadRef.current!.toData(),
-            scale: 1,
-          }),
-        ),
-      );
+      padRef.current!.clear();
+      history.current = {
+        states: [
+          ...states.slice(
+            index < MAX_STEP ? 0 : index - MAX_STEP + 1,
+            index + 1,
+          ),
+          { data: [], scale: 1 },
+        ],
+        index: index < MAX_STEP ? index + 1 : MAX_STEP,
+      };
     };
 
     // const handleScreenshot = async () => {
@@ -404,29 +376,39 @@ const XStarSlideViewer = React.forwardRef<
     //   a.click();
     // };
 
-    const handleSwitchToErase = () => {
-      if (!signaturePadRef.current) return;
-      if (operationType !== OperationType.ERASE) {
-        signaturePadRef.current.compositeOperation = 'destination-out';
-        setOperationType(OperationType.ERASE);
-      } else {
-        setOperationType(OperationType.NONE);
-      }
-    };
+    /**
+     * 切换橡皮
+     */
+    const handleToggleEraser = () =>
+      setOperationType(
+        operationType === OperationType.ERASER
+          ? OperationType.NONE
+          : OperationType.ERASER,
+      );
 
-    const handleSwitchToDraw = () => {
-      if (!signaturePadRef.current) return;
-      if (operationType !== OperationType.STROKE) {
-        signaturePadRef.current.compositeOperation = 'source-over';
-        setOperationType(OperationType.STROKE);
+    /**
+     * 切换画笔
+     */
+    const handleTogglePencil = () =>
+      setOperationType(
+        operationType === OperationType.PENCIL
+          ? OperationType.NONE
+          : OperationType.PENCIL,
+      );
+
+    /**
+     * 切换全屏
+     */
+    const handleToggleFullscreen = () => {
+      if (document.fullscreenElement === containerRef.current) {
+        document.exitFullscreen();
       } else {
-        setOperationType(OperationType.NONE);
+        containerRef.current!.requestFullscreen();
       }
     };
 
     return (
       <div
-        id="container"
         ref={containerRef}
         className={classNames(
           `${prefix}-slide-viewer`,
@@ -443,28 +425,20 @@ const XStarSlideViewer = React.forwardRef<
         </div>
         <canvas
           ref={canvasRef}
-          className={classNames(
-            `${prefix}-pad`,
-            {
-              [`${prefix}-custom-cursor-pencil`]:
-                operationType === OperationType.STROKE,
-            },
-            {
-              [`${prefix}-custom-cursor-eraser`]:
-                operationType === OperationType.ERASE,
-            },
-          )}
+          className={classNames(`${prefix}-pad`, {
+            [`${prefix}-custom-cursor-pencil`]:
+              operationType === OperationType.PENCIL,
+            [`${prefix}-custom-cursor-eraser`]:
+              operationType === OperationType.ERASER,
+          })}
           width={1280}
           height={720}
         />
-        <div
-          className={classNames(`${prefix}-btn-container`)}
-          id="btn-container"
-        >
+        <div className={classNames(`${prefix}-btn-container`)}>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
               className={classNames(`${prefix}-common-btn`)}
-              onClick={toggleFullscreen}
+              onClick={handleToggleFullscreen}
             >
               <SvgEnterFullscreen />
             </span>
@@ -474,7 +448,7 @@ const XStarSlideViewer = React.forwardRef<
           </div>
           {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
-              className={classNames(`${prefix}-common-btn`, `${prefix}-shot`)}
+              className={classNames(`${prefix}-common-btn`)}
               onClick={handleScreenshot}
             >
               <SvgScreenshot />
@@ -485,21 +459,21 @@ const XStarSlideViewer = React.forwardRef<
           </div> */}
           <div>
             <span
-              className={classNames(`${prefix}-common-btn`, `${prefix}-draw`)}
+              className={classNames(`${prefix}-common-btn`)}
               style={{
                 backgroundColor:
-                  operationType === OperationType.STROKE
+                  operationType === OperationType.PENCIL
                     ? 'rgb(66, 133, 244)'
                     : '',
               }}
-              onClick={handleSwitchToDraw}
+              onClick={handleTogglePencil}
             >
               <SvgPencil />
             </span>
             <div
               className={classNames(
                 `${prefix}-popover`,
-                `${prefix}-draw-popover`,
+                `${prefix}-pencil-popover`,
               )}
             >
               <div>
@@ -508,40 +482,36 @@ const XStarSlideViewer = React.forwardRef<
                 </span>
                 <input
                   type="color"
-                  value={strokeColor}
-                  onChange={(e) => {
-                    setStrokeColor(e.target.value);
-                  }}
+                  value={pencilColor}
+                  onChange={(e) => setPencilColor(e.target.value)}
                 />
               </div>
               <input
                 type="range"
                 min={1}
                 max={10}
-                value={strokeWidth}
-                onChange={(e) => {
-                  setStrokeWidth(Number(e.target.value));
-                }}
+                value={pencilWidth}
+                onChange={(e) => setPencilWidth(Number(e.target.value))}
               />
             </div>
           </div>
           <div>
             <span
-              className={classNames(`${prefix}-common-btn`, `${prefix}-erase`)}
+              className={classNames(`${prefix}-common-btn`)}
               style={{
                 backgroundColor:
-                  operationType === OperationType.ERASE
+                  operationType === OperationType.ERASER
                     ? 'rgb(66, 133, 244)'
                     : '',
               }}
-              onClick={handleSwitchToErase}
+              onClick={handleToggleEraser}
             >
               <SvgEraser />
             </span>
             <div
               className={classNames(
                 `${prefix}-popover`,
-                `${prefix}-erase-popover`,
+                `${prefix}-eraser-popover`,
               )}
             >
               <span className={classNames(`${prefix}-popover-label`)}>
@@ -551,16 +521,14 @@ const XStarSlideViewer = React.forwardRef<
                 type="range"
                 min={5}
                 max={50}
-                value={eraseWidth}
-                onChange={(e) => {
-                  setEraseWidth(Number(e.target.value));
-                }}
+                value={eraserWidth}
+                onChange={(e) => setEraserWidth(Number(e.target.value))}
               />
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
-              className={classNames(`${prefix}-common-btn`, `${prefix}-clear`)}
+              className={classNames(`${prefix}-common-btn`)}
               onClick={handleClear}
             >
               <SvgClear />
@@ -569,7 +537,7 @@ const XStarSlideViewer = React.forwardRef<
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
-              className={classNames(`${prefix}-common-btn`, `${prefix}-undo`)}
+              className={classNames(`${prefix}-common-btn`)}
               onClick={handleRedo}
             >
               <SvgRedo />
@@ -578,7 +546,7 @@ const XStarSlideViewer = React.forwardRef<
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
-              className={classNames(`${prefix}-common-btn`, `${prefix}-undo`)}
+              className={classNames(`${prefix}-common-btn`)}
               onClick={handleUndo}
             >
               <SvgUndo />

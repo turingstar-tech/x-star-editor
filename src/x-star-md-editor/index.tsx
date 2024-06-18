@@ -100,7 +100,7 @@ export interface XStarMdEditorProps {
   plugins?: XStarMdEditorPlugin[];
 
   /**
-   * 文本变化回调函数
+   * 文本改变回调函数
    */
   onChange?: (value: string) => void;
 
