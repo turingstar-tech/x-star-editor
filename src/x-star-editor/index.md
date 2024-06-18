@@ -260,16 +260,16 @@ export default () => {
           style={{ marginRight: 8 }}
           onClick={() =>
             // 使用内置 Handler
-            ref.current?.exec(insertHandler({ text: 'Hello *world*!\n' }))
+            ref.current!.exec(insertHandler({ text: 'Hello *world*!\n' }))
           }
         >
           插入一段话
         </button>
         <button
           onClick={() => {
-            const editor = ref.current?.getEditorContainer();
+            const editor = ref.current!.getEditorContainer();
             // 使用自定义 Handler
-            ref.current?.exec(({ selection, dispatch }) =>
+            ref.current!.exec(({ selection, dispatch }) =>
               dispatch({
                 type: 'set',
                 payload: {
@@ -313,7 +313,7 @@ export default () => {
         '将文件**粘贴**进编辑器\n或点击工具栏的**链接**或**图片**\n'
       }
       onInsertFile={async (file, { description, image }) =>
-        ref.current?.exec(
+        ref.current!.exec(
           insertHandler({
             text: `${image ? '!' : ''}[${description}](${await upload(file)})`,
           }),
