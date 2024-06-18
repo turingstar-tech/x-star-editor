@@ -46,7 +46,7 @@ const toMdastProcessor = unified()
  * @param sourceCode Markdown 文本
  * @returns Mdast 树
  */
-const cachedParse = (() => {
+export const cachedParse = (() => {
   let cache: Record<string, MdastRoot> = {};
   return (sourceCode: string) =>
     cache[sourceCode] ??

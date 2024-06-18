@@ -12,7 +12,7 @@ export {
   undoHandler,
 } from './utils/handler';
 export type { Executor, Handler, KeyboardEventHandler } from './utils/handler';
-export { toHTML, toMarkdown, toText } from './utils/markdown';
+export { cachedParse, toHTML, toMarkdown, toText } from './utils/markdown';
 export { default as XStarEditor, useEditorRef } from './x-star-editor';
 export type { XStarEditorHandle, XStarEditorProps } from './x-star-editor';
 export { default as XStarMdEditor, useMdEditorRef } from './x-star-md-editor';
