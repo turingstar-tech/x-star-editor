@@ -23,7 +23,7 @@ import {
   preViewerRender,
 } from '../utils/markdown';
 import type { PadValue } from '../utils/slide';
-import { getScale, getScaledData } from '../utils/slide';
+import { getScaledData } from '../utils/slide';
 import type { ViewerOptions } from '../x-star-md-viewer';
 
 let worker: Worker;
@@ -154,16 +154,11 @@ const XStarSlideViewer = React.forwardRef<
         history.current = { states: [{ data: [], scale: 1 }], index: 0 };
       }
 
-      padRef.current.addEventListener('beginPencil', () => {
-        // 开始画笔，记录此时 scale
-        scale.current = getScale(childRef.current!.style.transform);
-      });
-
-      padRef.current.addEventListener('endPencil', () => {
+      padRef.current.addEventListener('endStroke', () => {
         // 结束画笔，记录此时画板数据
         const value = {
           data: padRef.current!.toData(),
-          scale: getScale(childRef.current!.style.transform),
+          scale: scale.current,
         };
         const { states, index } = history.current;
         history.current = {
@@ -254,21 +249,22 @@ const XStarSlideViewer = React.forwardRef<
     }, [children]);
 
     const resizeObserver = new ResizeObserver((entries) => {
-      // 处理尺寸改变后的 scale
+      // 组件卸载时可能调用该函数，但 DOM 元素不存在
+      if (!childRef.current || !canvasRef.current || !padRef.current) {
+        return;
+      }
+      // 处理尺寸改变
       const parentWidth = entries[0].contentRect.width;
-      childRef.current!.style.transform = `scale(${parentWidth / 1280})`;
-      canvasRef.current!.width = parentWidth;
-      canvasRef.current!.height = parentWidth / (16 / 9);
-      padRef.current!.fromData(
+      childRef.current.style.transform = `scale(${parentWidth / 1280})`;
+      canvasRef.current.width = parentWidth;
+      canvasRef.current.height = parentWidth / (16 / 9);
+      padRef.current.fromData(
         getScaledData(
-          {
-            data: padRef.current!.toData(),
-            scale: scale.current,
-          },
+          { data: padRef.current.toData(), scale: scale.current },
           parentWidth,
         ),
       );
-      scale.current = getScale(childRef.current!.style.transform);
+      scale.current = parentWidth / 1280;
     });
 
     // 监听容器尺寸改变
@@ -304,7 +300,7 @@ const XStarSlideViewer = React.forwardRef<
         return;
       }
       padRef.current!.fromData(
-        getScaledData(states[index - 1], containerRef.current!.clientWidth),
+        getScaledData(states[index - 1], scale.current * 1280),
       );
       history.current = { states, index: index - 1 };
     };
@@ -318,7 +314,7 @@ const XStarSlideViewer = React.forwardRef<
         return;
       }
       padRef.current!.fromData(
-        getScaledData(states[index + 1], containerRef.current!.clientWidth),
+        getScaledData(states[index + 1], scale.current * 1280),
       );
       history.current = { states, index: index + 1 };
     };
@@ -431,8 +427,6 @@ const XStarSlideViewer = React.forwardRef<
             [`${prefix}-custom-cursor-eraser`]:
               operationType === OperationType.ERASER,
           })}
-          width={1280}
-          height={720}
         />
         <div className={classNames(`${prefix}-btn-container`)}>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
