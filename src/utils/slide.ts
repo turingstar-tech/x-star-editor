@@ -1,14 +1,5 @@
 import type { PointGroup } from 'signature_pad';
 
-/**
- * 获取缩放值
- *
- * @param scale scale 函数字符串
- * @returns 缩放值
- */
-export const getScale = (scale: string) =>
-  Number(scale.match(/scale\((.*?)\)/)?.[1]);
-
 export interface PadValue {
   data: PointGroup[];
   scale: number;
