@@ -291,6 +291,7 @@ interface History {
   index: number;
   selection: ContainerSelection;
 }
+
 export interface UndoAction {
   type: 'undo';
 }
