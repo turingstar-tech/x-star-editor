@@ -1,23 +1,11 @@
 import classNames from 'classnames';
 import type { Components } from 'hast-util-to-jsx-runtime';
-import React, {
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import workerRaw from '../../workers-dist/markdown.worker.js';
+import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { Schema } from '../utils/markdown';
-import {
-  getDefaultSchema,
-  postViewerRender,
-  preViewerRender,
-} from '../utils/markdown';
-
-let worker: Worker;
+import { getDefaultSchema } from '../utils/markdown';
+import { useViewerRender } from '../utils/viewer';
 
 export interface ViewerOptions {
   /**
@@ -99,47 +87,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       [plugins],
     );
 
-    const optionsLatest = useRef(options);
-    optionsLatest.current = options;
-
-    const [children, setChildren] = useState<React.JSX.Element>();
-
-    const id = useMemo(
-      () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      [],
-    );
-
-    useEffect(() => {
-      if (!worker) {
-        worker = new Worker(
-          URL.createObjectURL(
-            new Blob([workerRaw], { type: 'text/javascript' }),
-          ),
-        );
-      }
-
-      const listener = ({ data }: MessageEvent) => {
-        if (data.id === id) {
-          setChildren(postViewerRender(data.root, optionsLatest.current));
-        }
-      };
-
-      worker.addEventListener('message', listener);
-      return () => worker.removeEventListener('message', listener);
-    }, []);
-
-    useEffect(() => {
-      const timer = window.setTimeout(
-        async () =>
-          worker.postMessage({
-            id,
-            root: await preViewerRender(value),
-            schema: options.customSchema,
-          }),
-        100,
-      );
-      return () => window.clearTimeout(timer);
-    }, [value, options]);
+    const children = useViewerRender(value, options);
 
     // 确保在末尾输入时能同步滚动
     useEffect(() => {

@@ -15,6 +15,8 @@ export interface PadValue {
 export const getScaledData = ({ data, scale }: PadValue, parentWidth: number) =>
   data.map((group) => ({
     ...group,
+    minWidth: (group.minWidth / scale) * (parentWidth / 1280),
+    maxWidth: (group.maxWidth / scale) * (parentWidth / 1280),
     points: group.points.map((point) => ({
       ...point,
       x: (point.x / scale) * (parentWidth / 1280),
