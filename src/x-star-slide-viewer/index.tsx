@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react';
 import SignaturePad from 'signature_pad';
-import workerRaw from '../../workers-dist/markdown.worker.js';
 import SvgClear from '../icons/Clear';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgEraser from '../icons/Eraser';
@@ -17,16 +16,11 @@ import SvgUndo from '../icons/Undo';
 import { useLocale } from '../locales';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
-import {
-  getDefaultSchema,
-  postViewerRender,
-  preViewerRender,
-} from '../utils/markdown';
+import { getDefaultSchema } from '../utils/markdown';
 import type { PadValue } from '../utils/slide';
 import { getScaledData } from '../utils/slide';
+import { useViewerRender } from '../utils/viewer';
 import type { ViewerOptions } from '../x-star-md-viewer';
-
-let worker: Worker;
 
 export interface XStarSlideViewerPlugin {
   (ctx: ViewerOptions): void;
@@ -197,47 +191,7 @@ const XStarSlideViewer = React.forwardRef<
       [plugins],
     );
 
-    const optionsLatest = useRef(options);
-    optionsLatest.current = options;
-
-    const [children, setChildren] = useState<React.JSX.Element>();
-
-    const id = useMemo(
-      () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      [],
-    );
-
-    useEffect(() => {
-      if (!worker) {
-        worker = new Worker(
-          URL.createObjectURL(
-            new Blob([workerRaw], { type: 'text/javascript' }),
-          ),
-        );
-      }
-
-      const listener = ({ data }: MessageEvent) => {
-        if (data.id === id) {
-          setChildren(postViewerRender(data.root, optionsLatest.current));
-        }
-      };
-
-      worker.addEventListener('message', listener);
-      return () => worker.removeEventListener('message', listener);
-    }, []);
-
-    useEffect(() => {
-      const timer = window.setTimeout(
-        async () =>
-          worker.postMessage({
-            id,
-            root: await preViewerRender(value),
-            schema: options.customSchema,
-          }),
-        100,
-      );
-      return () => window.clearTimeout(timer);
-    }, [value, options]);
+    const children = useViewerRender(value, options);
 
     // 确保在末尾输入时能同步滚动
     useEffect(() => {
@@ -278,13 +232,13 @@ const XStarSlideViewer = React.forwardRef<
       if (operationType === OperationType.PENCIL) {
         canvasRef.current!.style.pointerEvents = 'auto';
         padRef.current!.penColor = pencilColor;
-        padRef.current!.maxWidth = pencilWidth;
         padRef.current!.minWidth = pencilWidth - 2;
+        padRef.current!.maxWidth = pencilWidth;
         padRef.current!.compositeOperation = 'source-over';
       } else if (operationType === OperationType.ERASER) {
         canvasRef.current!.style.pointerEvents = 'auto';
-        padRef.current!.maxWidth = eraserWidth;
         padRef.current!.minWidth = eraserWidth;
+        padRef.current!.maxWidth = eraserWidth;
         padRef.current!.compositeOperation = 'destination-out';
       } else {
         canvasRef.current!.style.pointerEvents = 'none';
