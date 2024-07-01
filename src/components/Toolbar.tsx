@@ -54,7 +54,6 @@ const Item = ({
   const popoverMount = !!popover && popoverOpen;
   const tooltipMount = !popoverMount && !!tooltip && tooltipOpen;
 
-  const tooltipRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -104,15 +103,20 @@ const Item = ({
       >
         {children}
       </div>
-      <Fade nodeRef={tooltipRef} appear={tooltipMount} timeout={300}>
-        <div ref={tooltipRef} className={classNames(`${prefix}-tooltip`)}>
-          {tooltip}
-        </div>
+      <Fade
+        className={classNames(`${prefix}-tooltip`)}
+        appear={tooltipMount}
+        timeout={300}
+      >
+        {tooltip}
       </Fade>
-      <Fade nodeRef={popoverRef} appear={popoverMount} timeout={300}>
-        <div ref={popoverRef} className={classNames(`${prefix}-popover`)}>
-          {popover}
-        </div>
+      <Fade
+        ref={popoverRef}
+        className={classNames(`${prefix}-popover`)}
+        appear={popoverMount}
+        timeout={300}
+      >
+        {popover}
       </Fade>
     </div>
   );
