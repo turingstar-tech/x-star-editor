@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import SignaturePad, { PointGroup } from 'signature_pad';
+import { XStarMdEditorProps } from 'x-star-editor/x-star-md-editor/index.js';
 import { ViewerOptions } from 'x-star-editor/x-star-md-viewer/index.js';
 import workerRaw from '../../workers-dist/markdown.worker.js';
 import SvgClear from '../icons/Clear';
@@ -16,7 +17,7 @@ import SvgEraser from '../icons/Eraser';
 import SvgPencil from '../icons/Pencil';
 import SvgRedo from '../icons/Redo';
 import SvgUndo from '../icons/Undo';
-import { useLocale } from '../locales';
+import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import {
@@ -69,6 +70,11 @@ export interface XStarSlideViewerProps {
   slideClassName?: string;
 
   /**
+   * 语言
+   */
+  locale?: XStarMdEditorProps['locale'];
+
+  /**
    * 文本
    */
   value?: string;
@@ -110,6 +116,7 @@ const XStarSlideViewer = React.forwardRef<
       plugins,
       padInitialValue,
       onPadChange,
+      locale,
     },
     ref,
   ) => {
@@ -126,7 +133,7 @@ const XStarSlideViewer = React.forwardRef<
     const [strokeWidth, setStrokeWidth] = useState(3);
     const [eraseWidth, setEraseWidth] = useState(10);
     const [, { toggleFullscreen }] = useFullscreen(containerRef);
-    const { format: t } = useLocale('slideViewer');
+    const t = getFormat(locale, 'slideViewer');
     const MAX_STEP = 100; // 最大保存历史记录数
 
     useEffect(() => {

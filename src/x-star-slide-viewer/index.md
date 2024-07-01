@@ -26,6 +26,7 @@ export default () => (
     onPadChange={(point, scale) => {
       console.log(point, scale);
     }}
+    locale={'en_US'}
     // padInitialValue={{
     //   scale: 0.771875,
     //   points: [
