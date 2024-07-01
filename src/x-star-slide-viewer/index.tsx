@@ -13,7 +13,7 @@ import SvgEraser from '../icons/Eraser';
 import SvgPencil from '../icons/Pencil';
 import SvgRedo from '../icons/Redo';
 import SvgUndo from '../icons/Undo';
-import { useLocale } from '../locales';
+import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import { getDefaultSchema } from '../utils/markdown';
@@ -58,6 +58,11 @@ export interface XStarSlideViewerProps {
   slideClassName?: string;
 
   /**
+   * 语言
+   */
+  locale?: string;
+
+  /**
    * 文本
    */
   value?: string;
@@ -95,6 +100,7 @@ const XStarSlideViewer = React.forwardRef<
       height,
       theme,
       slideClassName,
+      locale,
       value = '',
       plugins,
       initialPadValue,
@@ -130,7 +136,7 @@ const XStarSlideViewer = React.forwardRef<
     const [pencilWidth, setPencilWidth] = useState(3);
     const [eraserWidth, setEraserWidth] = useState(10);
 
-    const { format: t } = useLocale('slideViewer');
+    const t = getFormat(locale, 'slideViewer');
 
     useEffect(() => {
       padRef.current = new SignaturePad(canvasRef.current!, {

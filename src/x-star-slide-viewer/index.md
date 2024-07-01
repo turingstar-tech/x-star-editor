@@ -23,6 +23,7 @@ export default () => (
 
 信友队C++课程
 `}
+    locale="en_US"
     onPadChange={console.log}
   />
 );
