@@ -144,7 +144,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
     // 确保在末尾输入时能同步滚动
     useEffect(() => {
       const timer = window.setTimeout(
-        () => containerRef.current?.dispatchEvent(new Event('render')),
+        () => containerRef.current!.dispatchEvent(new Event('render')),
         100,
       );
       return () => window.clearTimeout(timer);

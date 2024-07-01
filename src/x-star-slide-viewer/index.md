@@ -15,6 +15,7 @@ import styles from './_test.module.scss';
 
 export default () => (
   <XStarSlideViewer
+    slideClassName={styles.slide}
     value={`
 ###### BUBBLE SORT AND SELECTION SORT
 

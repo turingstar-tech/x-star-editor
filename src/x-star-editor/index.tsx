@@ -126,7 +126,7 @@ export interface XStarEditorProps {
   viewerRender?: (value: string) => React.ReactNode;
 
   /**
-   * 文本变化回调函数
+   * 文本改变回调函数
    */
   onChange?: XStarMdEditorProps['onChange'];
 
@@ -171,11 +171,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
 
     // 同步滚动
     useEffect(() => {
-      const editor = editorRef.current?.getEditorContainer();
-      const viewer = viewerRef.current?.getViewerContainer();
-      if (!editor || !viewer) {
-        return;
-      }
+      const editor = editorRef.current!.getEditorContainer();
+      const viewer = viewerRef.current!.getViewerContainer();
 
       /**
        * 获取两个父元素的子元素到各自父元素顶部的距离
@@ -206,8 +203,8 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
             } else if (!(toChild instanceof HTMLElement)) {
               j++;
             } else {
-              const fromLine = parseInt(fromChild.dataset.line ?? '');
-              const toLine = parseInt(toChild.dataset.line ?? '');
+              const fromLine = Number(fromChild.dataset.line);
+              const toLine = Number(toChild.dataset.line);
               if (!fromLine) {
                 i++;
               } else if (!toLine) {
