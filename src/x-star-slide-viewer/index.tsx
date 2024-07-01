@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react';
 import SignaturePad from 'signature_pad';
-import { XStarMdEditorProps } from 'x-star-editor/x-star-md-editor/index.js';
 import SvgClear from '../icons/Clear';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgEraser from '../icons/Eraser';
@@ -61,7 +60,7 @@ export interface XStarSlideViewerProps {
   /**
    * 语言
    */
-  locale?: XStarMdEditorProps['locale'];
+  locale?: string;
 
   /**
    * 文本
@@ -101,11 +100,11 @@ const XStarSlideViewer = React.forwardRef<
       height,
       theme,
       slideClassName,
+      locale,
       value = '',
       plugins,
       initialPadValue,
       onPadChange,
-      locale,
     },
     ref,
   ) => {
