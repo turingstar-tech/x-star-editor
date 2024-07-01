@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react';
 import SignaturePad from 'signature_pad';
-import { useLocale } from 'x-star-editor/locales/index.js';
 import { XStarMdEditorProps } from 'x-star-editor/x-star-md-editor/index.js';
 import workerRaw from '../../workers-dist/markdown.worker.js';
 import SvgClear from '../icons/Clear';
@@ -16,6 +15,7 @@ import SvgEraser from '../icons/Eraser';
 import SvgPencil from '../icons/Pencil';
 import SvgRedo from '../icons/Redo';
 import SvgUndo from '../icons/Undo';
+import { getFormat } from '../locales';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import {
@@ -111,6 +111,7 @@ const XStarSlideViewer = React.forwardRef<
       plugins,
       initialPadValue,
       onPadChange,
+      locale,
     },
     ref,
   ) => {
@@ -142,7 +143,7 @@ const XStarSlideViewer = React.forwardRef<
     const [pencilWidth, setPencilWidth] = useState(3);
     const [eraserWidth, setEraserWidth] = useState(10);
 
-    const { format: t } = useLocale('slideViewer');
+    const t = getFormat(locale, 'slideViewer');
 
     useEffect(() => {
       padRef.current = new SignaturePad(canvasRef.current!, {
