@@ -1,6 +1,7 @@
 .#{$prefix}-slide-viewer {
   @include common;
 
+  line-height: normal;
   overflow: hidden;
   aspect-ratio: 16 / 9;
 
