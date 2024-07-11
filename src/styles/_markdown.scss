@@ -45,7 +45,6 @@ $md-prefix: #{$prefix}-md;
   }
 
   .#{$md-prefix}-heading {
-    line-height: 1.6em;
     font-weight: bold;
 
     @mixin heading-size($level, $size) {
