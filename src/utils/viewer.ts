@@ -3,6 +3,7 @@ import workerRaw from '../../workers-dist/markdown.worker.js';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { postViewerRender, preViewerRender } from './markdown';
 
+let sequence = 0;
 let worker: Worker;
 
 /**
@@ -19,7 +20,7 @@ export const useViewerRender = (sourceCode: string, options: ViewerOptions) => {
   const [children, setChildren] = useState<React.JSX.Element>();
 
   const id = useMemo(
-    () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    () => `${Date.now()}-${(sequence = (sequence + 1) & 0xfff)}`,
     [],
   );
 
