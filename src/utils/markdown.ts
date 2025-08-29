@@ -35,6 +35,7 @@ import rehypeCustom from './rehype/rehype-custom';
 import rehypeMath, { isMathNode } from './rehype/rehype-math';
 import rehypeRawPositions from './rehype/rehype-raw-positions';
 import rehypeTableCell from './rehype/rehype-table-cell';
+import rehypeTablePositions from './rehype/rehype-table-positions';
 
 /**
  * 将 Markdown 文本解析为 Mdast 树的处理器
@@ -311,6 +312,7 @@ const toHastProcessor = unified()
       },
     },
   })
+  .use(rehypeTablePositions)
   .use(rehypeMermaid, {
     errorFallback: (element) => element,
     strategy: 'img-svg',
@@ -349,6 +351,7 @@ const toHTMLProcessor = unified()
     },
   })
   .use(rehypeRawPositions)
+  .use(rehypeTablePositions)
   .use(rehypeRaw)
   .use(rehypeMath)
   .use(rehypeStringify)
@@ -572,6 +575,7 @@ const Table = ({ ...props }: any) => {
   useEffect(() => {
     const table = tableRef.current;
     if (!table) return;
+
     if (viewerRef && viewerRef.current)
       viewerRef.current.editorTableInstance = {
         tableRef: table,
@@ -620,6 +624,7 @@ export const postViewerRender = (
     };
     return toJsxRuntime(
       unified()
+        .use(rehypeTablePositions)
         .use(rehypeKatex)
         .use(rehypeCustom, options.customBlocks)
         .runSync(root),
