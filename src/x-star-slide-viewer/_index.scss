@@ -1,65 +1,36 @@
 .#{$prefix}-slide-viewer {
   @include common;
 
-  position: relative;
+  line-height: 1.4;
   overflow: hidden;
   aspect-ratio: 16 / 9;
 
   .#{$prefix}-slide {
+    @include viewer;
+
     width: 1280px;
     height: 720px;
-    padding: 0 32px;
+    padding: 78.5px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    font-size: 29px;
     background-color: $color-bg-container;
     transform-origin: top left;
 
     > :first-child {
-      margin-top: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+      margin-top: 0; /* 防止垂直居中时出现视觉上不居中的现象 */
     }
 
     > :last-child {
-      margin-bottom: 0; /* 防止垂直居中时出现的视觉上的不居中现象 */
+      margin-bottom: 0; /* 防止垂直居中时出现视觉上不居中的现象 */
     }
+  }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      font-weight: bold;
-    }
-
-    table {
-      margin: 16px 0;
-      border-collapse: collapse;
-    }
-
-    th,
-    td {
-      padding: 8px;
-      border: 1px solid $color-border;
-    }
-
-    th {
-      font-weight: bold;
-      background-color: $color-fill-secondary;
-    }
-
-    tr:nth-child(even) td {
-      background-color: $color-fill-tertiary;
-    }
-
-    pre {
-      width: 70%;
-    }
-
-    img[id^='user-content-mermaid-'] {
-      width: 100%;
-      max-height: 100%;
-    }
+  .#{$prefix}-pad {
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
   .#{$prefix}-custom-cursor-pencil {
@@ -67,7 +38,7 @@
   }
 
   .#{$prefix}-custom-cursor-eraser {
-    cursor: url('./cursor/editor-eraser.png'), auto;
+    cursor: url('./cursor/eraser.png'), auto;
   }
 
   .#{$prefix}-btn-container {
@@ -77,7 +48,7 @@
     height: 32px;
     display: flex;
     flex-direction: row-reverse;
-    z-index: 10000;
+    z-index: 1;
 
     .#{$prefix}-common-btn {
       position: relative;
@@ -93,7 +64,7 @@
       cursor: pointer;
 
       &:hover {
-        color: #f8f8f8;
+        color: rgb(132 174 241);
         background-color: #f0f0f0;
       }
     }
@@ -102,6 +73,7 @@
       position: absolute;
       width: 150px;
       height: 0;
+      margin: 5px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -110,12 +82,44 @@
       border-radius: 6px;
       box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
       overflow: hidden;
-      z-index: 10000;
+      z-index: 1;
       transition: all 0.3s cubic-bezier(0.51, 0.3, 0.06, 0.98);
+      user-select: none;
 
       > * {
         margin: 8px 0;
       }
+    }
+
+    .#{$prefix}-popover-label {
+      margin-right: 15px;
+      font-size: 12px;
+    }
+
+    .#{$prefix}-tooltip {
+      position: absolute;
+      height: 0;
+      margin-top: 36px;
+      margin-left: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      font-size: 12px;
+      background-color: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
+      z-index: 1;
+      transform: scale(0);
+      transition: all 0.25s cubic-bezier(0.51, 0.3, 0.06, 0.98);
+      user-select: none;
+    }
+
+    .#{$prefix}-common-btn:hover + .#{$prefix}-tooltip {
+      height: 30px;
+      transform: scale(1);
     }
 
     .#{$prefix}-common-btn:hover + .#{$prefix}-popover,
@@ -123,35 +127,14 @@
       height: 100px;
     }
 
-    .#{$prefix}-draw-popover {
+    .#{$prefix}-pencil-popover {
       top: 33px;
       left: 120px;
     }
 
-    .#{$prefix}-erase-popover {
+    .#{$prefix}-eraser-popover {
       top: 33px;
       left: 75px;
     }
-  }
-
-  .#{$prefix}-pad {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 960px;
-    height: 540px;
-  }
-
-  .#{$prefix}-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100px;
-    height: 100px;
-    border: 2px solid black;
-    border-radius: 50%;
-    opacity: 0.5; /* 圆环内部透明 */
-    transform: translate(-50%, -50%);
-    pointer-events: none; /* 防止圆环遮挡鼠标事件 */
   }
 }

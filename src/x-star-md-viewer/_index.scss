@@ -32,4 +32,6 @@
   tr:nth-child(even) td {
     background-color: $color-fill-tertiary;
   }
+
+  @include viewer;
 }

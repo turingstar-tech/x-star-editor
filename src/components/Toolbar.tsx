@@ -57,7 +57,6 @@ const Item = ({
   const popoverMount = !!popover && popoverOpen;
   const tooltipMount = !popoverMount && !!tooltip && tooltipOpen;
 
-  const tooltipRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -107,15 +106,20 @@ const Item = ({
       >
         {children}
       </div>
-      <Fade nodeRef={tooltipRef} appear={tooltipMount} timeout={300}>
-        <div ref={tooltipRef} className={classNames(`${prefix}-tooltip`)}>
-          {tooltip}
-        </div>
+      <Fade
+        className={classNames(`${prefix}-tooltip`)}
+        appear={tooltipMount}
+        timeout={300}
+      >
+        {tooltip}
       </Fade>
-      <Fade nodeRef={popoverRef} appear={popoverMount} timeout={300}>
-        <div ref={popoverRef} className={classNames(`${prefix}-popover`)}>
-          {popover}
-        </div>
+      <Fade
+        ref={popoverRef}
+        className={classNames(`${prefix}-popover`)}
+        appear={popoverMount}
+        timeout={300}
+      >
+        {popover}
       </Fade>
     </div>
   );
@@ -147,19 +151,12 @@ const headingOptions = [
   { depth: 6, fontSize: '0.9em' },
 ] as const;
 
-export type ToolbarItemMap = Partial<Record<string, ToolbarItem>>;
+const getMermaidOptions = (locale?: string) => {
+  const t = getFormat(locale, 'mermaid');
 
-export const getDefaultToolbarItemMap = (
-  locale?: string,
-  onInsertFile?: (
-    file: File,
-    options: { description: string; image: boolean },
-  ) => void,
-): ToolbarItemMap => {
-  const t = getFormat(locale, 'toolbarItem');
-  const mermaidOptions = [
+  return [
     {
-      label: t('flowChat'),
+      label: t('flowchart'),
       value: `flowchart TD
       A[Start] --> B{Is it?}
       B -- Yes --> C[OK]
@@ -210,7 +207,7 @@ export const getDefaultToolbarItemMap = (
       Crash --> [*]`,
     },
     {
-      label: t('ERDiagram'),
+      label: t('entityRelationshipDiagram'),
       value: `erDiagram
       CUSTOMER ||--o{ ORDER : places
       ORDER ||--|{ LINE-ITEM : contains
@@ -229,7 +226,7 @@ export const getDefaultToolbarItemMap = (
         Sit down: 5: Me`,
     },
     {
-      label: t('Gantt'),
+      label: t('gantt'),
       value: `gantt
       title A Gantt Diagram
       dateFormat YYYY-MM-DD
@@ -282,7 +279,7 @@ export const getDefaultToolbarItemMap = (
       test_entity - satisfies -> test_req`,
     },
     {
-      label: t('gitGraphDiagram'),
+      label: t('gitgraphDiagram'),
       value: `gitGraph
      commit
      commit
@@ -296,7 +293,7 @@ export const getDefaultToolbarItemMap = (
      commit`,
     },
     {
-      label: t('mindMaps'),
+      label: t('mindmap'),
       value: `mindmap
     root((mindmap))
       Origins
@@ -316,7 +313,7 @@ export const getDefaultToolbarItemMap = (
         Mermaid`,
     },
     {
-      label: t('timeLine'),
+      label: t('timeline'),
       value: `timeline
       title History of Social Media Platform
       2002 : LinkedIn
@@ -326,6 +323,18 @@ export const getDefaultToolbarItemMap = (
       2006 : Twitter`,
     },
   ] as const;
+};
+
+export type ToolbarItemMap = Partial<Record<string, ToolbarItem>>;
+
+export const getDefaultToolbarItemMap = (
+  locale?: string,
+  onInsertFile?: (
+    file: File,
+    options: { description: string; image: boolean },
+  ) => void,
+): ToolbarItemMap => {
+  const t = getFormat(locale, 'toolbarItem');
 
   return {
     textColor: {
@@ -480,7 +489,7 @@ export const getDefaultToolbarItemMap = (
       children: <SvgMermaid className={classNames(`${prefix}-icon`)} />,
       tooltip: t('mermaid'),
       popoverRender: (exec, close) =>
-        mermaidOptions.map(({ label, value }) => (
+        getMermaidOptions(locale).map(({ label, value }) => (
           <div
             key={label}
             className={classNames(`${prefix}-option`)}

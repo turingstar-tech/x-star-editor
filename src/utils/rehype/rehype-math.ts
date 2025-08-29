@@ -129,9 +129,7 @@ const rehypeMath = () => (root: HastRoot) => {
     { tagName: 'raw-positions' },
     (node, index, parent) => {
       if (typeof node.properties?.value === 'string') {
-        rawPositions = node.properties.value
-          .split(' ')
-          .map((offset) => parseInt(offset));
+        rawPositions = node.properties.value.split(' ').map(Number);
       }
       if (index !== null && parent) {
         parent.children.splice(index);

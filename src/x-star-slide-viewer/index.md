@@ -15,6 +15,7 @@ import styles from './_test.module.scss';
 
 export default () => (
   <XStarSlideViewer
+    slideClassName={styles.slide}
     value={`
 ###### BUBBLE SORT AND SELECTION SORT
 
@@ -22,12 +23,11 @@ export default () => (
 
 信友队C++课程
 `}
-    slideClassName={styles.slide}
+    locale="en_US"
+    onPadChange={console.log}
   />
 );
 ```
-
-:::
 
 ## API
 

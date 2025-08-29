@@ -214,7 +214,7 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       }
 
       const timer = window.setTimeout(
-        () => containerRef.current?.dispatchEvent(new Event('render')),
+        () => containerRef.current!.dispatchEvent(new Event('render')),
         100,
       );
       return () => {
