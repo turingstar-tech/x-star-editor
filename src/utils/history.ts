@@ -62,7 +62,7 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
 
   switch (action.type) {
     case 'insert': {
-      const text = action.payload.text.replace(/\r\n?/g, '\n');
+      const text = action.payload?.text.replace(/\r\n?/g, '\n') || '';
       return {
         sourceCode: `${before}${text}${after}`,
         selection: createSelection(startOffset + text.length),
