@@ -1,11 +1,26 @@
 import classNames from 'classnames';
 import type { Components } from 'hast-util-to-jsx-runtime';
-import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import workerRaw from '../../workers-dist/markdown.worker.js';
+import { containerRefContext } from '../context/containerRefContext';
 import { prefix } from '../utils/global';
 import { composeHandlers } from '../utils/handler';
 import type { Schema } from '../utils/markdown';
-import { getDefaultSchema } from '../utils/markdown';
-import { useViewerRender } from '../utils/viewer';
+import {
+  getDefaultSchema,
+  postViewerRender,
+  preViewerRender,
+} from '../utils/markdown';
+import { ThemeType } from '../x-star-editor/index';
+
+let worker: Worker;
 
 export interface ViewerOptions {
   /**
@@ -30,8 +45,15 @@ export interface XStarMdViewerPlugin {
   (ctx: ViewerOptions): void;
 }
 
+export interface IEditorTableInstance {
+  tableRef?: HTMLTableElement | null;
+  tableCells?: HTMLTableCellElement[];
+  selectedCell?: HTMLTableCellElement | null;
+}
+
 export interface XStarMdViewerHandle {
   getViewerContainer: () => HTMLDivElement;
+  editorTableInstance?: IEditorTableInstance;
 }
 
 export interface XStarMdViewerProps {
@@ -64,12 +86,34 @@ export interface XStarMdViewerProps {
    * 插件
    */
   plugins?: XStarMdViewerPlugin[];
+
+  /**
+   * viewer是否可编辑
+   */
+  canContentEditable?: boolean;
+
+  /**
+   * 编辑器主题
+   */
+  themeType?: ThemeType;
 }
 
 const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
-  ({ className, style, height, theme, value = '', plugins }, ref) => {
+  (
+    {
+      className,
+      style,
+      height,
+      theme,
+      value = '',
+      plugins,
+      canContentEditable = false,
+      themeType = 'xyd',
+    },
+    ref,
+  ) => {
     const containerRef = useRef<HTMLDivElement>(null);
-
+    const { editorRef, viewerRef } = useContext(containerRefContext);
     useImperativeHandle(
       ref,
       () => ({ getViewerContainer: () => containerRef.current! }),
@@ -87,19 +131,117 @@ const XStarMdViewer = React.forwardRef<XStarMdViewerHandle, XStarMdViewerProps>(
       [plugins],
     );
 
-    const children = useViewerRender(value, options);
+    const optionsLatest = useRef(options);
+    optionsLatest.current = options;
+
+    const [children, setChildren] = useState<React.JSX.Element>();
+
+    const id = useMemo(
+      () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      [],
+    );
+
+    const selection = window.getSelection();
+
+    const handleEditorTableKeyBoard = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        e.preventDefault(); // 阻止Tab键的默认行为
+        const { selectedCell, tableCells } =
+          viewerRef?.current?.editorTableInstance || {};
+        if (selectedCell && tableCells && selection) {
+          const nextTableCellIndex =
+            tableCells.indexOf(selectedCell) + 1 >= tableCells.length
+              ? 0
+              : tableCells.indexOf(selectedCell) + 1;
+          selection.setPosition(tableCells[nextTableCellIndex], 0);
+        }
+      }
+    };
+
+    useEffect(() => {
+      if (!worker) {
+        worker = new Worker(
+          URL.createObjectURL(
+            new Blob([workerRaw], { type: 'text/javascript' }),
+          ),
+        );
+      }
+
+      const listener = ({ data }: MessageEvent) => {
+        if (data.id === id) {
+          setChildren(
+            postViewerRender(
+              data.root,
+              optionsLatest.current,
+              canContentEditable,
+            ),
+          );
+        }
+      };
+
+      worker.addEventListener('message', listener);
+      return () => worker.removeEventListener('message', listener);
+    }, []);
+
+    useEffect(() => {
+      let timer: ReturnType<typeof setTimeout> | number;
+      if (!editorRef?.current?.getIsViewerChangeCode()) {
+        timer = window.setTimeout(
+          async () =>
+            worker.postMessage({
+              id,
+              root: await preViewerRender(value),
+              schema: options.customSchema,
+            }),
+          100,
+        );
+      }
+      return () => window.clearTimeout(timer);
+    }, [value, options]);
 
     // 确保在末尾输入时能同步滚动
     useEffect(() => {
+      // 可编辑表格中按下tab键时，将光标手动移动到下一个单元格
+      if (canContentEditable) {
+        document
+          .querySelectorAll('table[contenteditable="true"]')
+          .forEach((item) => {
+            (item as HTMLTableElement).addEventListener(
+              'keydown',
+              handleEditorTableKeyBoard,
+            );
+          });
+      }
+
       const timer = window.setTimeout(
         () => containerRef.current!.dispatchEvent(new Event('render')),
         100,
       );
-      return () => window.clearTimeout(timer);
+      return () => {
+        window.clearTimeout(timer);
+        if (canContentEditable)
+          document
+            .querySelectorAll('table[contenteditable="true"]')
+            .forEach((item) => {
+              (item as HTMLTableElement).removeEventListener(
+                'keydown',
+                handleEditorTableKeyBoard,
+              );
+            });
+      };
     }, [children]);
+
+    useEffect(() => {
+      if (!themeType) return;
+      containerRef?.current?.parentElement?.setAttribute(
+        'data-theme',
+        themeType,
+      );
+    }, [themeType]);
 
     return (
       <div
+        key={new Date().valueOf()}
         ref={containerRef}
         className={classNames(
           `${prefix}-md-viewer`,

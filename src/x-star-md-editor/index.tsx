@@ -14,6 +14,7 @@ import {
   getDefaultKeyboardEventHandlers,
 } from '../utils/handler';
 import { useHistory } from '../utils/history';
+import { ThemeType } from '../x-star-editor/index';
 
 interface EditorOptions {
   /**
@@ -41,6 +42,8 @@ export interface XStarMdEditorHandle {
   getEditorContainer: () => HTMLDivElement;
   getValue: () => string;
   setValue: (value: string) => void;
+  getIsViewerChangeCode: () => boolean;
+  setIsViewerChangeCode: (value: boolean) => boolean;
 }
 
 export interface XStarMdEditorProps {
@@ -111,6 +114,11 @@ export interface XStarMdEditorProps {
     file: File,
     options: { description: string; image: boolean },
   ) => void;
+
+  /**
+   * 编辑器主题
+   */
+  themeType?: ThemeType;
 }
 
 const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
@@ -129,6 +137,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       plugins,
       onChange,
       onInsertFile,
+      themeType,
     },
     ref,
   ) => {
@@ -142,6 +151,7 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     const ignoreNext = useRef(false);
     const initialized = useRef(false);
+    const isViewerChangeCode = useRef(false); // viewer区域触发了源码改变
 
     // 将文本同步到容器
     useEffect(() => {
@@ -155,7 +165,11 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
 
     // 将选区同步到容器
     useEffect(() => {
-      if (!ignoreNext.current && initialized.current) {
+      if (
+        !isViewerChangeCode.current &&
+        !ignoreNext.current &&
+        initialized.current
+      ) {
         container.setSelection(selection);
       }
     }, [selection]);
@@ -220,6 +234,9 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
             selection,
           });
         },
+        getIsViewerChangeCode: () => isViewerChangeCode.current,
+        setIsViewerChangeCode: (value: boolean) =>
+          (isViewerChangeCode.current = value),
       }),
       [],
     );
@@ -481,6 +498,14 @@ const XStarMdEditor = React.forwardRef<XStarMdEditorHandle, XStarMdEditorProps>(
       editor.addEventListener('beforeinput', listener);
       return () => editor.removeEventListener('beforeinput', listener);
     }, []);
+
+    useEffect(() => {
+      if (!themeType) return;
+      containerRef?.current?.parentElement?.setAttribute(
+        'data-theme',
+        themeType,
+      );
+    }, [themeType]);
 
     return (
       <LocaleProvider locale={locale}>

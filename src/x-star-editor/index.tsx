@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { createKeybindingsHandler } from 'tinykeys';
+import { containerRefContext } from '../../src/context/containerRefContext';
 import SvgEditOnly from '../icons/EditOnly';
 import SvgEnterFullscreen from '../icons/EnterFullscreen';
 import SvgExitFullscreen from '../icons/ExitFullscreen';
@@ -58,6 +59,8 @@ export interface XStarEditorHandle
     XStarMdViewerHandle {
   getContainer: () => HTMLDivElement;
 }
+
+export type ThemeType = 'xcamp' | 'xyd';
 
 export interface XStarEditorProps {
   /**
@@ -134,6 +137,11 @@ export interface XStarEditorProps {
    * 文件插入回调函数
    */
   onInsertFile?: XStarMdEditorProps['onInsertFile'];
+
+  /**
+   * 编辑器主题
+   */
+  themeType?: ThemeType;
 }
 
 const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
@@ -152,6 +160,7 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       viewerRender,
       onChange,
       onInsertFile,
+      themeType = 'xyd',
     },
     ref,
   ) => {
@@ -368,68 +377,82 @@ const XStarEditor = React.forwardRef<XStarEditorHandle, XStarEditorProps>(
       }
     }, [fullscreen]);
 
+    useEffect(() => {
+      if (!themeType) return;
+      containerRef?.current?.parentElement?.setAttribute(
+        'data-theme',
+        themeType,
+      );
+    }, [themeType]);
+
     const [sourceCode, setSourceCode] = useState(value ?? initialValue);
 
     return (
-      <div
-        ref={containerRef}
-        className={classNames(
-          `${prefix}-editor`,
-          { [`${prefix}-fullscreen`]: fullscreen },
-          className,
-        )}
-        style={style}
-      >
-        <XStarMdEditor
-          ref={editorRef}
-          {...editorProps}
+      <containerRefContext.Provider value={{ editorRef, viewerRef }}>
+        <div
+          ref={containerRef}
           className={classNames(
-            { [`${prefix}-active`]: editOnly, [`${prefix}-hidden`]: viewOnly },
-            editorProps?.className,
+            `${prefix}-editor`,
+            { [`${prefix}-fullscreen`]: fullscreen },
+            className,
           )}
-          height={height}
-          locale={locale}
-          placeholder={placeholder}
-          value={value ?? sourceCode}
-          readOnly={viewOnly || readOnly}
-          plugins={editorPlugins}
-          onChange={(value) => {
-            setSourceCode(value);
-            onChange?.(value);
-          }}
-          onInsertFile={onInsertFile}
-        />
-        {viewerRender ? (
-          <ViewerRenderWrapper
-            ref={viewerRef}
+          style={style}
+        >
+          <XStarMdEditor
+            ref={editorRef}
+            {...editorProps}
             className={classNames(
               {
-                [`${prefix}-active`]: viewOnly,
-                [`${prefix}-hidden`]: editOnly,
+                [`${prefix}-active`]: editOnly,
+                [`${prefix}-hidden`]: viewOnly,
               },
-              viewerProps?.className,
-            )}
-            style={viewerProps?.style}
-            height={height}
-          >
-            {viewerRender(value ?? sourceCode)}
-          </ViewerRenderWrapper>
-        ) : (
-          <XStarMdViewer
-            ref={viewerRef}
-            {...viewerProps}
-            className={classNames(
-              {
-                [`${prefix}-active`]: viewOnly,
-                [`${prefix}-hidden`]: editOnly,
-              },
-              viewerProps?.className,
+              editorProps?.className,
             )}
             height={height}
+            locale={locale}
+            placeholder={placeholder}
             value={value ?? sourceCode}
+            readOnly={viewOnly || readOnly}
+            plugins={editorPlugins}
+            onChange={(value) => {
+              setSourceCode(value);
+              onChange?.(value);
+            }}
+            onInsertFile={onInsertFile}
           />
-        )}
-      </div>
+          {viewerRender ? (
+            <ViewerRenderWrapper
+              ref={viewerRef}
+              className={classNames(
+                {
+                  [`${prefix}-active`]: viewOnly,
+                  [`${prefix}-hidden`]: editOnly,
+                },
+                viewerProps?.className,
+              )}
+              style={viewerProps?.style}
+              height={height}
+            >
+              {viewerRender(value ?? sourceCode)}
+            </ViewerRenderWrapper>
+          ) : (
+            <XStarMdViewer
+              ref={viewerRef}
+              canContentEditable={!viewOnly && !editOnly}
+              {...viewerProps}
+              className={classNames(
+                {
+                  [`${prefix}-active`]: viewOnly,
+                  [`${prefix}-hidden`]: editOnly,
+                },
+                viewerProps?.className,
+              )}
+              height={height}
+              value={value ?? sourceCode}
+            />
+          )}
+        </div>
+      </containerRefContext.Provider>
     );
   },
 );

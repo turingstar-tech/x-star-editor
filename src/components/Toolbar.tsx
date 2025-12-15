@@ -17,6 +17,7 @@ import SvgRedo from '../icons/Redo';
 import SvgStrong from '../icons/Strong';
 import SvgTable from '../icons/Table';
 import SvgTaskList from '../icons/TaskList';
+import SvgTextColor from '../icons/TextColor';
 import SvgThematicBreak from '../icons/ThematicBreak';
 import SvgToHTML from '../icons/ToHtml';
 import SvgToMarkdown from '../icons/ToMarkdown';
@@ -29,6 +30,8 @@ import { redoHandler, toggleHandler, undoHandler } from '../utils/handler';
 import { toHTML, toMarkdown } from '../utils/markdown';
 import Fade from './Fade';
 import FileInput from './FileInput';
+import PickColor from './PickColor';
+import TableSelect from './TableSelect';
 
 interface ItemProps {
   children: React.ReactNode;
@@ -334,6 +337,14 @@ export const getDefaultToolbarItemMap = (
   const t = getFormat(locale, 'toolbarItem');
 
   return {
+    textColor: {
+      children: <SvgTextColor />,
+      tooltip: t('textColor'),
+      popoverRender: (exec, close) => {
+        return <PickColor exec={exec} close={close} />;
+      },
+    },
+
     blockquote: {
       children: <SvgBlockquote className={classNames(`${prefix}-icon`)} />,
       tooltip: t('blockquote'),
@@ -521,7 +532,8 @@ export const getDefaultToolbarItemMap = (
     table: {
       children: <SvgTable className={classNames(`${prefix}-icon`)} />,
       tooltip: t('table'),
-      onClick: (exec) => exec(toggleHandler({ type: 'table' })),
+      // onClick: (exec) => exec(toggleHandler({ type: 'table' })),
+      popoverRender: (exec, close) => <TableSelect exec={exec} close={close} />,
     },
 
     taskList: {
@@ -580,7 +592,7 @@ export const getDefaultToolbarItemMap = (
 export type ToolbarItems = (string | ToolbarItem)[][];
 
 export const getDefaultToolbarItems = (): ToolbarItems => [
-  ['heading', 'strong', 'emphasis', 'delete'],
+  ['heading', 'strong', 'emphasis', 'textColor', 'delete'],
   ['thematicBreak', 'blockquote', 'table'],
   ['link', 'image', 'mermaid'],
   ['inlineCode', 'code', 'inlineMath', 'math'],

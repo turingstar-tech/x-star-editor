@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import workerRaw from '../../workers-dist/markdown.worker.js';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { postViewerRender, preViewerRender } from './markdown';
-
 let sequence = 0;
 let worker: Worker;
 

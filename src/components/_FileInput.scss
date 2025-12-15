@@ -13,11 +13,21 @@
       &:hover {
         color: $color-primary-hover;
         border-bottom: 1px solid $color-primary-hover;
+
+        [data-theme='xcamp'] & {
+          color: $color-primary-hover-xcamp;
+          border-bottom: 1px solid $color-primary-hover-xcamp;
+        }
       }
 
       &.#{$prefix}-active {
         color: $color-primary;
         border-bottom: 2px solid $color-primary;
+
+        [data-theme='xcamp'] & {
+          color: $color-primary-xcamp;
+          border-bottom: 2px solid $color-primary-xcamp;
+        }
       }
     }
   }
@@ -41,8 +51,16 @@
       background-color: $color-primary;
       border: none;
 
+      [data-theme='xcamp'] & {
+        background-color: $color-primary-xcamp;
+      }
+
       &:hover {
         background-color: $color-primary-hover;
+
+        [data-theme='xcamp'] & {
+          background-color: $color-primary-hover-xcamp;
+        }
       }
     }
   }
@@ -63,6 +81,10 @@
 
       &:focus {
         border: 1px solid $color-primary;
+
+        [data-theme='xcamp'] & {
+          border: 1px solid $color-primary-xcamp;
+        }
       }
     }
 

@@ -1,0 +1,89 @@
+import classNames from 'classnames';
+import React, { useEffect, useState } from 'react';
+import { Executor, toggleHandler } from 'x-star-editor';
+import { prefix } from '../utils/global';
+
+interface TableSelectProps {
+  exec: Executor;
+  close: () => void;
+}
+
+const TableSelect = ({ exec, close }: TableSelectProps) => {
+  const [tableSize, setTableSize] = useState({ rows: 6, cols: 6 });
+  const [selectedArea, setSelectedArea] = useState({ row: 0, col: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const tableContainer = e.currentTarget as HTMLTableElement;
+      const rect = tableContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const col = Math.min(Math.ceil(x / 20), tableSize.cols);
+      const row = Math.min(Math.ceil(y / 20), tableSize.rows);
+
+      setSelectedArea({ row, col });
+
+      const newCols = Math.min(9, Math.max(tableSize.cols, col));
+      const newRows = Math.min(9, Math.max(tableSize.rows, row));
+
+      setTableSize({ cols: newCols, rows: newRows });
+    };
+
+    const tableContainer = document.getElementById('toolbar-table-container');
+    tableContainer?.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      tableContainer?.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [tableSize]);
+
+  const renderTable = () => {
+    const { rows, cols } = tableSize;
+    const { row: selRow, col: selCol } = selectedArea;
+    let table = [];
+
+    for (let i = 1; i <= rows; i++) {
+      let row = [];
+      for (let j = 1; j <= cols; j++) {
+        const isSelected = i <= selRow && j <= selCol;
+        row.push(
+          <td
+            key={j}
+            className={classNames(`${prefix}-toolbar-table-cell`, {
+              [`${prefix}-toolbar-table-cell-selected`]: isSelected,
+            })}
+          ></td>,
+        );
+      }
+      table.push(<tr key={i}>{row}</tr>);
+    }
+
+    return (
+      <tbody
+        onClick={() => {
+          const { row, col } = selectedArea;
+          exec(toggleHandler({ type: 'table', row, col }));
+          close();
+        }}
+      >
+        {table}
+      </tbody>
+    );
+  };
+
+  return (
+    <div className={classNames(`${prefix}-toolbar-table-container-wrap`)}>
+      <table
+        id="toolbar-table-container"
+        className={classNames(`${prefix}-toolbar-table-container`)}
+      >
+        {renderTable()}
+      </table>
+      <div>
+        {selectedArea.row}*{selectedArea.col}
+      </div>
+    </div>
+  );
+};
+
+export default TableSelect;

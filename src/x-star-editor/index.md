@@ -15,16 +15,24 @@ import { XStarEditor } from 'x-star-editor';
 
 export default () => {
   const [locale, setLocale] = useState('zh_CN');
+  const [themeType, setThemeType] = useState('xyd');
 
   return (
     <>
-      <button
-        style={{ marginBottom: 8 }}
-        onClick={() => setLocale(locale === 'zh_CN' ? 'en_US' : 'zh_CN')}
-      >
-        当前语言：{locale}
-      </button>
+      <div style={{ marginBottom: 8, display: 'flex', gap: 8 }}>
+        <button
+          onClick={() => setLocale(locale === 'zh_CN' ? 'en_US' : 'zh_CN')}
+        >
+          当前语言：{locale}
+        </button>
+        <button
+          onClick={() => setThemeType(themeType === 'xyd' ? 'xcamp' : 'xyd')}
+        >
+          当前配色：{themeType}
+        </button>
+      </div>
       <XStarEditor
+        themeType={themeType}
         height="50vh"
         locale={locale}
         placeholder={'请输入文本\n快快输入文本'}

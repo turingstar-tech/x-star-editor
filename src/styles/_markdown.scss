@@ -22,6 +22,10 @@ $md-prefix: #{$prefix}-md;
   .#{$md-prefix}-inlineMath,
   .#{$md-prefix}-math {
     color: $color-primary-active;
+
+    [data-theme='xcamp'] & {
+      color: $color-primary-active-xcamp;
+    }
   }
 
   .#{$md-prefix}-definition,
@@ -34,6 +38,10 @@ $md-prefix: #{$prefix}-md;
   .#{$md-prefix}-listItem > .#{$md-prefix}-delimiter,
   .#{$md-prefix}-thematicBreak {
     color: $color-primary;
+
+    [data-theme='xcamp'] & {
+      color: $color-primary-xcamp;
+    }
   }
 
   .#{$md-prefix}-delete > :not(.#{$md-prefix}-delimiter) {

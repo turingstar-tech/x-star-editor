@@ -1,4 +1,5 @@
 import type { Root as HastRoot } from 'hast';
+import { toHtml } from 'hast-util-to-html';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { toText as hastToText } from 'hast-util-to-text';
 import type {
@@ -9,9 +10,11 @@ import type {
 import type { Math as MdastMath } from 'mdast-util-math';
 import type { Options as ToStringOptions } from 'mdast-util-to-string';
 import { toString as mdastToString } from 'mdast-util-to-string';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 import rehypeKatex from 'rehype-katex';
 import rehypeMermaid from 'rehype-mermaidjs';
+import rehypeParse from 'rehype-parse';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeRaw from 'rehype-raw';
 import rehypeRemark, { defaultHandlers } from 'rehype-remark';
@@ -25,11 +28,14 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
+import { containerRefContext } from '../context/containerRefContext';
 import type { ViewerOptions } from '../x-star-md-viewer';
 import { prefix } from './global';
 import rehypeCustom from './rehype/rehype-custom';
 import rehypeMath, { isMathNode } from './rehype/rehype-math';
 import rehypeRawPositions from './rehype/rehype-raw-positions';
+import rehypeTableCell from './rehype/rehype-table-cell';
+import rehypeTablePositions from './rehype/rehype-table-positions';
 
 /**
  * 将 Markdown 文本解析为 Mdast 树的处理器
@@ -306,6 +312,7 @@ const toHastProcessor = unified()
       },
     },
   })
+  .use(rehypeTablePositions)
   .use(rehypeMermaid, {
     errorFallback: (element) => element,
     strategy: 'img-svg',
@@ -329,62 +336,6 @@ export const preViewerRender = async (sourceCode: string) =>
  */
 export type Schema = typeof defaultSchema;
 
-export const getDefaultSchema = (): Schema => ({
-  ...defaultSchema,
-  attributes: {
-    ...defaultSchema.attributes,
-    custom: ['meta', 'value'],
-    span: ['line'],
-    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className', 'style'],
-  },
-  protocols: {
-    ...defaultSchema.protocols,
-    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
-  },
-  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
-});
-
-const Input = ({ checked, ...props }: any) =>
-  jsx('input', { checked: !!checked, ...props });
-
-const Custom = ({ component, value }: any) =>
-  jsx(component, { children: value });
-
-/**
- * 将 Hast 树映射到 React 虚拟 DOM 树
- *
- * @param root Hast 树
- * @param options 配置项
- * @returns React 虚拟 DOM 树
- */
-export const postViewerRender = (root: HastRoot, options: ViewerOptions) => {
-  try {
-    const components = {
-      ...options.customHTMLElements,
-      // 直接在这里写函数会有重复渲染问题，因此用全局组件
-      input: Input,
-      custom: Custom,
-    };
-    return toJsxRuntime(
-      unified()
-        .use(rehypeKatex)
-        .use(rehypeCustom, options.customBlocks)
-        .runSync(root),
-      {
-        Fragment,
-        jsx,
-        jsxs,
-        components,
-      },
-    );
-  } catch {
-    return jsx('div', {
-      style: { fontStyle: 'italic', color: 'red' },
-      children: 'Parse error!',
-    });
-  }
-};
-
 const toHTMLProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -400,6 +351,7 @@ const toHTMLProcessor = unified()
     },
   })
   .use(rehypeRawPositions)
+  .use(rehypeTablePositions)
   .use(rehypeRaw)
   .use(rehypeMath)
   .use(rehypeStringify)
@@ -422,10 +374,18 @@ const toMarkdownProcessor = unified()
         isMathNode(node)
           ? h(node, 'math', hastToText(node))
           : defaultHandlers.div(h, node),
-      span: (h, node) =>
-        isMathNode(node)
+      span: (h, node) => {
+        return isMathNode(node)
           ? h(node, 'inlineMath', hastToText(node))
-          : defaultHandlers.span(h, node),
+          : node.tabelCell === true
+          ? h(node, 'html', toHtml(node))
+          : defaultHandlers.span(h, node);
+      },
+      br: (h, node) => {
+        return node.tabelCell === true
+          ? { type: 'html', value: '<br>' }
+          : defaultHandlers.br(h, node);
+      },
       custom: (h, node) =>
         h(node, 'math', { meta: node.properties.meta }, node.properties.value),
     },
@@ -434,6 +394,27 @@ const toMarkdownProcessor = unified()
   .use(remarkGfm)
   .use(remarkStringify)
   .freeze();
+
+/**
+ * table元素解析为Markdown 进行单独处理
+ *
+ * @param element HTMLTableCellElement
+ * @returns sourceCode Markdown 文本
+ */
+const toTableMarkdownProcessor = (element: HTMLTableCellElement) => {
+  const tableCode = toMarkdownProcessor.stringify(
+    toMarkdownProcessor.runSync(
+      unified()
+        .use(rehypeTableCell)
+        .runSync(
+          unified()
+            .use(rehypeParse)
+            .parse(element.outerHTML || ''),
+        ),
+    ),
+  );
+  return tableCode;
+};
 
 /**
  * 将带有 HTML 的 Markdown 文本转成 Markdown 文本
@@ -447,6 +428,220 @@ export const toMarkdown = (sourceCode: string) =>
       toHTMLProcessor.runSync(toHTMLProcessor.parse(sourceCode)),
     ),
   );
+
+export const getDefaultSchema = (): Schema => ({
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    custom: ['meta', 'value'],
+    span: ['line'],
+    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className', 'style'],
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
+  },
+  tagNames: [...(defaultSchema.tagNames ?? []), 'custom'],
+});
+
+const Input = ({ checked, ...props }: any) =>
+  jsx('input', { checked: !!checked, ...props });
+
+const Custom = ({ component, value }: any) =>
+  jsx(component, { children: value });
+
+// 自定义渲染table
+const Table = ({ ...props }: any) => {
+  const [isComposition, setIsComposition] = useState(false);
+  const [newSourceCode, setNewSourceCode] = useState('');
+  const tableRef = useRef<HTMLTableElement>(null);
+  const { editorRef, viewerRef } = useContext(containerRefContext);
+  const sourceCode = editorRef?.current?.getValue();
+
+  // 精准更新table的源码
+  const updateTableSource = (e: React.FormEvent<HTMLTableElement>) => {
+    const target = e.target as HTMLTableCellElement;
+    if (target && target.nodeName === 'TABLE') {
+      editorRef?.current?.setIsViewerChangeCode(true);
+      const sourceCodeStart = Number(target.getAttribute('data-start'));
+      const sourceCodeEnd = Number(target.getAttribute('data-end'));
+      setNewSourceCode(
+        sourceCode?.slice(0, sourceCodeStart) +
+          toTableMarkdownProcessor(target) +
+          sourceCode?.slice(sourceCodeEnd + 1),
+      );
+    }
+  };
+
+  // 组合输入时 不更新源码
+  const handleInput = (e: React.FormEvent<HTMLTableElement>) => {
+    if (isComposition) return;
+    updateTableSource(e);
+  };
+
+  const compositionEndUpdate = (e: React.FormEvent<HTMLTableElement>) => {
+    setIsComposition(false);
+    updateTableSource(e);
+  };
+
+  const handleFocus = (e: React.FormEvent<HTMLTableElement>) => {
+    updateTableSource(e);
+  };
+
+  // 由于限制了viewer的渲染时机会导致rehype插件无法实时更新
+  // 所以在table失焦时候 统一更新markdown源码
+  const handleBlur = () => {
+    editorRef?.current?.setIsViewerChangeCode(false);
+    editorRef?.current?.setValue(newSourceCode);
+  };
+
+  const handleClick = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A') {
+      event.stopPropagation();
+      event.preventDefault();
+      window.open((target as HTMLAnchorElement).href, '_blank');
+    }
+  };
+
+  const handleMouseOver = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A') {
+      target.style.cursor = 'pointer';
+    }
+  };
+
+  const handleMouseOut = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A') {
+      target.style.cursor = 'default';
+    }
+  };
+
+  // 处理选区变化
+  const handleSelectionChange = () => {
+    const table = tableRef?.current;
+
+    const selection = window.getSelection();
+
+    if (!selection?.rangeCount || !table || !viewerRef?.current) return;
+
+    const range = selection.getRangeAt(0);
+
+    // 获取选择范围的起始和结束容器，如果是文本节点则获取其父元素
+    const startContainer =
+      range.startContainer.nodeType === 3
+        ? range.startContainer.parentElement
+        : range.startContainer;
+    const endContainer =
+      range.endContainer.nodeType === 3
+        ? range.endContainer.parentElement
+        : range.endContainer;
+
+    // 检查选择范围是否在表格内
+    if (table.contains(startContainer) && table.contains(endContainer)) {
+      let currentNode: Node | Element | null = startContainer;
+      let selectedCell: HTMLTableCellElement | null = null;
+      const tableCells = Array.from(
+        table.querySelectorAll<HTMLTableCellElement>('th, td'),
+      );
+
+      // 遍历从起始容器开始的所有节点，直到找到结束容器
+      while (currentNode) {
+        if (currentNode instanceof HTMLTableCellElement) {
+          selectedCell = currentNode;
+          if (currentNode === endContainer) break;
+        }
+        // 确保 currentNode 是 Element 类型
+        if (currentNode instanceof Element) {
+          currentNode =
+            currentNode.nextElementSibling ||
+            currentNode.parentElement?.nextElementSibling ||
+            null;
+        } else {
+          currentNode = null;
+        }
+      }
+
+      // 更新 editorTableInstance 对象
+      viewerRef.current.editorTableInstance = {
+        tableRef: table,
+        selectedCell,
+        tableCells,
+      };
+    }
+  };
+
+  useEffect(() => {
+    const table = tableRef.current;
+    if (!table) return;
+
+    if (viewerRef && viewerRef.current)
+      viewerRef.current.editorTableInstance = {
+        tableRef: table,
+      };
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, []);
+
+  return jsx('table', {
+    ...props,
+    ref: tableRef,
+    contentEditable: true,
+    onInput: handleInput,
+    onCompositionStart: () => setIsComposition(true),
+    onCompositionEnd: compositionEndUpdate,
+    onFocus: handleFocus,
+    onBlur: handleBlur,
+    onClick: handleClick,
+    onMouseOver: handleMouseOver,
+    onMouseOut: handleMouseOut,
+  });
+};
+
+/**
+ * 将 Hast 树映射到 React 虚拟 DOM 树
+ *
+ * @param root Hast 树
+ * @param options 配置项
+ * @returns React 虚拟 DOM 树
+ */
+export const postViewerRender = (
+  root: HastRoot,
+  options: ViewerOptions,
+  canContentEditable?: boolean,
+) => {
+  const tableOpts = canContentEditable ? { table: Table } : {};
+  try {
+    const components = {
+      ...options.customHTMLElements,
+      // 直接在这里写函数会有重复渲染问题，因此用全局组件
+      input: Input,
+      custom: Custom,
+      ...tableOpts,
+    };
+    return toJsxRuntime(
+      unified()
+        .use(rehypeTablePositions)
+        .use(rehypeKatex)
+        .use(rehypeCustom, options.customBlocks)
+        .runSync(root),
+      {
+        Fragment,
+        jsx,
+        jsxs,
+        components,
+      },
+    );
+  } catch {
+    return jsx('div', {
+      style: { fontStyle: 'italic', color: 'red' },
+      children: 'Parse error!',
+    });
+  }
+};
 
 interface ToTextOptions extends ToStringOptions {
   /**

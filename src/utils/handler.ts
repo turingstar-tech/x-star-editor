@@ -1,3 +1,4 @@
+import React from 'react';
 import { createKeybindingsHandler } from 'tinykeys';
 import { createSelection, getRange } from './container';
 import type {
@@ -10,7 +11,6 @@ import type {
   ToggleAction,
   useHistory,
 } from './history';
-
 /**
  * 处理函数上下文
  */

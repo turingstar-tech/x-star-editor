@@ -29,14 +29,15 @@ export interface ToggleAction {
           | 'math'
           | 'orderedList'
           | 'strong'
-          | 'table'
           | 'taskList'
           | 'thematicBreak'
           | 'unorderedList';
       }
     | { type: 'code'; lang: string; value: string; showLineNumbers: boolean }
     | { type: 'heading'; depth: 1 | 2 | 3 | 4 | 5 | 6 }
-    | { type: 'image' | 'link'; url: string; description: string };
+    | { type: 'image' | 'link'; url: string; description: string }
+    | { type: 'table'; row?: number; col?: number }
+    | { type: 'textColor'; color: string };
   selection: ContainerSelection;
 }
 
@@ -170,7 +171,29 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
         case 'emphasis': {
           return toggleDelimiters('*', '_');
         }
-
+        case 'textColor': {
+          // 构造span标签
+          const getTextColor = (text: string, color: string) => {
+            const textDom = document.createElement('span');
+            textDom.style.color = color;
+            textDom.textContent = text;
+            return textDom.outerHTML;
+          };
+          // 获取选中的文本
+          const text = sourceCode.slice(startOffset, endOffset);
+          const { color } = action.payload;
+          const textContent = getTextColor(text, color);
+          const textOffset = text
+            ? textContent.split(text)[0].length
+            : textContent.length - '</span>'.length;
+          return {
+            sourceCode: `${before}${textContent}${after}`,
+            selection: createSelection(
+              anchorOffset + textOffset,
+              focusOffset + textOffset,
+            ),
+          };
+        }
         case 'heading': {
           const { depth } = action.payload;
           const lines = sourceCode
@@ -236,7 +259,17 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
         }
 
         case 'table': {
-          return toggleBlock('|  |  |\n| - | - |\n|  |  |\n|  |  |', 2);
+          const { row = 3, col = 2 } = action.payload;
+          const header = `${'|  '.repeat(col)}|\n${'| - '.repeat(col)}|\n`;
+          const content = `${'|  '.repeat(col)}|\n`.repeat(row - 1);
+          const tableCode = header + content;
+          return {
+            sourceCode: `${sourceCode.slice(
+              0,
+              lineEndOffset,
+            )}${tableCode}${lineAfter}`,
+            selection: createSelection(lineEndOffset + 1),
+          };
         }
 
         case 'thematicBreak': {
@@ -259,7 +292,7 @@ const stateReducer = ({ sourceCode }: State, action: StateAction): State => {
         .slice(lineStartOffset, lineEndOffset)
         .split('\n')
         .map((line) =>
-          action.payload.indent ? `\t${line}` : line.replace(/^(\t|  )/, ''),
+          action.payload.indent ? `\t${line}` : line.replace(/^(\t| {2})/, ''),
         )
         .join('\n');
       return {

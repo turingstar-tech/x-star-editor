@@ -7,6 +7,9 @@ export default {
     file: '文件',
     url: '网址',
   },
+  textColor: {
+    confirm: '确定',
+  },
   toolbarItem: {
     blockquote: '引用',
     code: '代码块',
@@ -46,6 +49,10 @@ export default {
     pieChart: '饼图',
     quadrantChart: '象限图',
     requirementDiagram: '需求图',
+    gitGraphDiagram: 'Git图',
+    mindMaps: '思维导图',
+    timeLine: '时间线图',
+    textColor: '文本颜色',
     gitgraphDiagram: 'Gitgraph 图',
     mindmap: '思维导图',
     timeline: '时间线图',
