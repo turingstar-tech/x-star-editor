@@ -58,5 +58,7 @@ export default {
     eraser: '橡皮',
     screenshot: '截图',
     fullscreen: '全屏',
+    previous: '后退',
+    next: '前进',
   },
 } as const;

@@ -58,5 +58,7 @@ export default {
     eraser: 'Eraser',
     screenshot: 'Screenshot',
     fullscreen: 'Fullscreen',
+    previous: 'Previous',
+    next: 'Next',
   },
 } as const;
