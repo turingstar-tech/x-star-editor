@@ -10,23 +10,33 @@ Markdown 幻灯片渲染器。
  * description: 使用 `value` 属性传入要查看的 Markdown 源码。更多示例可参考 XStarEditor。
  */
 
+import React, { useState } from 'react';
 import { XStarSlideViewer } from 'x-star-editor';
 import styles from './_test.module.scss';
 
-export default () => (
-  <XStarSlideViewer
-    slideClassName={styles.slide}
-    value={`
+export default () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 3;
+
+  return (
+    <XStarSlideViewer
+      slideClassName={styles.slide}
+      value={`
 ###### BUBBLE SORT AND SELECTION SORT
 
 # 冒泡排序与选择排序
 
 信友队C++课程
 `}
-    locale="en_US"
-    onPadChange={console.log}
-  />
-);
+      locale="en_US"
+      currentPage={currentPage}
+      totalPages={totalPages}
+      onPrevious={() => setCurrentPage((page) => page - 1)}
+      onNext={() => setCurrentPage((page) => page + 1)}
+      onPadChange={console.log}
+    />
+  );
+};
 ```
 
 ## API
