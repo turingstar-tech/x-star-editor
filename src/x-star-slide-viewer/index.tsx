@@ -419,7 +419,7 @@ const XStarSlideViewer = React.forwardRef<
               disabled={currentPage <= 1 || !onPrevious}
               onClick={onPrevious}
             >
-              后退
+              {t('previous')}
             </button>
             <span>
               {currentPage} / {totalPages}
@@ -429,7 +429,7 @@ const XStarSlideViewer = React.forwardRef<
               disabled={currentPage >= totalPages || !onNext}
               onClick={onNext}
             >
-              前进
+              {t('next')}
             </button>
           </div>
         )}
