@@ -81,6 +81,26 @@ export interface XStarSlideViewerProps {
    * 画板改变回调函数
    */
   onPadChange?: (value: PadValue) => void;
+
+  /**
+   * 当前页码
+   */
+  currentPage?: number;
+
+  /**
+   * 总页数
+   */
+  totalPages?: number;
+
+  /**
+   * 后退回调函数
+   */
+  onPrevious?: () => void;
+
+  /**
+   * 前进回调函数
+   */
+  onNext?: () => void;
 }
 
 enum OperationType {
@@ -105,6 +125,10 @@ const XStarSlideViewer = React.forwardRef<
       plugins,
       initialPadValue,
       onPadChange,
+      currentPage,
+      totalPages,
+      onPrevious,
+      onNext,
     },
     ref,
   ) => {
@@ -388,6 +412,27 @@ const XStarSlideViewer = React.forwardRef<
               operationType === OperationType.ERASER,
           })}
         />
+        {currentPage !== undefined && totalPages !== undefined && (
+          <div className={classNames(`${prefix}-page-navigation`)}>
+            <button
+              type="button"
+              disabled={currentPage <= 1 || !onPrevious}
+              onClick={onPrevious}
+            >
+              后退
+            </button>
+            <span>
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={currentPage >= totalPages || !onNext}
+              onClick={onNext}
+            >
+              前进
+            </button>
+          </div>
+        )}
         <div className={classNames(`${prefix}-btn-container`)}>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span
